@@ -147,4 +147,3 @@ def capability_tools(
         fn = build_tool(catalog, capability, run, context_type=context_type)
         out.append((tool_name(capability), fn.__doc__ or "", fn))
     return out
-

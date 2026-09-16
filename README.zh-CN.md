@@ -37,4 +37,17 @@ uv run openpeoplerouter serve
 这是单一拥有者的自托管服务，连接到同一实例的客户端共用该实例配置的供应商 Key。
 需要多人账号隔离、托管服务或支付系统时，应另建服务层。
 
+## 相关开源项目
+
+**[OpenMailConnect](https://github.com/DINQ-labs/openmailconnect)**：独立、自托管的
+Gmail / SMTP 邮件 MCP，由 DINQ Labs 维护，采用 Apache-2.0 许可证。
+支持 Gmail 搜索、阅读、会话、草稿与发送，以及 SMTP 发送。
+可以用 OpenPeopleRouter 找人，用 OpenMailConnect 操作自己的邮箱；两者可分别配置到同一个 MCP 客户端。
+
+OpenMailConnect 是可选的独立项目，不随 OpenPeopleRouter 安装。
+请按其[安装指南](https://github.com/DINQ-labs/openmailconnect#install)配置自己的
+Gmail OAuth 应用或 SMTP 凭据，无需 DINQ 账号或 PeopleRouter 积分。发送邮件须经用户授权。
+
+## 许可证
+
 代码采用 Apache-2.0，保留上游目录归属说明；供应商的数据与服务条款不随代码开源。

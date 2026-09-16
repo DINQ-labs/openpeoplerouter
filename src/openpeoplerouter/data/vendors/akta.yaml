@@ -1,0 +1,34 @@
+vendor: akta
+name: Akta by Wokelo
+base_url: https://api.akta.pro/api
+auth:
+  kind: header
+  name: x-api-key
+  format: '{secret}'
+  credential: AKTA_API_KEY
+docs: https://akta.pro
+endpoints:
+- id: akta.companies.search
+  capability: companies.search
+  name: Company name or domain to Akta id — free lookup
+  summary: Look up a company by name or domain for its Akta id (free — costs 0 credits)
+  method: GET
+  path: /v1/company/search/
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: a company name or website domain; Akta detects which you sent
+    note: the trailing slash on the path is required — without it Akta 307-redirects
+      and the key is dropped. This is the registry's health probe as well as the name→UUID
+      resolver for every other endpoint
+  docs_url: https://docs.akta.pro/api-reference/supporting-apis/company-search
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    confidence: verified
+    note: documented free, and OBSERVED free 2026-07-28 and again 2026-07-31 — the
+      response reports credits_consumed 0.00

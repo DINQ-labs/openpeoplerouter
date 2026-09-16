@@ -1,0 +1,37 @@
+vendor: predictleads
+name: PredictLeads
+base_url: https://predictleads.com/api/v3
+auth:
+  kind: header
+  name: Authorization
+  format: Basic {secret}
+  credential: PREDICTLEADS_API_KEY
+docs: https://predictleads.com/subscription_plans
+endpoints:
+- id: predictleads.companies.enrich
+  capability: companies.enrich
+  name: Enrich a company by domain
+  summary: Returns Company.
+  method: GET
+  path: /companies/{id_or_domain}
+  input:
+    pathParams:
+      id_or_domain:
+        type: string
+        required: true
+        note: company domain (no protocol/www) or a PredictLeads company UUID
+    note: the record carries firmographics plus PredictLeads' own fields — ticker,
+      meta title/description, long and short LLM descriptions, structured location_data,
+      extraction states and subsidiary domains
+  docs_url: https://docs.predictleads.com/v3/api_endpoints/companies_dataset/retrieve_company
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://predictleads.com/pricing
+    checked: '2026-08-20'
+    confidence: documented
+    note: docs label this endpoint '1 Credit / Response'

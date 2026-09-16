@@ -1,0 +1,44 @@
+vendor: serpapi
+name: SerpApi
+base_url: https://serpapi.com
+auth:
+  kind: query
+  name: api_key
+  format: '{secret}'
+  credential: SERPAPI_API_KEY
+docs: https://serpapi.com/manage-api-key
+endpoints:
+- id: serpapi.x.instagram-profile
+  capability: social.profile
+  name: Public Instagram profile by username — bio, followers
+  summary: Public Instagram profile data for a username — bio, followers, recent posts
+  method: GET
+  path: /search
+  provides:
+  - instagram
+  input:
+    queryParams:
+      engine:
+        type: string
+        required: true
+      profile_id:
+        type: string
+        required: true
+        note: Instagram username
+      next_page_token:
+        type: string
+        required: false
+        note: pagination cursor for posts
+    note: profile fields at top level (biography, followers, posts_count); posts in
+      an array with pagination via serpapi_pagination.next_page_token.
+  docs_url: https://serpapi.com/instagram-profile-api
+  cost:
+    type: per_success
+    value: 0.015
+    currency: USD
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://serpapi.com/pricing
+    checked: '2026-07-28'
+    confidence: documented

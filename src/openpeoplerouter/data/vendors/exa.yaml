@@ -1,0 +1,566 @@
+vendor: exa
+name: Exa
+base_url: https://api.exa.ai
+auth:
+  kind: header
+  name: x-api-key
+  format: '{secret}'
+  credential: EXA_API_KEY
+docs: https://dashboard.exa.ai/api-keys
+endpoints:
+- id: exa.people.search
+  capability: people.search
+  name: Search people by description
+  summary: The search endpoint lets you intelligently search the web and extract contents
+    from the results.
+  method: POST
+  path: /search
+  input:
+    bodyType: json
+    body:
+      query:
+        type: string
+        required: true
+        note: 'describe the person in words — role, seniority, location, industry,
+          anything a profile page would say. Free text, not filters: ''head of security
+          at a fintech in berlin'' works, so does ''ai safety researchers in greater
+          phoenix'''
+      category:
+        type: string
+        required: true
+        note: must be `people`
+      numResults:
+        type: integer
+        required: false
+        note: 1-100, default 10; beyond 10 adds $0.001 each
+      includeDomains:
+        type: array[string]
+        required: false
+        note: e.g. ["linkedin.com"] to keep to one profile host
+      contents:
+        type: object
+        required: false
+        note: '{highlights: true} returns the profile lines that matched the query'
+    note: 'each result is a profile page: url (mostly linkedin.com/in/…), title (the
+      person''s name), publishedDate, and an `entities` block with the structured
+      person record Exa extracted (name, current title, company, location). No contact
+      data — pair with a people.enrich or people.email.find provider for that. Scored
+      72% R@1 / 94.5% R@10 on Exa''s open people-search benchmark; the structured
+      providers under this capability need role+location filters instead of free text.'
+  docs_url: https://docs.exa.ai/reference/search
+  cost:
+    type: per_call
+    value: 7
+    currency: USD
+    per: 1000
+    unit: call
+    source: observed
+    source_url: https://exa.ai/pricing
+    checked: '2026-08-27'
+    confidence: verified
+    note: '$0.007 per call for up to 10 results (OBSERVED 2026-08-27: category people,
+      5 results → costDollars.total 0.007), plus $0.001 per result beyond 10. Platform
+      billing settles the exact costDollars.total.'
+- id: exa.companies.search
+  capability: companies.search
+  name: Search companies by description
+  summary: The search endpoint lets you intelligently search the web and extract contents
+    from the results.
+  method: POST
+  path: /search
+  input:
+    bodyType: json
+    body:
+      query:
+        type: string
+        required: true
+        note: describe the company in words — what it does, stage, geography
+      category:
+        type: string
+        required: true
+        note: must be `company`
+      numResults:
+        type: integer
+        required: false
+      includeDomains:
+        type: array[string]
+        required: false
+      startPublishedDate:
+        type: string
+        required: false
+      contents:
+        type: object
+        required: false
+        note: '{summary: {query: "what does this company sell"}} adds a $0.001/page
+          summary'
+    note: 'each result is the company''s own site or profile page: url, title, and
+      an `entities` block with the structured company record (name, description, location,
+      industry, headcount range, founding year where known). Firmographic FILTERS
+      (headcount, funding) belong to the structured providers under this capability;
+      this one takes a description.'
+  docs_url: https://docs.exa.ai/reference/search
+  cost:
+    type: per_call
+    value: 7
+    currency: USD
+    per: 1000
+    unit: call
+    source: observed
+    source_url: https://exa.ai/pricing
+    checked: '2026-08-27'
+    confidence: verified
+    note: '$0.007 per call for up to 10 results (OBSERVED 2026-08-27: category company,
+      5 results → costDollars.total 0.007), plus $0.001 per result beyond 10. Platform
+      billing settles the exact costDollars.total.'
+- id: exa.web.search
+  capability: web.search
+  name: Search the web
+  summary: The search endpoint lets you intelligently search the web and extract contents
+    from the results.
+  method: POST
+  path: /search
+  input:
+    bodyType: json
+    body:
+      query:
+        type: string
+        required: true
+        note: natural-language or keyword query; Exa's neural index understands meaning,
+          so phrase it as a description of the page you want
+      numResults:
+        type: integer
+        required: false
+        note: 1-100, default 10. The first 10 are covered by the base price; each
+          result beyond 10 adds $0.001
+      type:
+        type: string
+        required: false
+        note: auto (default) | instant | fast | deep-lite | deep | deep-reasoning.
+          auto/instant/fast bill the base; use exa.web.search.deep for the deep modes
+      category:
+        type: string
+        required: false
+        note: 'focus on one sub-index: company | people | news | publication | personal
+          site | financial report. The people/company/news/publication categories
+          have their own curated routes below'
+      includeDomains:
+        type: array[string]
+        required: false
+        note: only these hosts or host paths
+      excludeDomains:
+        type: array[string]
+        required: false
+      startPublishedDate:
+        type: string
+        required: false
+        note: ISO 8601; only pages published after this
+      endPublishedDate:
+        type: string
+        required: false
+        note: ISO 8601
+      userLocation:
+        type: string
+        required: false
+        note: two-letter ISO country code to localise results, e.g. US
+      contents:
+        type: object
+        required: false
+        note: 'attach page content to each result: {text: true|{maxCharacters}, highlights:
+          true|{query, maxCharacters}, summary: {query}}. Observed 2026-08-27: highlights
+          on a search were not billed on top of the base; text/summary follow the
+          $1/1k-page contents rate'
+    note: results carry url, title, publishedDate, author, score and any requested
+      contents. Keep numResults at 10 or below to stay at the base price.
+  docs_url: https://docs.exa.ai/reference/search
+  cost:
+    type: per_call
+    value: 7
+    currency: USD
+    per: 1000
+    unit: call
+    source: observed
+    source_url: https://exa.ai/pricing
+    checked: '2026-08-27'
+    confidence: verified
+    note: '$0.007 per call for up to 10 results, plus $0.001 per result beyond 10
+      (OBSERVED 2026-08-27: numResults 10 → costDollars.total 0.007; numResults 20
+      → 0.016, i.e. 19 returned = base + 9 riders). type fast and instant billed the
+      same 0.007. Platform billing settles the exact costDollars.total the response
+      reports, so the rider is charged as Exa charges it.'
+  tool: true
+- id: exa.web.search.deep
+  capability: web.search.deep
+  name: Deep web search
+  summary: The search endpoint lets you intelligently search the web and extract contents
+    from the results.
+  method: POST
+  path: /search
+  input:
+    bodyType: json
+    body:
+      query:
+        type: string
+        required: true
+      type:
+        type: string
+        required: true
+        note: deep-lite ($12/1k) | deep ($12/1k) | deep-reasoning ($15/1k). This route
+          exists so the deep modes carry their own price; the base route is exa.web.search
+      numResults:
+        type: integer
+        required: false
+        note: 1-100, default 10; results beyond 10 add $0.001 each
+      additionalQueries:
+        type: array[string]
+        required: false
+        note: extra query variations the deep search fans out over
+      includeDomains:
+        type: array[string]
+        required: false
+      excludeDomains:
+        type: array[string]
+        required: false
+      startPublishedDate:
+        type: string
+        required: false
+      endPublishedDate:
+        type: string
+        required: false
+      contents:
+        type: object
+        required: false
+        note: same shape as exa.web.search
+    note: the same /search route with a deep `type`; same result shape as exa.web.search
+  docs_url: https://docs.exa.ai/reference/search
+  cost:
+    type: per_call
+    value: 12
+    currency: USD
+    per: 1000
+    unit: call
+    source: observed
+    source_url: https://exa.ai/pricing
+    checked: '2026-08-27'
+    confidence: verified
+    note: '$0.012 per deep-lite or deep call (OBSERVED 2026-08-27: deep-lite, 5 results
+      → costDollars.total 0.012); deep-reasoning is documented at $0.015 and unobserved.
+      Results beyond 10 add $0.001 each. Platform billing settles the exact costDollars.total.'
+  tool: true
+- id: exa.web.search.news
+  capability: web.search.news
+  name: Search news by topic
+  summary: The search endpoint lets you intelligently search the web and extract contents
+    from the results.
+  method: POST
+  path: /search
+  input:
+    bodyType: json
+    body:
+      query:
+        type: string
+        required: true
+      category:
+        type: string
+        required: true
+        note: must be `news`
+      startPublishedDate:
+        type: string
+        required: false
+        note: ISO 8601 — the usual way to mean 'recent'
+      endPublishedDate:
+        type: string
+        required: false
+      numResults:
+        type: integer
+        required: false
+      includeDomains:
+        type: array[string]
+        required: false
+      contents:
+        type: object
+        required: false
+        note: '{highlights: true} or {summary: {query}}'
+    note: 'results are articles: url, title, publishedDate, author'
+  docs_url: https://docs.exa.ai/reference/search
+  cost:
+    type: per_call
+    value: 7
+    currency: USD
+    per: 1000
+    unit: call
+    source: observed
+    source_url: https://exa.ai/pricing
+    checked: '2026-08-27'
+    confidence: verified
+    note: '$0.007 per call for up to 10 results (OBSERVED 2026-08-27: category news,
+      5 results → costDollars.total 0.007), plus $0.001 per result beyond 10. Platform
+      billing settles the exact costDollars.total.'
+  tool: true
+- id: exa.web.search.publications
+  capability: web.search.publications
+  name: Search research publications
+  summary: The search endpoint lets you intelligently search the web and extract contents
+    from the results.
+  method: POST
+  path: /search
+  input:
+    bodyType: json
+    body:
+      query:
+        type: string
+        required: true
+        note: a research question, method, or a vague recollection of the paper
+      category:
+        type: string
+        required: true
+        note: must be `publication`
+      numResults:
+        type: integer
+        required: false
+      startPublishedDate:
+        type: string
+        required: false
+      includeDomains:
+        type: array[string]
+        required: false
+        note: e.g. ["arxiv.org"]
+      contents:
+        type: object
+        required: false
+        note: '{highlights: {query}} pulls the matching passage'
+    note: 'results are paper pages (arxiv, publisher, DOI landing pages): url, title,
+      publishedDate, author'
+  docs_url: https://docs.exa.ai/reference/search
+  cost:
+    type: per_call
+    value: 7
+    currency: USD
+    per: 1000
+    unit: call
+    source: observed
+    source_url: https://exa.ai/pricing
+    checked: '2026-08-27'
+    confidence: verified
+    note: '$0.007 per call for up to 10 results (OBSERVED 2026-08-27: category publication,
+      5 results → costDollars.total 0.007), plus $0.001 per result beyond 10. Platform
+      billing settles the exact costDollars.total.'
+  tool: true
+- id: exa.web.contents.get
+  capability: web.contents.get
+  name: Get page contents by URL
+  summary: Get the full page contents, summaries, and metadata for a list of URLs.
+  method: POST
+  path: /contents
+  input:
+    bodyType: json
+    body:
+      urls:
+        type: array[string]
+        required: true
+        note: one or more page URLs; each page is billed per content type requested
+      text:
+        type: boolean|object
+        required: false
+        note: 'true, or {maxCharacters: N} — the page as clean text. $0.001 per page'
+      highlights:
+        type: object
+        required: false
+        note: '{query, maxCharacters, numSentences} — the passages most relevant to
+          `query`. $0.001 per page'
+      summary:
+        type: object
+        required: false
+        note: '{query} — an AI summary of the page focused on `query`. $0.001 per
+          page'
+      maxAgeHours:
+        type: integer
+        required: false
+        note: serve cache if younger than this, else live-crawl; omit for Exa's default
+          freshness
+      livecrawlTimeout:
+        type: integer
+        required: false
+        note: ms, default 10000
+      subpages:
+        type: integer
+        required: false
+        note: also crawl N linked subpages (each billed as a page)
+    note: each result carries url, title, author, publishedDate and whichever of text
+      / highlights / summary was asked for; `statuses` says per URL whether it came
+      from cache or a live crawl, or failed. Request only the content types you need
+      — each one is a separate $0.001 per page.
+  docs_url: https://docs.exa.ai/reference/get-contents
+  cost:
+    type: per_result
+    value: 1
+    currency: USD
+    per: 1000
+    unit: page
+    source: observed
+    source_url: https://exa.ai/pricing
+    checked: '2026-08-27'
+    confidence: verified
+    note: '$0.001 per page PER CONTENT TYPE: text, highlights and summary are each
+      billed separately (OBSERVED 2026-08-27: text on one page → costDollars.total
+      0.001; highlights+summary on one page → 0.002 as {highlights: 0.001, summary:
+      0.001}). A failed URL is not billed. Platform billing settles the exact costDollars.total.'
+  tool: true
+- id: exa.web.similar
+  capability: web.similar
+  name: Find pages similar to a URL
+  summary: Find similar links to the link provided and optionally return the contents
+    of the pages.
+  method: POST
+  path: /findSimilar
+  input:
+    bodyType: json
+    body:
+      url:
+        type: string
+        required: true
+        note: the page to find neighbours of — a product site to find competitors,
+          an article to find coverage of the same story
+      numResults:
+        type: integer
+        required: false
+        note: 1-100, default 10; beyond 10 adds $0.001 each
+      excludeSourceDomain:
+        type: boolean
+        required: false
+        note: drop results from the input URL's own domain — usually what you want
+      category:
+        type: string
+        required: false
+        note: company | people | news | publication | personal site | financial report
+      includeDomains:
+        type: array[string]
+        required: false
+      excludeDomains:
+        type: array[string]
+        required: false
+      startPublishedDate:
+        type: string
+        required: false
+      contents:
+        type: object
+        required: false
+        note: same shape as exa.web.search
+    note: results carry url, title, publishedDate, author and a similarity `score`
+  docs_url: https://docs.exa.ai/reference/find-similar-links
+  cost:
+    type: per_call
+    value: 7
+    currency: USD
+    per: 1000
+    unit: call
+    source: observed
+    source_url: https://exa.ai/pricing
+    checked: '2026-08-27'
+    confidence: verified
+    note: '$0.007 per call for up to 10 results (OBSERVED 2026-08-27: 5 results →
+      costDollars.total 0.007), plus $0.001 per result beyond 10. Platform billing
+      settles the exact costDollars.total.'
+  tool: true
+- id: exa.creators.search
+  capability: creators.search
+  name: Find influencers & creators by describing them
+  summary: The search endpoint lets you intelligently search the web and extract contents
+    from the results.
+  method: POST
+  path: /search
+  input:
+    bodyType: json
+    body:
+      query:
+        type: string
+        required: true
+        note: describe the creators in words — niche, city/region, language, audience,
+          brand mentions, follower scale ('Italian specialty-coffee baristas who post
+          latte art', 'Belo Horizonte food guides recommending restaurants'). Keep
+          city and niche words in the query; they are how Exa matches profile and
+          post text
+      includeDomains:
+        type: array[string]
+        required: true
+        note: 'pin the platform: ["instagram.com"] | ["tiktok.com"] | ["youtube.com"]
+          | ["x.com", "twitter.com"] | ["twitch.tv"]. Without it results drift to
+          news and LinkedIn'
+      numResults:
+        type: integer
+        required: false
+        note: 1-100, default 10; beyond 10 adds $0.001 each
+      contents:
+        type: object
+        required: false
+        note: '{highlights: {query, maxCharacters: 400}} returns the matching caption/bio
+          lines — the evidence a reviewer needs'
+    note: 'Do NOT set category: people — that returns LinkedIn profiles, not creators.
+      Results are profile and post URLs on the platform (instagram.com/<handle>/p/…);
+      take the handle from the URL, dedupe on it. This is the SEMANTIC shape of creator
+      discovery: it follows meaning (niche, brand mentions, city) but cannot enforce
+      follower ranges or engagement. The STRUCTURED shape is influencersclub.creators.search
+      (follower/engagement/location/language filters, audience data). Best results
+      come from running both and merging on handle — on the LessieAI people-search-bench
+      influencer track (2026-08-27) Exa rows qualified 100% and influencers.club rows
+      63%, and the union scored 55 vs 38 for either alone.'
+  docs_url: https://docs.exa.ai/reference/search
+  cost:
+    type: per_call
+    value: 7
+    currency: USD
+    per: 1000
+    unit: call
+    source: observed
+    source_url: https://exa.ai/pricing
+    checked: '2026-08-27'
+    confidence: verified
+    note: '$0.007 per call for up to 10 results (OBSERVED 2026-08-27: includeDomains
+      instagram.com, 15 results → costDollars.total 0.012 = base + 5 riders), plus
+      $0.001 per result beyond 10. Highlights inside the call were not billed on top.
+      Platform billing settles the exact costDollars.total.'
+  tool: true
+- id: exa.web.answer
+  capability: web.answer
+  name: Answer a question with citations
+  summary: Get an LLM answer to a question informed by Exa search results. Fully compatible
+    with OpenAI's chat completions endpoint.
+  method: POST
+  path: /answer
+  input:
+    bodyType: json
+    body:
+      query:
+        type: string
+        required: true
+        note: a question or instruction; Exa searches, reads, and writes an answer
+          with citations
+      text:
+        type: boolean
+        required: false
+        note: true also returns the full text of each cited page
+      outputSchema:
+        type: object
+        required: false
+        note: JSON Schema draft-7; when set, `answer` is a JSON object in that shape
+          instead of prose
+      stream:
+        type: boolean
+        required: false
+        note: server-sent events; leave false through the proxy
+    note: 'response is {answer, citations: [{url, title, publishedDate, author, text?}],
+      costDollars}. This is the one Exa route that runs a model over the results;
+      for raw results use exa.web.search.'
+  docs_url: https://docs.exa.ai/reference/answer
+  cost:
+    type: per_call
+    value: 5
+    currency: USD
+    per: 1000
+    unit: call
+    source: observed
+    source_url: https://exa.ai/pricing
+    checked: '2026-08-27'
+    confidence: verified
+    note: '$0.005 per answer (OBSERVED 2026-08-27: costDollars.total 0.005). Platform
+      billing settles the exact costDollars.total.'
+  tool: true

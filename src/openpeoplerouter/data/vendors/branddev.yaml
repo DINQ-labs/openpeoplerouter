@@ -1,0 +1,512 @@
+vendor: branddev
+name: Brand.dev
+base_url: https://api.brand.dev/v1
+auth:
+  kind: header
+  name: Authorization
+  format: Bearer {secret}
+  credential: BRANDDEV_API_KEY
+docs: https://brand.dev
+endpoints:
+- id: branddev.brand.retrieve
+  capability: companies.enrich
+  name: Brand profile by domain — logos, colors, socials, headcount
+  summary: Retrieve logos, colors, fonts, slogan, description, socials, address, headcount
+    and industry for a domain
+  method: GET
+  path: /brand/retrieve
+  input:
+    queryParams:
+      domain:
+        type: string
+        required: true
+        note: bare domain, no scheme or www
+      maxSpeed:
+        type: boolean
+        required: false
+        note: true serves the cached record and returns in ~1s instead of ~10s — same
+          price
+      maxAgeMs:
+        type: integer
+        required: false
+        note: maximum acceptable age of the cached record in ms; lower forces a fresh
+          crawl and a slower call
+      timeoutMS:
+        type: integer
+        required: false
+        note: abort the call after this many ms
+      force_language:
+        type: string
+        required: false
+        note: return the description in this language; full language names, not codes
+          ('english', 'french', 'japanese' …)
+    note: exactly one lookup identifier per call — this route takes `domain`; use
+      the sibling retrieve-by-* routes for name / email / ticker / ISIN. Calling it
+      with NO parameters returns a free 400 and is the registry's probe.
+  docs_url: https://docs.brand.dev/api-reference/brand-intelligence/brand
+  cost:
+    type: per_success
+    value: 10
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://brand.dev/pricing
+    checked: '2026-08-20'
+    confidence: verified
+    note: key_metadata.credits_consumed = 10 on the captured response; the pricing
+      page's plan popovers say '10 credits per call' for brand retrieval. Failed/invalid
+      calls consume 0
+- id: branddev.brand.retrieve-by-name
+  capability: companies.enrich
+  name: Brand profile by company name — logos, colors, socials
+  summary: Resolve a company name to its domain and return the full brand record —
+    logos, colors, description, socials, industry
+  method: GET
+  path: /brand/retrieve-by-name
+  input:
+    queryParams:
+      name:
+        type: string
+        required: true
+        note: company name, at least 3 characters (2 returns a free 405)
+      country_gl:
+        type: string
+        required: false
+        note: ISO 3166-1 alpha-2 country code to disambiguate a name used in several
+          markets
+      maxSpeed:
+        type: boolean
+        required: false
+        note: serve the cached record (~1s)
+      maxAgeMs:
+        type: integer
+        required: false
+      timeoutMS:
+        type: integer
+        required: false
+    note: a name shorter than 3 characters is refused free. This family answers bad
+      input with a plain-text 405 rather than a JSON 400 — treat both as free validation
+      failures, not as outages
+  docs_url: https://docs.brand.dev/api-reference/brand-intelligence/brand
+  cost:
+    type: per_success
+    value: 10
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://brand.dev/pricing
+    checked: '2026-08-20'
+    confidence: verified
+    note: observed credits_consumed = 10
+- id: branddev.brand.retrieve-by-email
+  capability: companies.enrich
+  name: Company brand profile by work email
+  summary: Turn a work email address into the employer's brand record — the signup-form
+    enrichment call
+  method: GET
+  path: /brand/retrieve-by-email
+  input:
+    queryParams:
+      email:
+        type: string
+        required: true
+        note: a work email; free / disposable mailbox providers are rejected
+      maxSpeed:
+        type: boolean
+        required: false
+      maxAgeMs:
+        type: integer
+        required: false
+      timeoutMS:
+        type: integer
+        required: false
+    note: this enriches the COMPANY behind the address, never the person — no personal
+      data is returned for the mailbox itself
+  docs_url: https://docs.brand.dev/api-reference/brand-intelligence/brand
+  cost:
+    type: per_success
+    value: 10
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://brand.dev/pricing
+    checked: '2026-08-20'
+    confidence: verified
+    note: observed credits_consumed = 10
+- id: branddev.brand.retrieve-simplified
+  capability: companies.brand.assets
+  name: Brand logos, colors and backdrops by domain
+  summary: The visual half of the brand record — logos, backdrops and the color palette
+    — without the description, socials or firmographics
+  method: GET
+  path: /brand/retrieve-simplified
+  input:
+    queryParams:
+      domain:
+        type: string
+        required: true
+        note: bare domain, no scheme or www
+      maxAgeMs:
+        type: integer
+        required: false
+        note: maximum acceptable age of the cached record in ms
+      timeoutMS:
+        type: integer
+        required: false
+    note: 'same price as the full record — pick this one for a smaller payload (about
+      half the bytes), not to save money. Verified 2026-08-20: this route IGNORES
+      maxSpeed (it is accepted on /brand/retrieve), so there is no latency dial here'
+  docs_url: https://docs.brand.dev/api-reference/brand-intelligence/brand
+  cost:
+    type: per_success
+    value: 10
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://brand.dev/pricing
+    checked: '2026-08-20'
+    confidence: verified
+    note: observed credits_consumed = 10
+  tool: true
+- id: branddev.brand.retrieve-by-ticker
+  capability: companies.enrich
+  name: Brand profile by stock ticker — logo and colors
+  summary: Resolve a listed company's ticker to its domain and brand record — logo
+    and colors for a portfolio or watchlist UI
+  method: GET
+  path: /brand/retrieve-by-ticker
+  input:
+    queryParams:
+      ticker:
+        type: string
+        required: true
+        note: exchange ticker symbol
+      maxSpeed:
+        type: boolean
+        required: false
+      maxAgeMs:
+        type: integer
+        required: false
+      timeoutMS:
+        type: integer
+        required: false
+    note: unrecognised query params are IGNORED rather than rejected, so a misspelled
+      parameter fails silently and still costs a call — copy the names above exactly
+  docs_url: https://docs.brand.dev/api-reference/brand-intelligence/brand
+  cost:
+    type: per_success
+    value: 10
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://brand.dev/pricing
+    checked: '2026-08-20'
+    confidence: verified
+    note: observed credits_consumed = 10
+  tool: true
+- id: branddev.brand.retrieve-by-isin
+  capability: companies.enrich
+  name: Brand profile by ISIN security identifier
+  summary: Resolve an ISIN security identifier to the issuing company's domain and
+    brand record
+  method: GET
+  path: /brand/retrieve-by-isin
+  input:
+    queryParams:
+      isin:
+        type: string
+        required: true
+        note: 12-character ISIN
+      maxSpeed:
+        type: boolean
+        required: false
+      maxAgeMs:
+        type: integer
+        required: false
+      timeoutMS:
+        type: integer
+        required: false
+    note: the finance-native sibling of retrieve-by-ticker — the one route here that
+      speaks a securities identifier rather than a web one
+  docs_url: https://docs.brand.dev/api-reference/brand-intelligence/brand
+  cost:
+    type: per_success
+    value: 10
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://brand.dev/pricing
+    checked: '2026-08-20'
+    confidence: verified
+    note: observed credits_consumed = 10
+  tool: true
+- id: branddev.brand.transaction-identifier
+  capability: companies.transaction.identify
+  name: Identify a company from a card transaction descriptor
+  summary: Turn a raw card or bank statement descriptor into a named company with
+    logo, colors and industry
+  method: GET
+  path: /brand/transaction_identifier
+  input:
+    queryParams:
+      transaction_info:
+        type: string
+        required: true
+        note: the raw descriptor exactly as it appears on the statement, URL-encoded
+      timeoutMS:
+        type: integer
+        required: false
+    note: 'the fintech route: ''TST* STARBUCKS SEATTLE'' resolves to starbucks.com.
+      Descriptors that match nothing return a brand record with a low-confidence domain
+      rather than an error, so check the domain before trusting it'
+  docs_url: https://docs.brand.dev/guides/enrich-transaction-codes
+  cost:
+    type: per_success
+    value: 10
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://brand.dev/pricing
+    checked: '2026-08-20'
+    confidence: verified
+    note: observed credits_consumed = 10
+  tool: true
+- id: branddev.brand.naics
+  capability: companies.industry.resolve
+  name: NAICS industry codes by domain or description
+  summary: Map a domain or a free-text company description to 2022 NAICS industry
+    codes with a confidence label
+  method: GET
+  path: /brand/naics
+  input:
+    queryParams:
+      input:
+        type: string
+        required: true
+        note: a domain OR a free-text description of the business; minimum 4 characters
+      timeoutMS:
+        type: integer
+        required: false
+    note: 'returns one or more {code, name, confidence: high|medium|low} rows. Every
+      brand record also carries an inline `industries.eic` tag pair, so call this
+      only when you specifically need NAICS'
+  docs_url: https://docs.brand.dev/guides/classification/NAICS
+  cost:
+    type: per_success
+    value: 10
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://brand.dev/pricing
+    checked: '2026-08-20'
+    confidence: verified
+    note: observed credits_consumed = 10
+  tool: true
+- id: branddev.brand.styleguide
+  capability: companies.brand.styleguide
+  name: Extract a website's design system by domain — CSS
+  summary: Colors, type scale, spacing, shadows and component styles (button, card,
+    input) lifted from a live site, each with ready-to-paste CSS
+  method: GET
+  path: /brand/styleguide
+  input:
+    queryParams:
+      domain:
+        type: string
+        required: true
+        note: bare domain, no scheme
+      maxAgeMs:
+        type: integer
+        required: false
+        note: maximum acceptable age of the cached styleguide in ms; lower forces
+          a fresh render
+      timeoutMS:
+        type: integer
+        required: false
+    note: 'the programmatic-theming call: enough to render an app in a customer''s
+      brand without a designer. Values are measured off the rendered page, so a heavily
+      JS-themed site can report the pre-hydration palette'
+  docs_url: https://docs.brand.dev/api-reference/brand-intelligence/styleguide
+  cost:
+    type: per_success
+    value: 10
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://brand.dev/pricing
+    checked: '2026-08-20'
+    confidence: verified
+    note: observed credits_consumed = 10
+  tool: true
+- id: branddev.brand.fonts
+  capability: companies.brand.fonts
+  name: Detect a website's fonts by domain — files per weight
+  summary: Every font family a site loads, with fallback stacks, share of elements
+    and words, and direct links to the font files by weight
+  method: GET
+  path: /brand/fonts
+  input:
+    queryParams:
+      domain:
+        type: string
+        required: true
+        note: bare domain, no scheme
+      maxAgeMs:
+        type: integer
+        required: false
+        note: maximum acceptable age of the cached result in ms
+      timeoutMS:
+        type: integer
+        required: false
+    note: 5 credits, the cheapest of the brand-asset routes (maxSpeed is ignored here).
+      `fontLinks` gives the woff2 URL per weight, which is what makes the result actually
+      usable in a rendered mock-up
+  docs_url: https://docs.brand.dev/api-reference/brand-intelligence/fonts
+  cost:
+    type: per_success
+    value: 5
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://brand.dev/pricing
+    checked: '2026-08-20'
+    confidence: verified
+    note: observed credits_consumed = 5 — half the brand-retrieval price
+  tool: true
+- id: branddev.brand.screenshot
+  capability: companies.website.screenshot
+  name: Screenshot a company's website by domain
+  summary: A 1920x1080 viewport or full-page PNG of a company's site, returned as
+    a cached CDN URL
+  method: GET
+  path: /brand/screenshot
+  input:
+    queryParams:
+      domain:
+        type: string
+        required: true
+        note: bare domain, no scheme
+      fullScreenshot:
+        type: boolean
+        required: false
+        note: true captures the whole page (screenshotType 'fullPage') instead of
+          the 1920x1080 viewport
+      page:
+        type: string
+        required: false
+        note: capture a named sub-page instead of the homepage — an enum (pricing,
+          blog, careers, contact, login, signup …); an unknown value returns a free
+          405
+      maxAgeMs:
+        type: integer
+        required: false
+      timeoutMS:
+        type: integer
+        required: false
+    note: 1 credit — the cheapest route on the provider. The response is a URL on
+      the provider's media CDN, not image bytes, so the call stays small
+  docs_url: https://docs.brand.dev/guides/take-webpage-screenshot
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://brand.dev/pricing
+    checked: '2026-08-20'
+    confidence: verified
+    note: observed credits_consumed = 1, for both the viewport and the fullScreenshot=true
+      variant
+  tool: true
+- id: branddev.brand.ai.query
+  capability: companies.website.extract
+  name: Extract named datapoints from a company site by domain
+  summary: Define the fields you want — name, description, type and an example each
+    — and get them extracted from the company's own website, with the URLs used
+  method: POST
+  path: /brand/ai/query
+  input:
+    body:
+      domain:
+        type: string
+        required: true
+        note: bare domain, no scheme
+      data_to_extract:
+        type: array[object]
+        required: true
+        note: each item needs ALL FOUR of datapoint_name, datapoint_description, datapoint_example
+          and datapoint_type; datapoint_type is one of text | number | date | boolean
+          | list | url
+      specific_pages:
+        type: object
+        required: false
+        note: restrict the crawl to named page types instead of letting it pick
+      timeoutMS:
+        type: integer
+        required: false
+    note: one flat price whatever the number of datapoints, so batch every field you
+      need into one call. The response echoes `urls_analyzed`, which is what makes
+      an answer auditable
+  docs_url: https://docs.brand.dev/api-reference/web-extraction/extract
+  cost:
+    type: per_success
+    value: 10
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://brand.dev/pricing
+    checked: '2026-08-20'
+    confidence: verified
+    note: observed credits_consumed = 10 for a one-datapoint request; the pricing
+      page prices structured extraction at 10 credits per call
+  tool: true
+- id: branddev.brand.ai.products
+  capability: companies.products
+  name: Extract products and prices from a company site by domain
+  summary: Build a structured product/plan catalog from a company's site — name, price,
+    currency, billing frequency, pricing model, features, audience and URL
+  method: POST
+  path: /brand/ai/products
+  input:
+    body:
+      domain:
+        type: string
+        required: false
+        note: bare domain — provide EITHER domain or directUrl, never both (sending
+          neither, or both, returns a free 400)
+      directUrl:
+        type: string
+        required: false
+        note: a specific pricing or product page to parse instead of letting the crawler
+          find one
+      timeoutMS:
+        type: integer
+        required: false
+    note: 'the competitive-pricing call: it reads a public pricing page into rows
+      you can diff over time. Returns a bare {products: [...]} object with no status
+      wrapper'
+  docs_url: https://docs.brand.dev/api-reference/web-extraction/products
+  cost:
+    type: per_success
+    value: 10
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://brand.dev/pricing
+    checked: '2026-08-20'
+    confidence: verified
+    note: observed credits_consumed = 10 regardless of how many products come back
+  tool: true

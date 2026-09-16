@@ -1,0 +1,71 @@
+order:
+- people.search
+- companies.search
+- people.enrich
+- companies.enrich
+- people.from_image
+- social.profile
+- people.identity.resolve
+- people.contact.find
+capabilities:
+  people.enrich:
+    en: 'Fill in a person from an identifier you already hold: title, employer, seniority,
+      location.'
+    zh: 手里已经有这个人的某个标识，把他补全：现任职位、雇主、资历、所在地。
+  people.search:
+    en: 'A list of people you did not have: from a description — a role, a company,
+      a place — or from a source that names them, such as a repository, a paper, a
+      Scholar profile or a company page.'
+    zh: 拿到一批你原本没有的人：可以按条件描述，职位、公司、地点；也可以给一个会点到人的来源，比如代码仓库、论文、Scholar 主页或公司页。
+  people.identity.resolve:
+    en: 'Identity resolution: one person''s profiles across platforms, resolved into
+      a single set. Give any one of them and get the rest.'
+    zh: 身份归一：把一个人散落在各平台的身份并成一组。给出其中任意一个，返回其余的。
+  people.contact.find:
+    en: 'How to reach one person: their work email, their phone when you ask for it,
+      and whether an address you already hold is real.'
+    zh: 怎么联系到这个人：工作邮箱，需要时再找电话，以及验证你手里已有的地址是否真实。
+  companies.enrich:
+    en: 'Turn a company name or domain into its facts: canonical name, domain, size,
+      industry, location, LinkedIn page — the step that gives contact discovery a
+      domain to work with.'
+    zh: 把一个公司名或域名变成它的资料：规范名称、域名、规模、行业、地点、LinkedIn 页。找联系方式最通用的输入是「姓名加公司域名」，域名就从这里来。
+  companies.search:
+    en: Find companies by industry, size or technology — the first half of sourcing,
+      before you look for people inside them.
+    zh: 按行业、规模或技术栈找出一批公司。这是寻访的上半段，先圈定公司，再进去找人。
+  social.profile:
+    en: 'One person''s public profile on whatever platform a handle belongs to: LinkedIn,
+      X, Instagram, TikTok, YouTube, GitHub and the rest.'
+    zh: 给一个账号或主页链接，返回这个人在那个平台上的公开主页。覆盖 LinkedIn、X、Instagram、TikTok、YouTube、GitHub
+      等，由链接自己决定谁来答。
+  people.from_image:
+    en: 'A photo in, the person out: every page and profile on the web that carries
+      that exact image, with the social profiles among them picked out — the way in
+      when all you hold is a picture.'
+    zh: 给一张照片，找到这个人：全网带有这张图的页面和主页，并从中提出社媒账号。手里只有一张图的时候，从这里进。
+titles:
+  people.search:
+    en: People search
+    zh: 人物搜索
+  companies.search:
+    en: Company search
+    zh: 公司搜索
+  people.enrich:
+    en: Person enrichment
+    zh: 人物信息补全
+  companies.enrich:
+    en: Company lookup
+    zh: 公司信息查询
+  social.profile:
+    en: Social profiles
+    zh: 社媒主页
+  people.identity.resolve:
+    en: Identity resolution
+    zh: 身份归一
+  people.contact.find:
+    en: Contact discovery
+    zh: 联系方式获取
+  people.from_image:
+    en: Find by photo
+    zh: 以图找人

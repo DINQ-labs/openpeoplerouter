@@ -1,0 +1,54 @@
+vendor: wikidata
+name: Wikidata
+base_url: https://query.wikidata.org
+auth:
+  kind: none
+  extra_headers:
+    User-Agent: OpenPeopleRouter/0.1
+docs: https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service
+homepage: https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service
+limits: ''
+endpoints:
+- id: wikidata.identity.from_x
+  capability: people.identity.resolve
+  name: Every account of a notable person, from an X handle
+  summary: 'Wikidata''s record for a person: GitHub, LinkedIn, ORCID, Scholar, Hugging
+    Face, website — exact match on the X handle'
+  method: GET
+  path: /sparql
+  input:
+    queryParams:
+      query:
+        type: string
+        description: SPARQL
+      format:
+        type: string
+        description: json
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    source: public API, no key
+    confidence: verified
+  latency: 1-4 s
+- id: wikidata.identity.from_github
+  capability: people.identity.resolve
+  name: Every account of a notable person, from a GitHub login
+  summary: The same record, matched exactly on the GitHub username
+  method: GET
+  path: /sparql
+  input:
+    queryParams:
+      query:
+        type: string
+        description: SPARQL
+      format:
+        type: string
+        description: json
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    source: public API, no key
+    confidence: verified
+  latency: 1-4 s

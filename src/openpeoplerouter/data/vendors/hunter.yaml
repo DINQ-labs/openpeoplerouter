@@ -1,0 +1,333 @@
+vendor: hunter
+name: Hunter
+base_url: https://api.hunter.io/v2
+auth:
+  kind: header
+  name: X-API-KEY
+  format: '{secret}'
+  credential: HUNTER_API_KEY
+docs: https://hunter.io/api-keys
+endpoints:
+- id: hunter.x.combined-find
+  capability: people.enrich
+  name: Enrich a person and their company by email
+  summary: Retrieves person and company information from a single email address
+  method: GET
+  path: /combined/find
+  input:
+    queryParams:
+      email:
+        type: string
+        required: true
+      clearbit_format:
+        type: boolean
+        required: false
+    note: 'Cheap probe: queryParams {email: "steli@close.io"}'
+  docs_url: https://hunter.io/api-documentation/v2#email-enrichment
+  tier: extended
+  miss:
+    status: 404
+    means: no record for that email — an expected outcome (and free, per the cost
+      note), not an API failure; do not retry
+  cost:
+    type: per_success
+    value: 0.2
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://hunter.io/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 0.2 credits, billed conditionally (only when the combined record comes back
+      complete); a 404 or partial record is free — same rate as the /people/find and
+      /companies/find enrichment routes
+- id: hunter.people.email.find
+  capability: people.contact.find
+  name: Find a person's work email by name and company domain
+  summary: Find someone's work email address from their name and their company's domain
+  method: GET
+  path: /email-finder
+  input:
+    queryParams:
+      domain:
+        type: string
+        required: false
+        note: the company's domain — preferred over company
+      company:
+        type: string
+        required: false
+        note: company name, when you don't know the domain
+      linkedin_handle:
+        type: string
+        required: false
+        note: identifies EITHER the person or the company — it can stand in for the
+          name pair or for domain/company
+      first_name:
+        type: string
+        required: false
+        note: use with last_name
+      last_name:
+        type: string
+        required: false
+      full_name:
+        type: string
+        required: false
+        note: alternative to first_name + last_name
+      max_duration:
+        type: integer
+        required: false
+        note: seconds Hunter may spend, 3-20, default 10
+    note: one of domain | company | linkedin_handle, plus either full_name or first_name
+      + last_name (or linkedin_handle alone). The response carries a confidence score,
+      the sources the address was seen on, and an automatic verification of the address
+      it found
+  docs_url: https://hunter.io/api-documentation/v2#email-finder
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://hunter.io/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 1 SEARCH credit, charged only when an email is found; a miss is free.
+  provides:
+  - email
+- id: hunter.people.email.verify
+  capability: people.contact.find
+  name: Verify an email address is deliverable
+  summary: Check an email is real, deliverable and not a catch-all or disposable inbox
+  method: GET
+  path: /email-verifier
+  input:
+    queryParams:
+      email:
+        type: string
+        required: true
+        note: the address to verify
+    note: returns status (valid | invalid | accept_all | webmail | disposable | unknown),
+      a score, and the individual SMTP/MX/gibberish checks behind it. May answer HTTP
+      202 while the check is still running — poll the same URL until it settles. Rate
+      limit 10 req/s and 300 req/min, lower than the other routes
+  docs_url: https://hunter.io/api-documentation/v2#email-verifier
+  cost:
+    type: per_call
+    value: 0.5
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://hunter.io/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 0.5 VERIFICATION credits per call — half a credit, a separate pool from
+      search credits. Re-verifying the same address within the plan period is not
+      re-charged.
+  provides:
+  - verify
+- id: hunter.companies.emails
+  capability: people.search
+  name: Find email addresses at a company domain, with roles
+  summary: People and email addresses Hunter knows at a company, with roles and confidence
+  method: GET
+  path: /domain-search
+  input:
+    queryParams:
+      domain:
+        type: string
+        required: false
+        note: the company's domain — preferred over company
+      company:
+        type: string
+        required: false
+        note: company name, when you don't know the domain
+      limit:
+        type: integer
+        required: false
+        note: 'emails to return, default 10, max 100 — THIS IS THE PRICE DIAL: 1 search
+          credit per 10 returned'
+      offset:
+        type: integer
+        required: false
+        note: records to skip, for paging
+      type:
+        type: string
+        required: false
+        note: personal (named people) | generic (info@, contact@)
+      seniority:
+        type: string
+        required: false
+        note: junior, senior, executive — comma-separate to combine
+      department:
+        type: string
+        required: false
+        note: executive, it, finance, management, sales, legal, support, hr, marketing,
+          communication, education, design, health, operations
+      required_field:
+        type: string
+        required: false
+        note: comma-separated fields a result must have, e.g. full_name,position
+      decision_maker:
+        type: boolean
+        required: false
+        note: restrict to people Hunter classifies as decision makers
+      verification_status:
+        type: string
+        required: false
+        note: filter by deliverability status, e.g. valid
+      job_titles:
+        type: string
+        required: false
+        note: comma-separated job titles to match
+      location:
+        type: string
+        required: false
+        note: comma-separated locations to filter results by
+      aggregations:
+        type: boolean
+        required: false
+        note: return aggregate breakdowns (by department, seniority) alongside the
+          results
+    note: one of domain | company is required. Mapped to people.search because what
+      it actually returns is a filtered list of PEOPLE at that company
+  docs_url: https://hunter.io/api-documentation/v2#domain-search
+  cost:
+    type: per_result
+    value: 1
+    currency: credit
+    per: 10
+    unit: record
+    source: observed
+    source_url: https://hunter.io/pricing
+    checked: '2026-07-31'
+    confidence: verified
+    note: 1 SEARCH credit per 10 emails returned (rounded up); a domain with no results
+      is free. OBSERVED 2026-07-31 — a `limit` of 1 on a domain never queried on this
+      key returned 1 email and moved requests.credits.used by exactly 1.000, confirming
+      the per-10 rounding — one email costs the same whole credit as ten, so a limit
+      below 10 buys nothing.
+- id: hunter.people.enrich
+  capability: people.enrich
+  name: Enrich a person by email — name, role, social profiles
+  summary: Enrich a person from their email — name, role, seniority, location, social
+    profiles
+  method: GET
+  path: /people/find
+  input:
+    queryParams:
+      email:
+        type: string
+        required: false
+        note: the person's email address — or pass linkedin_handle instead
+      linkedin_handle:
+        type: string
+        required: false
+        note: alternative identifier when you have no email, e.g. 'stelieffendy' from
+          linkedin.com/in/stelieffendy
+      clearbit_format:
+        type: boolean
+        required: false
+        note: return the payload in Clearbit's response shape, for drop-in migration
+    note: one of email | linkedin_handle is required (Hunter answers 400 when neither
+      is sent; treg does not pre-check this). To go the other way (name → email) use
+      hunter.people.email.find, which costs a full search credit. GET /combined/find?email=…
+      returns the person AND their company in one call at the same 0.2 rate
+  docs_url: https://hunter.io/api-documentation/v2#people-enrichment
+  cost:
+    type: per_success
+    value: 0.2
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://hunter.io/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 0.2 credits, billed CONDITIONALLY — charged only when email, full name AND
+      position all come back. A 404 or a partial record is free.
+- id: hunter.x.discover-companies
+  capability: companies.search
+  name: Discover companies by criteria or plain-language query
+  summary: Identifies companies matching specified criteria; returns up to 100 companies
+    per request
+  method: POST
+  path: /discover
+  input:
+    body:
+      query:
+        type: string
+        required: false
+        note: natural-language description of the companies to find; either query
+          or at least one filter is required
+      headquarters_location:
+        type: string
+        required: false
+      industry:
+        type: string
+        required: false
+      headcount:
+        type: string
+        required: false
+      company_type:
+        type: string
+        required: false
+      technology:
+        type: string
+        required: false
+      limit:
+        type: integer
+        required: false
+      offset:
+        type: integer
+        required: false
+    bodyType: json
+    note: 'either query (natural language) or at least one filter parameter is required.
+      Cheap probe: body {query: "B2B SaaS companies in the United States", limit:
+      1}'
+  docs_url: https://hunter.io/api-documentation/v2#discover
+  tier: extended
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    note: Discover does not consume search or verification credits
+- id: hunter.companies.enrich
+  capability: companies.enrich
+  name: Enrich a company by domain — headcount, revenue, tech
+  summary: Enrich a company from its domain — industry, headcount, revenue, location,
+    tech stack
+  method: GET
+  path: /companies/find
+  input:
+    queryParams:
+      domain:
+        type: string
+        required: true
+        note: company domain without protocol or www
+      clearbit_format:
+        type: boolean
+        required: false
+        note: return the payload in Clearbit's response shape, for drop-in migration
+    note: the combined variant GET /combined/find?email=… returns the person AND their
+      company in one call at the same rate
+  docs_url: https://hunter.io/api-documentation/v2#company-enrichment
+  cost:
+    type: per_success
+    value: 0.2
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://hunter.io/pricing
+    checked: '2026-07-31'
+    confidence: verified
+    note: 0.2 credits, billed CONDITIONALLY — charged only when company name, category/description/tags,
+      location or country code AND company size all come back. A 404 or a partial
+      record is free. Still the cheapest companies.enrich in this catalog. OBSERVED
+      2026-07-31 — a call on a domain never queried on this key moved GET /account's
+      requests.credits.used by exactly 0.200; the same call repeated on an already-queried
+      domain moved it by 0.000 (cached, not free).

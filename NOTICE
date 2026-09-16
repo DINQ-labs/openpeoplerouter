@@ -1,0 +1,14 @@
+Part of this catalog is ported from treg (github.com/superdesigndev/treg),
+Copyright (c) 2026 Superdesign, licensed under Apache License 2.0.
+
+What came across: vendor endpoints, contracts, request/response mappings, prices
+and captured example responses for the people and company capabilities. What
+changed: the file format (theirs is one flat catalog directory, ours splits
+vendors from contracts), credential names, capability names where ours already
+existed, and the credit pricing, which is DINQ's own.
+
+The port is reproducible: scripts/import_treg.py <treg checkout> catalog
+
+OpenPeopleRouter extracts and adapts the public-provider catalog and routing code
+from DINQ PeopleRouter. Hosted account, payment and internal-service code are excluded.
+Captured provider responses are not distributed.

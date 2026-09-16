@@ -1,0 +1,32 @@
+vendor: orcid
+name: ORCID
+base_url: https://pub.orcid.org/v3.0
+auth:
+  kind: none
+  extra_headers:
+    User-Agent: OpenPeopleRouter/0.1
+docs: https://info.orcid.org/documentation/api-tutorials/
+homepage: https://info.orcid.org/documentation/api-tutorials/
+limits: ''
+endpoints:
+- id: orcid.people.search
+  capability: people.search
+  name: Researchers by name
+  summary: 'The ORCID registry: a researcher''s persistent id, names and institutions'
+  method: GET
+  path: /expanded-search/
+  input:
+    queryParams:
+      q:
+        type: string
+        description: given-names:X AND family-names:Y
+      rows:
+        type: string
+        description: rows
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    source: public API, no key
+    confidence: verified
+  latency: 1-3 s

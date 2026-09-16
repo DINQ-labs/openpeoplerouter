@@ -1,0 +1,338 @@
+contracts:
+  people.enrich:
+    summary: 'Everything known about one person: title, employer, location, profile
+      links.'
+    identity:
+    - email: str
+    - linkedin_url: url
+    - linkedin_handle: str
+    - full_name: str
+      domain: str
+    - first_name: str
+      last_name: str
+      domain: str
+    - scholar_url: url
+    - x_handle: str
+    - github_url: url
+    - full_name: str
+      company: str
+    derive:
+      full_name: join(first_name, last_name)
+      first_name: split_first(full_name)
+      last_name: split_last(full_name)
+      domain: email_domain(email)
+      linkedin_url: linkedin_url(linkedin_handle)
+      linkedin_handle: linkedin_handle(linkedin_url)
+    filters: {}
+    output:
+      full_name:
+        type: str
+        required: true
+      first_name:
+        type: str
+      last_name:
+        type: str
+      title:
+        type: str
+      company:
+        type: str
+      company_domain:
+        type: str
+      linkedin_url:
+        type: str
+      location:
+        type: str
+      emails:
+        type: list
+    miss: full_name == null
+    idempotent: true
+  people.search:
+    summary: 'A list of people you did not have: from a description — a role, a company,
+      a place — or from a source that names them, such as a repository, a paper, a
+      Scholar profile or a company page.'
+    identity:
+    - q: str
+    - company_domain: str
+    - title: str
+      company_domain: str
+    - title: str
+    - full_name: str
+    - source_url: url
+    - company_name: str
+    aliases:
+      query: q
+    filters:
+      country:
+        type: str
+        default: null
+        note: ISO country code, where the provider supports it
+      location:
+        type: str
+        default: null
+        note: free text place; providers normalise it differently
+      limit:
+        type: int
+        default: 25
+        note: how many people to return — the price dial on per-row vendors
+      keywords:
+        type: list
+        default: null
+        note: skills, topics or domain terms the person must match ('microservices',
+          'match analysis') — the SUBSTANCE of most briefs; a provider with no keyword
+          field answers a looser question and ranks below one that has it
+      title:
+        type: str
+        default: null
+        note: the role, as a company would write it
+      company_domain:
+        type: str
+        default: null
+        note: employer domain, to search inside one company
+      seniority:
+        type: str
+        default: null
+        note: director, vp, c_suite, senior, entry
+    row_key: name
+    output:
+      people:
+        type: list
+        required: true
+        note: 'one row per person: {name, url?, domain?, data} — name and a handle
+          are ours, `data` is the vendor''s own row, whole'
+      count:
+        type: int
+      next_cursor:
+        type: str
+      entity:
+        type: obj
+        note: what the source turned out to be
+      next_lookups:
+        type: list
+        note: URLs into other capabilities
+    miss: people == []
+    idempotent: true
+    derive: {}
+  people.identity.resolve:
+    summary: 'Identity resolution: one person''s profiles across platforms, resolved
+      into a single set. Give any one of them — LinkedIn, GitHub, X, Hugging Face,
+      Scholar, an email — and get the rest.'
+    identity:
+    - email: str
+    - linkedin_url: url
+    - github_url: url
+    - x_handle: str
+    - scholar_url: url
+    - huggingface_url: url
+    - full_name: str
+      company: str
+    - full_name: str
+      domain: str
+    derive:
+      full_name: join(first_name, last_name)
+      first_name: split_first(full_name)
+      last_name: split_last(full_name)
+      domain: email_domain(email)
+      linkedin_url: linkedin_url(linkedin_handle)
+      linkedin_handle: linkedin_handle(linkedin_url)
+    filters: {}
+    row_key: url
+    output:
+      profiles:
+        type: list
+        required: true
+        note: 'one row per platform: {platform, url, handle}'
+      full_name:
+        type: str
+      linkedin_url:
+        type: str
+      count:
+        type: int
+    miss: profiles == []
+    merge: profiles
+  people.contact.find:
+    summary: 'How to reach one person: their work email, their phone when you ask
+      for it, and whether an address you already hold is real.'
+    identity:
+    - full_name: str
+      domain: str
+    - first_name: str
+      last_name: str
+      domain: str
+    - linkedin_url: url
+    - linkedin_handle: str
+    - full_name: str
+      company: str
+    - email: str
+    derive:
+      full_name: join(first_name, last_name)
+      first_name: split_first(full_name)
+      last_name: split_last(full_name)
+      domain: host(company_website)
+      linkedin_url: linkedin_url(linkedin_handle)
+      linkedin_handle: linkedin_handle(linkedin_url)
+    filters:
+      want:
+        type: str
+        default: email
+        note: email | phone | verify | both. A phone costs several times an email,
+          so it is only looked for when asked for. Passing an email you already hold
+          and want='verify' checks it rather than finding one.
+    output:
+      emails:
+        type: list
+        note: each {value, type, confidence}
+      phones:
+        type: list
+        note: each {value, type}
+      email:
+        type: str
+        note: the best one, for callers that want a single answer
+      full_name:
+        type: str
+      title:
+        type: str
+      company:
+        type: str
+      linkedin_url:
+        type: str
+      valid:
+        type: bool
+        note: true or false when you asked for an address to be checked; absent when
+          we were finding one
+      status:
+        type: str
+        note: the provider's own verdict word (valid | invalid | accept_all | unknown
+          | …)
+      score:
+        type: int
+    miss: coalesce(emails, phones, email, valid) == null
+    merge: emails
+  companies.enrich:
+    summary: Enrich a company from its domain, name, LinkedIn URL or a work email
+      — treg picks the provider and names the one that served
+    identity:
+    - domain: str
+    - website: url
+    - name: str
+    - linkedin_url: url
+    - linkedin_handle: str
+    - email: str
+    derive:
+      domain: coalesce(email_domain(email), host(website))
+      linkedin_url: linkedin_url(linkedin_handle)
+      linkedin_handle: linkedin_handle(linkedin_url)
+    filters: {}
+    output:
+      name:
+        type: str
+        required: true
+      domain:
+        type: str
+      website:
+        type: str
+      description:
+        type: str
+      industry:
+        type: str
+      employees:
+        type: str
+        note: headcount or a range, as the provider states it
+      founded:
+        type: int
+      location:
+        type: str
+      linkedin_url:
+        type: str
+    miss: name == null
+    idempotent: true
+  companies.search:
+    summary: Find companies by a free-text description, a name, an industry, a technology
+      they use, or a domain — provider-native rows in `companies`
+    identity:
+    - q: str
+    - name: str
+    - industry: str
+    - technology: str
+    - domain: str
+    filters:
+      country:
+        type: str
+        default: null
+        note: ISO country code, where the provider supports it
+      limit:
+        type: int
+        default: 10
+        note: 'rows to return — THE price dial: most providers bill per row'
+    row_key: name
+    output:
+      companies:
+        type: list
+        required: true
+        note: 'one row per company: {name, url?, domain?, data} — name and a handle
+          are ours, `data` is the vendor''s own row, whole'
+      count:
+        type: int
+      next_cursor:
+        type: str
+    miss: companies == []
+    idempotent: true
+  social.profile:
+    summary: 'One person''s public profile on whatever platform a handle belongs to:
+      LinkedIn, X, Instagram, TikTok, YouTube, GitHub and the rest. Give a profile
+      URL, or a platform and a handle.'
+    identity:
+    - profile_url: url
+    - platform: str
+      handle: str
+    derive:
+      platform: platform_of(profile_url)
+      handle: handle_of(profile_url)
+    filters: {}
+    output:
+      platform:
+        type: str
+        required: true
+      handle:
+        type: str
+        required: true
+      name:
+        type: str
+      url:
+        type: str
+      bio:
+        type: str
+        note: often carries the links to their other profiles
+      followers:
+        type: int
+      following:
+        type: int
+      posts_count:
+        type: int
+      verified:
+        type: bool
+      location:
+        type: str
+      avatar:
+        type: str
+      platform_id:
+        type: str
+    miss: handle == null
+  people.from_image:
+    summary: 'Where a photo appears on the web, and who it is: pages carrying the
+      exact image, and the social profiles among them.'
+    identity:
+    - image_url: url
+    filters: {}
+    list_field: matches
+    row_key: name
+    output:
+      matches:
+        type: list
+        required: true
+        note: 'one row per page carrying the image: {name (page title), url, data}'
+      profiles:
+        type: list
+        note: 'the social profiles among those pages: {platform, url, handle}'
+      count:
+        type: int
+    miss: matches == []

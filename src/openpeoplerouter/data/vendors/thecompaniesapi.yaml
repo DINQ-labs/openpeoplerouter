@@ -1,0 +1,159 @@
+vendor: thecompaniesapi
+name: The Companies API
+base_url: https://api.thecompaniesapi.com/v2
+auth:
+  kind: header
+  name: Authorization
+  format: Basic {secret}
+  credential: THECOMPANIESAPI_API_KEY
+docs: https://www.thecompaniesapi.com/
+endpoints:
+- id: thecompaniesapi.companies.enrich
+  capability: companies.enrich
+  name: Enrich a company by domain — 80+ datapoints
+  summary: 'Enrich a company from its domain — 80+ datapoints: industry, size, revenue,
+    socials'
+  method: GET
+  path: /companies/{domain}
+  input:
+    pathParams:
+      domain:
+        type: string
+        required: true
+        note: company domain, no protocol or www
+    queryParams:
+      simplified:
+        type: boolean
+        required: false
+        note: returns a reduced record for ZERO credits — use it to check a domain
+          exists before paying for the full profile
+      refresh:
+        type: boolean
+        required: false
+        note: forces a live re-crawl instead of the cached record; costs 10 EXTRA
+          credits
+    note: a domain with no company behind it returns an empty object and is not charged
+  docs_url: https://www.thecompaniesapi.com/api/enrich-company-from-domain
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://www.thecompaniesapi.com/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 1 credit per company found; nothing when not found. `simplified=true` is
+      free; `refresh=true` adds 10 credits. Dollar value depends on plan (500 free
+      credits on signup).
+- id: thecompaniesapi.companies.search
+  capability: companies.search
+  name: Search companies by industry, size, location or tech
+  summary: Search companies by industry, size, location, technology or any other attribute
+    filter
+  method: GET
+  path: /companies
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: 'a stringified, URL-encoded ARRAY of conditions, each {attribute, operator:
+          ''and''|''or'', sign: ''equals''|…, values: [...]}'
+      size:
+        type: integer
+        required: false
+        note: 'results per page, 1-100, default 10 — THIS IS THE PRICE DIAL: 1 credit
+          per company returned'
+      page:
+        type: integer
+        required: false
+        note: 1-based page number, default 1
+      search:
+        type: string
+        required: false
+        note: extra free-text match on company name or domain
+      searchFields:
+        type: array[string]
+        required: false
+        note: which fields `search` applies to, e.g. domain, name
+      simplified:
+        type: boolean
+        required: false
+        note: reduced records for ZERO credits — always preview a new query this way
+          before paying for it
+      domainsToExclude:
+        type: string
+        required: false
+        note: comma-separated domains to drop from the results
+      linkedinToExclude:
+        type: string
+        required: false
+        note: comma-separated LinkedIn URLs to drop
+      sortKey:
+        type: string
+        required: false
+        note: field to sort by, e.g. meta.score, about.name
+      sortOrder:
+        type: string
+        required: false
+        note: asc | desc
+      sortFields:
+        type: array[object]
+        required: false
+        note: multiple sort criteria, stringified and URL-encoded
+      actionId:
+        type: integer
+        required: false
+        note: scope the search to a saved action
+    note: POST /companies takes the identical fields as a JSON body, which is easier
+      when the condition array is long. `searchFields` accepts about.name and domain.domain.
+      Always set an explicit small `size` — the default of 10 bills for 10 companies.
+      GET /companies/count returns just the match count and is widely treated as free,
+      though that is not published
+  docs_url: https://www.thecompaniesapi.com/api/search-companies
+  cost:
+    type: per_result
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    source_url: https://www.thecompaniesapi.com/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 1 credit PER COMPANY RETURNED, so `size` is the price. `simplified=true`
+      makes the whole call free.
+- id: thecompaniesapi.companies.enrich_by_email
+  capability: companies.enrich
+  name: Enrich the company behind an email address
+  summary: Identify and enrich the company behind an email address
+  method: GET
+  path: /companies/by-email
+  input:
+    queryParams:
+      email:
+        type: string
+        required: true
+        note: any address at the company; the domain is what does the work
+      simplified:
+        type: boolean
+        required: false
+        note: reduced record for zero credits
+    note: the signup-qualification route — turn a new user's work email into their
+      employer's firmographics. Free-mail domains (gmail.com and friends) return nothing
+  docs_url: https://www.thecompaniesapi.com/api/enrich-company-from-email
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://www.thecompaniesapi.com/pricing
+    checked: '2026-08-13'
+    confidence: verified
+    note: '1 credit per company found. VERIFIED live 2026-08-13: the response body
+      reports its own accounting — a by-email enrich returned meta.cost 1 (with meta.credits
+      showing the remaining balance), confirming 1 credit per matched company.'

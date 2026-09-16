@@ -1,0 +1,51 @@
+vendor: openalex
+name: OpenAlex
+base_url: https://api.openalex.org
+auth:
+  kind: none
+  extra_headers:
+    User-Agent: OpenPeopleRouter/0.1
+docs: https://docs.openalex.org
+homepage: https://docs.openalex.org
+limits: 100k requests a day with a mailto in the User-Agent
+endpoints:
+- id: openalex.people.search
+  capability: people.search
+  name: Researchers by name or topic
+  summary: 'Authors in the open scholarly graph: name, ORCID, institutions, works
+    and citation counts'
+  method: GET
+  path: /authors
+  input:
+    queryParams:
+      search:
+        type: string
+        description: name or words
+      per-page:
+        type: string
+        description: rows
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    source: public API, no key
+    confidence: verified
+  latency: 1-3 s
+- id: openalex.people.from_doi
+  capability: people.search
+  name: Authors of a paper, by DOI
+  summary: Every author of a work with their institution and ORCID
+  method: GET
+  path: /works
+  input:
+    queryParams:
+      filter:
+        type: string
+        description: doi:<doi>
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    source: public API, no key
+    confidence: verified
+  latency: 1-3 s

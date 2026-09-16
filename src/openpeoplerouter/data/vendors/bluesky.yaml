@@ -1,0 +1,30 @@
+vendor: bluesky
+name: Bluesky
+base_url: https://public.api.bsky.app
+auth:
+  kind: none
+docs: https://docs.bsky.app/docs/api/app-bsky-actor-get-profile
+homepage: https://docs.bsky.app/docs/api/app-bsky-actor-get-profile
+limits: ''
+endpoints:
+- id: bluesky.user.profile
+  capability: social.profile
+  name: Bluesky profile by handle
+  summary: Display name, bio, followers, following and post count from the public
+    AppView
+  method: GET
+  path: /xrpc/app.bsky.actor.getProfile
+  input:
+    queryParams:
+      actor:
+        type: string
+        description: handle
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    source: public API, no key
+    confidence: verified
+  latency: 1-3 s
+  provides:
+  - bluesky

@@ -1,0 +1,247 @@
+vendor: leadsforge
+name: LeadsForge
+base_url: https://api.leadsforge.ai/public/v1
+auth:
+  kind: header
+  name: Authorization
+  format: Bearer {secret}
+  credential: LEADSFORGE_API_KEY
+docs: https://app.leadsforge.ai/
+endpoints:
+- id: leadsforge.people.search
+  capability: people.search
+  name: Search people by company, industry or tech — ids only
+  summary: Search leads. Accepts the full person filter set.
+  method: POST
+  path: /search
+  input:
+    queryParams:
+      cursor:
+        type: string
+        required: false
+        note: opaque cursor from the previous page's response
+    body:
+      companyDomains:
+        type: object
+        required: false
+        note: '{include: [domain], exclude: [domain]} — the way to target named companies'
+      companyNames:
+        type: object
+        required: false
+        note: '{include/exclude} free text, partial and case-insensitive'
+      companyIndustries:
+        type: object
+        required: false
+        note: '{include/exclude}; EXACT values from leadsforge.people.search.filters.industries'
+      companyTypes:
+        type: object
+        required: false
+        note: '{include/exclude}; ids from leadsforge.people.search.filters.company_types'
+      companyFundingRounds:
+        type: object
+        required: false
+        note: '{include/exclude}; ids from leadsforge.people.search.filters.funding_types'
+      companyRevenueRanges:
+        type: array
+        required: false
+        note: values from leadsforge.people.search.filters.revenue_ranges
+      companyEmployeeNumberRange:
+        type: object
+        required: false
+        note: '{min, max}'
+      companyFoundedYearRange:
+        type: object
+        required: false
+        note: '{min, max}'
+      companyYearsInBusinessRange:
+        type: object
+        required: false
+        note: '{min, max}'
+      companyLocations:
+        type: object
+        required: false
+        note: '{include/exclude} free text'
+      companyTechnologies:
+        type: object
+        required: false
+        note: '{any: [...], all: [...]} free text'
+      companyKeywords:
+        type: object
+        required: false
+        note: '{include, exclude, all} free text'
+      companyIDs:
+        type: object
+        required: false
+        note: '{include/exclude} LeadsForge company ids'
+      companyRequired:
+        type: boolean
+        required: false
+        note: only return leads that have a resolved company
+      leadSeniorities:
+        type: object
+        required: false
+        note: '{include/exclude}; values from leadsforge.people.search.filters.seniorities'
+      leadDepartments:
+        type: object
+        required: false
+        note: '{include/exclude}; values from leadsforge.people.search.filters.departments'
+      leadJobTitles:
+        type: object
+        required: false
+        note: job-title filter, free text
+      leadLocations:
+        type: object
+        required: false
+        note: '{include/exclude} free text'
+      leadLanguages:
+        type: object
+        required: false
+        note: language filter
+      leadTenure:
+        type: object
+        required: false
+        note: '{min, max} years in current role'
+      leadIDs:
+        type: object
+        required: false
+        note: '{include/exclude} LeadsForge person ids'
+      limit:
+        type: integer
+        required: false
+        note: page size
+      maxContactsPerCompany:
+        type: integer
+        required: false
+        note: cap results per company so one big employer cannot fill the page
+      excludeEmails:
+        type: array
+        required: false
+        note: suppression list — emails you already own (documented in the route description,
+          not in the schema)
+      excludeDomains:
+        type: array
+        required: false
+        note: suppression list — company domains to skip
+      excludeLinkedInURLs:
+        type: array
+        required: false
+        note: suppression list — LinkedIn profile URLs to skip
+    note: returns person ids plus name, job title, location and firmographics — NOT
+      email or phone. Feed the returned `id` into the enrichment routes as `personID`
+      to reveal a contact channel.
+  docs_url: https://api.leadsforge.ai/public/swagger/doc.json
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    source: observed
+    source_url: https://www.leadsforge.ai/pricing
+    checked: '2026-08-20'
+    confidence: verified
+    note: credit balance was identical before and after this call (100 -> 100) on
+      2026-08-20; the pricing page prices only revealed contact channels, never the
+      search
+- id: leadsforge.people.email.find
+  capability: people.contact.find
+  name: Find a work email by LinkedIn URL or name + company
+  summary: Enrich a single person's work email and return the result in the same response,
+    no polling.
+  method: POST
+  path: /enrichment/email
+  input:
+    body:
+      personID:
+        type: string
+        required: false
+        note: id from leadsforge.people.search — the most reliable input
+      linkedinURL:
+        type: string
+        required: false
+        note: profile URL, used when you have no personID
+      firstName:
+        type: string
+        required: false
+        note: with lastName plus a company signal
+      lastName:
+        type: string
+        required: false
+      companyDomain:
+        type: string
+        required: false
+        note: preferred company signal over `company`
+      company:
+        type: string
+        required: false
+        note: company NAME, not a URL
+      externalID:
+        type: string
+        required: false
+        note: max 128 chars, echoed back verbatim for CRM correlation
+    note: one of personID | linkedinURL | firstName+lastName+company signal is required.
+      A miss is free.
+  docs_url: https://api.leadsforge.ai/public/swagger/doc.json
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://www.leadsforge.ai/pricing
+    checked: '2026-08-20'
+    confidence: documented
+    note: '1 credit on a hit, nothing on a miss. Confirmed live: balance 100 -> 99
+      on one successful call, and GET /balance reports emailEnrichmentPrice=1'
+  provides:
+  - email
+- id: leadsforge.people.phone.find
+  capability: people.contact.find
+  name: Find a mobile number by LinkedIn URL or name + company
+  summary: Enrich a single person's phone number and return the result in the same
+    response, no polling.
+  method: POST
+  path: /enrichment/phone
+  input:
+    body:
+      personID:
+        type: string
+        required: false
+        note: id from leadsforge.people.search
+      linkedinURL:
+        type: string
+        required: false
+      firstName:
+        type: string
+        required: false
+      lastName:
+        type: string
+        required: false
+      companyDomain:
+        type: string
+        required: false
+        note: preferred over `company`
+      company:
+        type: string
+        required: false
+      externalID:
+        type: string
+        required: false
+        note: max 128 chars, echoed back
+    note: TEN TIMES the price of an email — gate it behind a search/count so you only
+      ask for the numbers you need. A miss is free.
+  docs_url: https://api.leadsforge.ai/public/swagger/doc.json
+  cost:
+    type: per_success
+    value: 10
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://www.leadsforge.ai/pricing
+    checked: '2026-08-20'
+    confidence: documented
+    note: '10 credits on a hit, nothing on a miss. Confirmed live: balance 99 -> 89
+      on one successful call; GET /balance reports phoneNumberEnrichmentPrice=10'
+  provides:
+  - phone

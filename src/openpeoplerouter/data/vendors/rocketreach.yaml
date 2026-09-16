@@ -1,0 +1,87 @@
+vendor: rocketreach
+name: RocketReach
+homepage: https://rocketreach.co
+docs: https://rocketreach.co/api/v2/docs
+pricing_url: https://rocketreach.co/pricing
+limits: lookup credits per plan; roughly 60 requests per minute
+base_url: https://api.rocketreach.co/api/v2
+auth:
+  kind: header
+  name: Api-Key
+  format: '{secret}'
+  credential: ROCKETREACH_API_KEY
+endpoints:
+- id: rocketreach.contact.find
+  capability: people.contact.find
+  name: Look up a person's emails and phones
+  summary: Emails graded A to F plus direct dials, from a LinkedIn URL or a name with
+    the current employer.
+  method: GET
+  path: /person/lookup
+  latency: 2-10 s, occasionally longer while the profile is assembled
+  input:
+    queryParams:
+      li_url:
+        type: string
+        required: false
+        note: the person's LinkedIn profile URL
+      name:
+        type: string
+        required: false
+        note: full name; needs current_employer alongside
+      current_employer:
+        type: string
+        required: false
+  miss:
+    status: 404
+    means: nobody matched, or every email grades below B
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    source_url: https://rocketreach.co/pricing
+    checked: '2026-09-03'
+    confidence: documented
+    note: a lookup that finds nobody does not spend a credit
+  notes:
+  - A response with status `incomplete` means the profile is still being assembled;
+    the relay polls once.
+  - Only grade A and B emails are returned; the rest are guesses.
+  docs_url: https://rocketreach.co/api/v2/docs#person-lookup
+  provides:
+  - email
+- id: rocketreach.people.enrich
+  capability: people.enrich
+  name: Profile facts for one person
+  summary: Current title, employer, location and profile links, from a LinkedIn URL
+    or a name with the employer.
+  method: GET
+  path: /person/lookup
+  latency: 2-10 s
+  input:
+    queryParams:
+      li_url:
+        type: string
+        required: false
+      name:
+        type: string
+        required: false
+      current_employer:
+        type: string
+        required: false
+  miss:
+    status: 404
+    means: nobody matched
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    source_url: https://rocketreach.co/pricing
+    checked: '2026-09-03'
+    confidence: documented

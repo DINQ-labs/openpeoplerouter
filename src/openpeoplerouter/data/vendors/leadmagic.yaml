@@ -1,0 +1,427 @@
+vendor: leadmagic
+name: LeadMagic
+base_url: https://api.leadmagic.io
+auth:
+  kind: header
+  name: X-API-Key
+  format: '{secret}'
+  credential: LEADMAGIC_API_KEY
+docs: https://app.leadmagic.io/dashboard/api-keys
+endpoints:
+- id: leadmagic.x.personal-email-finder
+  capability: people.contact.find
+  name: Find a personal email from a profile URL
+  summary: Locates personal email addresses associated with a professional profile
+    URL, serving as a fallback when work email is unavailable or undeliverable
+  method: POST
+  path: /v1/people/personal-email-finder
+  input:
+    bodyType: json
+    body:
+      profile_url:
+        type: string
+        required: true
+  docs_url: https://leadmagic.io/docs/api-reference/personal-email-finder
+  tier: extended
+  cost:
+    type: per_success
+    value: 2
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://leadmagic.io/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 2 credits if found; free if not found
+  provides:
+  - email
+- id: leadmagic.x.role-finder
+  capability: people.search
+  name: Find one person at a company by job title
+  summary: Locates a person at a company based on their job title, enabling targeted
+    outreach for account-based marketing campaigns and other role-specific needs
+  method: POST
+  path: /v1/people/role-finder
+  input:
+    bodyType: json
+    body:
+      job_title:
+        type: string
+        required: true
+      company_domain:
+        type: string
+        required: false
+        note: preferred for accuracy
+      company_name:
+        type: string
+        required: false
+    note: job_title is required; at least one of company_domain | company_name is
+      also required
+  docs_url: https://leadmagic.io/docs/reference/role-finder
+  tier: extended
+  cost:
+    type: per_success
+    value: 2
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://leadmagic.io/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 2 credits when found; free on no match
+- id: leadmagic.x.employee-finder
+  capability: people.search
+  name: List employees at a company by domain or name
+  summary: Retrieves a list of employees from a company using either domain or company
+    name
+  method: POST
+  path: /v1/people/employee-finder
+  input:
+    bodyType: json
+    body:
+      company_domain:
+        type: string
+        required: false
+      company_name:
+        type: string
+        required: false
+      limit:
+        type: integer
+        required: false
+    note: at least one of company_domain | company_name is required
+  docs_url: https://leadmagic.io/docs/api-reference/employee-finder
+  tier: extended
+  cost:
+    type: per_result
+    value: 0.05
+    currency: credit
+    per: 1
+    unit: employee
+    source: docs
+    source_url: https://leadmagic.io/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 0.05 credits per employee returned (20 employees = 1 credit); free if no
+      results
+- id: leadmagic.people.email.find
+  capability: people.contact.find
+  name: Find a person's work email by name and company
+  summary: Find someone's work email address from their name and their company's domain
+    or name
+  method: POST
+  path: /v1/people/email-finder
+  input:
+    bodyType: json
+    body:
+      first_name:
+        type: string
+        required: false
+        note: use with last_name; alternatively send full_name
+      last_name:
+        type: string
+        required: false
+      full_name:
+        type: string
+        required: false
+        note: alternative to first_name + last_name
+      domain:
+        type: string
+        required: false
+        note: the company's domain — more accurate than company_name
+      company_name:
+        type: string
+        required: false
+        note: company name, when you don't know the domain
+    note: at least one NAME field and at least one COMPANY field are both required
+      — a name alone or a domain alone is rejected. The response also carries company
+      enrichment and employment verification at no extra cost
+  docs_url: https://leadmagic.io/docs/api-reference/email-finder
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://leadmagic.io/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 1 credit per email found; a null result costs nothing. The FREE-MISS half
+      is observed (the test_request is a deliberate no-match and reported credits_consumed
+      0 on 2026-07-28 and 2026-07-31); the 1-credit hit price is still only documented,
+      because verifying it would mean buying a real person's email address. Dollar
+      value depends on plan.
+  provides:
+  - email
+- id: leadmagic.people.email.verify
+  capability: people.contact.find
+  name: Verify an email address is deliverable
+  summary: Check an email is real and deliverable, and whether its domain is catch-all
+  method: POST
+  path: /v1/people/email-validation
+  input:
+    bodyType: json
+    body:
+      email:
+        type: string
+        required: true
+        note: the address to validate
+    note: returns email_status (valid | invalid | unknown), is_domain_catch_all, the
+      MX provider and gateway, plus company enrichment thrown in free
+  docs_url: https://leadmagic.io/docs/api-reference/email-validation
+  cost:
+    type: per_success
+    value: 0.25
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://leadmagic.io/pricing
+    checked: '2026-07-31'
+    confidence: verified
+    note: 0.25 credits per DEFINITIVE result (valid or invalid) — four validations
+      to a credit. 'unknown' results and RFC syntax failures are free. OBSERVED live
+      2026-07-31 - the response reported credits_consumed 0.25. Rate limit 300 req/min.
+  provides:
+  - verify
+- id: leadmagic.people.enrich
+  capability: people.enrich
+  name: Enrich a person by profile URL — role, work history
+  summary: Enrich a person from their profile URL — role, employer, location and work
+    history
+  method: POST
+  path: /v1/people/profile-search
+  input:
+    bodyType: json
+    body:
+      profile_url:
+        type: string
+        required: true
+        note: full professional profile URL or just the username
+      extended_response:
+        type: boolean
+        required: false
+        note: adds the profile image URL; default false
+  docs_url: https://leadmagic.io/docs/reference/profile-search
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://leadmagic.io/pricing
+    checked: '2026-07-31'
+    confidence: verified
+    note: 1 credit per profile matched; free when the profile cannot be resolved.
+      OBSERVED live 2026-07-31 - a matched profile reported credits_consumed 1.
+- id: leadmagic.people.phone.find
+  capability: people.contact.find
+  name: Find a person's mobile number by profile URL or email
+  summary: Find someone's mobile number from their profile URL or email address
+  method: POST
+  path: /v1/people/mobile-finder
+  input:
+    bodyType: json
+    body:
+      profile_url:
+        type: string
+        required: false
+        note: professional profile URL
+      work_email:
+        type: string
+        required: false
+        note: the person's work email
+      personal_email:
+        type: string
+        required: false
+        note: the person's personal email
+    note: at least one identifier is required. This is the most expensive endpoint
+      in the file at 5 credits a hit — and mobile numbers are regulated contact data
+      (TCPA / CASL), so treat the result accordingly
+  docs_url: https://leadmagic.io/docs/api-reference/mobile-finder
+  cost:
+    type: per_success
+    value: 5
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://leadmagic.io/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 5 credits when a mobile number is found; free when nothing is returned.
+      Only the free-miss half is observed (the test_request points at a nonexistent
+      profile and reported credits_consumed 0 on 2026-07-28 and 2026-07-31); the 5-credit
+      hit price stays documented, because confirming it would mean buying a real person's
+      mobile number - which rule 1 of the catalog's PII policy forbids capturing anyway.
+  provides:
+  - phone
+- id: leadmagic.people.search
+  capability: people.search
+  name: Find people at a company by job title, with contact details
+  summary: Find the people at a company by job title, optionally revealing their emails
+    and mobiles
+  method: POST
+  path: /v3/people/search
+  input:
+    bodyType: json
+    body:
+      company_domain:
+        type: string
+        required: false
+        note: the company to search inside — the usual entry point
+      company_name:
+        type: string
+        required: false
+        note: alternative to company_domain
+      company_filters:
+        type: object
+        required: false
+        note: filter across many companies instead of naming one
+      titles:
+        type: array[string]
+        required: false
+        note: job titles to match
+      required_email:
+        type: boolean
+        required: false
+        note: only return people LeadMagic holds an email for
+      required_mobile:
+        type: boolean
+        required: false
+        note: only return people it holds a mobile for
+      include_contact_details:
+        type: boolean
+        required: false
+        note: THE EXPENSIVE SWITCH — reveals emails and mobiles inline, adding 1 credit
+          per email and 5 per mobile on top of the per-person charge. Default false
+      limit:
+        type: integer
+        required: false
+        note: people to return, max 100, default 25 — the base cost dial
+    note: exactly one of company_domain | company_name | company_filters is required.
+      This is the only /v3 route in the file. Rate limit 300 req/min
+  docs_url: https://leadmagic.io/docs/reference/people-search
+  cost:
+    type: per_result
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    source_url: https://leadmagic.io/pricing
+    checked: '2026-08-13'
+    confidence: verified
+    note: 'VERIFIED live 2026-08-13: a limit=3 search with include_contact_details=false
+      returned 1 person and reported credits_consumed 1 (1 credit per person returned).
+      Revealing contact details adds 1 credit per email and 5 per mobile, so a limit=25
+      search revealing mobiles can cost 150+ credits — set limit deliberately. No
+      results, no charge. (The earlier 401 plan-gate on v3 people search has cleared
+      on this key.)'
+- id: leadmagic.x.companies-search-v3
+  capability: companies.search
+  name: Search companies by firmographics, tech stack or funding
+  summary: The canonical company discovery endpoint supporting both single-company
+    lookups and broad criteria-based discovery — domain, website, name, profile URL,
+    and extensive firmographic/technographic/funding filters with cursor pagination
+  method: POST
+  path: /v3/companies/search
+  input:
+    bodyType: json
+    body:
+      company_domain:
+        type: string
+        required: false
+        note: single-company lookup
+      company_name:
+        type: string
+        required: false
+      linkedin_url:
+        type: string
+        required: false
+      industries:
+        type: array[string]
+        required: false
+      min_employees:
+        type: integer
+        required: false
+      max_employees:
+        type: integer
+        required: false
+      country_codes:
+        type: array[string]
+        required: false
+      tech_stack:
+        type: array[string]
+        required: false
+      sort_by:
+        type: string
+        required: false
+        note: linkedin_followers | total_funding | linkedin_employee_count | revenue_min
+          | revenue_max | founded_year | total_contacts
+      limit:
+        type: integer
+        required: false
+        note: max 50
+      cursor:
+        type: string
+        required: false
+        note: opaque pagination token from a previous response
+    note: 'one-off lookup via company_domain/website/company_name/linkedin_url, OR
+      broad discovery via the firmographic/technographic/funding filters; also nestable
+      under company_filters (alias: filters)'
+  docs_url: https://leadmagic.io/docs/api-reference/company-search-v3
+  tier: extended
+  cost:
+    type: per_result
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    source_url: https://leadmagic.io/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 1 credit per company returned; free if zero matches. Rate limit 100 req/min,
+      ~2 req/s burst
+- id: leadmagic.companies.enrich
+  capability: companies.enrich
+  name: Enrich a company by domain or name — headcount, revenue
+  summary: Enrich a company from domain, name or profile URL — industry, headcount,
+    revenue
+  method: POST
+  path: /v1/companies/company-search
+  input:
+    bodyType: json
+    body:
+      company_domain:
+        type: string
+        required: false
+        note: website domain — the most accurate identifier
+      profile_url:
+        type: string
+        required: false
+        note: company profile URL or slug
+      company_name:
+        type: string
+        required: false
+        note: company name; least precise of the three
+    note: at least one of company_domain | profile_url | company_name. Named 'company-search'
+      but it resolves ONE company, so it is an enrichment call rather than a filtered
+      search
+  docs_url: https://leadmagic.io/docs/v1/reference/search-company
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://leadmagic.io/pricing
+    checked: '2026-07-31'
+    confidence: verified
+    note: 1 credit per company matched; free when no company is found. OBSERVED live
+      2026-07-31 - a matched company reported credits_consumed 1.

@@ -1,0 +1,7 @@
+services:
+  openpeoplerouter:
+    build: .
+    env_file: .env
+    ports:
+      - "127.0.0.1:8093:8093"
+    restart: unless-stopped

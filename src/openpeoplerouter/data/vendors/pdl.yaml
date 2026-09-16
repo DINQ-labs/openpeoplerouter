@@ -1,0 +1,916 @@
+vendor: pdl
+name: People Data Labs
+base_url: https://api.peopledatalabs.com/v5
+auth:
+  kind: header
+  name: X-Api-Key
+  format: '{secret}'
+  credential: PDL_API_KEY
+docs: https://dashboard.peopledatalabs.com/main/api-keys
+endpoints:
+- id: pdl.x.person-identify
+  capability: people.identity.resolve
+  name: Recover all profiles for one identity by email or name
+  summary: Recover all related profiles for an identity
+  method: GET
+  path: /person/identify
+  input:
+    queryParams:
+      name:
+        type: string
+        required: false
+      first_name:
+        type: string
+        required: false
+      last_name:
+        type: string
+        required: false
+      middle_name:
+        type: string
+        required: false
+      location:
+        type: string
+        required: false
+      street_address:
+        type: string
+        required: false
+      locality:
+        type: string
+        required: false
+      region:
+        type: string
+        required: false
+      country:
+        type: string
+        required: false
+      postal_code:
+        type: string
+        required: false
+      company:
+        type: string
+        required: false
+      school:
+        type: string
+        required: false
+      phone:
+        type: string
+        required: false
+      email:
+        type: string
+        required: false
+      email_hash:
+        type: string
+        required: false
+      profile:
+        type: string
+        required: false
+      lid:
+        type: string
+        required: false
+      birth_date:
+        type: string
+        required: false
+      min_likelihood:
+        type: integer
+        required: false
+      required:
+        type: string
+        required: false
+      titlecase:
+        type: boolean
+        required: false
+      data_include:
+        type: string
+        required: false
+        note: comma-separated response field list, e.g. 'names.clean,emails.address'
+      include_if_matched:
+        type: boolean
+        required: false
+  docs_url: https://docs.peopledatalabs.com/docs/reference-identify-api
+  tier: extended
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://www.peopledatalabs.com/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: flat 1 credit per call regardless of profiles returned; PDL does not publish
+      a flat $/credit
+- id: pdl.people.enrich
+  capability: people.enrich
+  name: Enrich a person by email, LinkedIn or name + company
+  summary: Enrich a person from email, LinkedIn or name + company — job history, skills,
+    contact
+  method: GET
+  path: /person/enrich
+  input:
+    queryParams:
+      email:
+        type: string
+        required: false
+        note: strongest single identifier
+      phone:
+        type: string
+        required: false
+        note: E.164 preferred
+      profile:
+        type: string
+        required: false
+        note: social profile URL — LinkedIn, GitHub, Twitter, Facebook
+      lid:
+        type: string
+        required: false
+        note: LinkedIn numeric profile id
+      email_hash:
+        type: string
+        required: false
+        note: MD5 or SHA-256 of the email, when you cannot send it in the clear
+      name:
+        type: string
+        required: false
+        note: full name; use with company or location to disambiguate
+      first_name:
+        type: string
+        required: false
+      last_name:
+        type: string
+        required: false
+      company:
+        type: string
+        required: false
+        note: employer name or domain
+      school:
+        type: string
+        required: false
+      location:
+        type: string
+        required: false
+        note: free-text location of the person
+      country:
+        type: string
+        required: false
+      min_likelihood:
+        type: integer
+        required: false
+        note: 1-10 match-confidence floor; PDL returns 404 below it. 6+ is the usual
+          production setting
+      required:
+        type: string
+        required: false
+        note: fields the response must contain or it is treated as a miss, e.g. 'emails
+          AND profiles'
+      titlecase:
+        type: boolean
+        required: false
+      pretty:
+        type: boolean
+        required: false
+    note: 'PDL''s minimum-input rule, verbatim: profile OR email OR phone OR email_hash
+      OR lid OR ((first_name AND last_name, or name) AND (locality OR region OR company
+      OR school OR location OR postal_code)). A bare name is never enough on its own'
+  docs_url: https://docs.peopledatalabs.com/docs/reference-person-enrichment-api
+  miss:
+    status: 404
+    means: no person matched (or none above min_likelihood) — an expected outcome
+      (and free, per the cost note), not an API failure; do not retry the same identifiers
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://www.peopledatalabs.com/pricing
+    checked: '2026-07-31'
+    confidence: verified
+    note: 1 PDL credit per person returned (HTTP 200); a 404 is free. OBSERVED live
+      2026-07-31 - the response carried x-call-credits-spent 1 and x-call-credits-type
+      enrich. Enriching the same person twice costs 2 credits, PDL does not de-duplicate.
+      cost.usd stays null because there is no public $/credit - the rate is plan-negotiated
+      - so this is a verified CREDIT count, not a verified dollar figure.
+- id: pdl.companies.enrich
+  capability: companies.enrich
+  name: Enrich a company by website, name or ticker
+  summary: Enrich a company from website, name or ticker — industry, size, founded,
+    location
+  method: GET
+  path: /company/enrich
+  input:
+    queryParams:
+      website:
+        type: string
+        required: false
+        note: company domain — the strongest identifier
+      name:
+        type: string
+        required: false
+        note: company name; ambiguous on its own, pair with location
+      profile:
+        type: string
+        required: false
+        note: LinkedIn company URL
+      ticker:
+        type: string
+        required: false
+        note: stock ticker for public companies
+      location:
+        type: string
+        required: false
+        note: free-text HQ location, to disambiguate a name
+      locality:
+        type: string
+        required: false
+      region:
+        type: string
+        required: false
+      country:
+        type: string
+        required: false
+      street_address:
+        type: string
+        required: false
+      postal_code:
+        type: string
+        required: false
+      min_likelihood:
+        type: integer
+        required: false
+        note: 1-10 match-confidence floor; defaults to 2 here, lower than you might
+          expect
+      pretty:
+        type: boolean
+        required: false
+    note: at least one of pdl_id | name | website | ticker | profile (pdl_id overrides
+      the rest); website gives the highest match rate. The other fields only disambiguate
+  docs_url: https://docs.peopledatalabs.com/docs/reference-company-enrichment-api
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://www.peopledatalabs.com/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 1 PDL credit per company returned; a 404 is free.
+- id: pdl.companies.search
+  capability: companies.search
+  name: Search companies by industry, headcount or location
+  summary: Search PDL companies by industry, headcount, location or tags — pays per
+    record
+  method: GET
+  path: /company/search
+  input:
+    queryParams:
+      sql:
+        type: string
+        required: false
+        note: SQL WHERE clause over the Company schema, e.g. "SELECT * FROM company
+          WHERE industry='computer software' AND size='51-200'"
+      query:
+        type: string
+        required: false
+        note: Elasticsearch JSON query — the alternative to sql
+      size:
+        type: integer
+        required: false
+        note: records to return, 1-100, default 1 — you pay 1 credit per record
+      scroll_token:
+        type: string
+        required: false
+        note: cursor from the previous response
+      titlecase:
+        type: boolean
+        required: false
+      pretty:
+        type: boolean
+        required: false
+    note: exactly one of sql | query. Unlike person search, company search caps `size`
+      at 100 on BOTH methods, and the spec does not offer scroll_token here. Rate
+      limit 10 req/min
+  docs_url: https://docs.peopledatalabs.com/docs/reference-company-search-api
+  cost:
+    type: per_result
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: observed
+    source_url: https://www.peopledatalabs.com/pricing
+    checked: '2026-07-31'
+    confidence: verified
+    note: '1 PDL credit PER RECORD returned; `size` is the cost dial. OBSERVED live
+      2026-07-31 - a size=1 call returning 1 record carried x-call-credits-spent 1,
+      x-call-credits-type search_company, and left the enrich allowance (x-totallimit-remaining)
+      untouched: search bills a different meter.'
+- id: pdl.x.person-enrich-preview
+  capability: people.enrich
+  name: Preview a person enrichment by email, name or phone
+  summary: Enrich a person record on a variety of fields and receive a preview record
+    in return
+  method: GET
+  path: /person/enrich/preview
+  input:
+    queryParams:
+      name:
+        type: string
+        required: false
+        note: full name, at least first and last
+      first_name:
+        type: string
+        required: false
+      last_name:
+        type: string
+        required: false
+      middle_name:
+        type: string
+        required: false
+      location:
+        type: string
+        required: false
+        note: a location in which a person lives
+      street_address:
+        type: string
+        required: false
+      locality:
+        type: string
+        required: false
+      region:
+        type: string
+        required: false
+      country:
+        type: string
+        required: false
+      postal_code:
+        type: string
+        required: false
+      company:
+        type: string
+        required: false
+        note: name, website, or social url of a company where the person has worked
+      school:
+        type: string
+        required: false
+      phone:
+        type: string
+        required: false
+      email:
+        type: string
+        required: false
+      email_hash:
+        type: string
+        required: false
+        note: SHA-256 email hash
+      profile:
+        type: string
+        required: false
+        note: a social profile the person has used
+      lid:
+        type: string
+        required: false
+        note: LinkedIn numerical ID
+      birth_date:
+        type: string
+        required: false
+        note: year, or full birth date
+      min_likelihood:
+        type: integer
+        required: false
+      required:
+        type: string
+        required: false
+        note: fields/data points a response must have to return a 200
+      titlecase:
+        type: boolean
+        required: false
+      include_if_matched:
+        type: boolean
+        required: false
+        note: adds a top-level 'matched' field listing which query fields matched
+  docs_url: https://docs.peopledatalabs.com/docs/reference-person-enrich-preview-api
+  tier: extended
+  cost:
+    type: per_success
+    value: null
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    checked: '2026-07-28'
+    confidence: unknown
+    note: PDL bills a preview at a reduced credit rate vs a full enrich; exact rate
+      is plan-negotiated, not published
+  tool: true
+- id: pdl.x.person-retrieve-by-id
+  capability: people.enrich
+  name: A person record by PDL id
+  summary: Retrieves a person based on a PDL ID.
+  method: GET
+  path: /person/retrieve/{person_id}
+  input:
+    pathParams:
+      person_id:
+        type: string
+        required: true
+        note: the PDL person ID
+    queryParams:
+      titlecase:
+        type: boolean
+        required: false
+      filter_updated:
+        type: string
+        required: false
+        note: comma-delimited key(s); skip returning if not updated since the most
+          recent request
+      request_version:
+        type: string
+        required: false
+        note: bypass last_requested_version for filter_updated
+  docs_url: https://docs.peopledatalabs.com/docs/reference-person-retrieve-api
+  tier: extended
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://www.peopledatalabs.com/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: billed like enrich — 1 credit on a hit
+  tool: true
+- id: pdl.x.person-retrieve-bulk
+  capability: people.enrich
+  name: Up to 100 person records by PDL id in one call
+  summary: Retrieves up to 100 person records based on a PDL ID.
+  method: POST
+  path: /person/retrieve/bulk
+  input:
+    queryParams:
+      titlecase:
+        type: boolean
+        required: false
+      filter_updated:
+        type: string
+        required: false
+      request_version:
+        type: string
+        required: false
+    body:
+      requests:
+        type: array
+        required: true
+        note: list of {person_id, metadata?} objects, up to 100
+    bodyType: json
+  docs_url: https://docs.peopledatalabs.com/docs/reference-person-retrieve-api
+  tier: extended
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://www.peopledatalabs.com/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 1 credit per record returned
+  tool: true
+- id: pdl.x.person-search-post
+  capability: people.search
+  name: Search people (POST, size up to 1000)
+  summary: Search PDL people by title, company, seniority, skills or location — pays
+    per record
+  method: POST
+  path: /person/search
+  input:
+    body:
+      sql:
+        type: string
+        required: false
+        note: SQL WHERE clause over the Person schema
+      query:
+        type: object
+        required: false
+        note: Elasticsearch JSON query — alternative to sql
+      size:
+        type: integer
+        required: false
+        note: records to return, 1-1000 on POST (vs 100 on GET) — the price dial
+      scroll_token:
+        type: string
+        required: false
+      dataset:
+        type: string
+        required: false
+      titlecase:
+        type: boolean
+        required: false
+      pretty:
+        type: boolean
+        required: false
+    bodyType: json
+    note: core file (pdl.yaml) already curates the GET variant; this is the same route,
+      POST method, for the size>100 case
+  docs_url: https://docs.peopledatalabs.com/docs/reference-person-search-api
+  tier: extended
+  cost:
+    type: per_result
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    source_url: https://www.peopledatalabs.com/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 1 credit PER RECORD in the data array; a size=1000 call costs 1000 credits
+  tool: true
+- id: pdl.x.company-search-post
+  capability: companies.search
+  name: Search companies (POST)
+  summary: Search PDL companies by industry, headcount, location or tags — pays per
+    record
+  method: POST
+  path: /company/search
+  input:
+    body:
+      sql:
+        type: string
+        required: false
+        note: SQL WHERE clause over the Company schema
+      query:
+        type: object
+        required: false
+        note: Elasticsearch JSON query — alternative to sql
+      size:
+        type: integer
+        required: false
+        note: records to return, 1-100 — the price dial
+      scroll_token:
+        type: string
+        required: false
+      titlecase:
+        type: boolean
+        required: false
+      pretty:
+        type: boolean
+        required: false
+    bodyType: json
+    note: core file (pdl.yaml) already curates the GET variant; this is the same route,
+      POST method
+  docs_url: https://docs.peopledatalabs.com/docs/reference-company-search-api
+  tier: extended
+  cost:
+    type: per_result
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    source_url: https://www.peopledatalabs.com/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 1 credit PER RECORD returned
+  tool: true
+- id: pdl.x.job-title-enrich
+  capability: people.title.enrich
+  name: Enrich a raw job title
+  summary: Enrich a job_title
+  method: GET
+  path: /job_title/enrich
+  input:
+    queryParams:
+      job_title:
+        type: string
+        required: true
+        note: a job title to be enriched
+      pretty:
+        type: boolean
+        required: false
+  docs_url: https://docs.peopledatalabs.com/docs/reference-job-title-enrichment-api
+  tier: extended
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://www.peopledatalabs.com/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: billed like other enrich routes — 1 credit per matched title; NOT free despite
+      looking like a lookup utility
+  tool: true
+- id: pdl.x.ip-enrich
+  capability: pdl.tools
+  name: Enrich an IP address — location, company behind it
+  summary: Enrich data on an IP by performing a one-to-one match of this IP with the
+    nearly 2 Billion IPs hosted in our dataset, returning location, company, and metadata
+  method: GET
+  path: /ip/enrich
+  input:
+    queryParams:
+      ip:
+        type: string
+        required: true
+        note: IPv4 or IPv6 address to enrich
+      return_ip_location:
+        type: boolean
+        required: false
+      return_ip_metadata:
+        type: boolean
+        required: false
+      return_if_unmatched:
+        type: boolean
+        required: false
+      return_person:
+        type: boolean
+        required: false
+      min_confidence:
+        type: string
+        required: false
+      pretty:
+        type: boolean
+        required: false
+      titlecase:
+        type: boolean
+        required: false
+  docs_url: https://docs.peopledatalabs.com/docs/reference-ip-enrichment-api
+  tier: extended
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: docs
+    source_url: https://www.peopledatalabs.com/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: charged per match on HTTP 200; a 404 is free — 1 credit per successful lookup
+  tool: true
+- id: pdl.x.company-clean
+  capability: pdl.tools
+  name: Clean and standardize a company identifier
+  summary: Clean company, school and location data that you employ in your API queries
+  method: GET
+  path: /company/clean
+  input:
+    queryParams:
+      name:
+        type: string
+        required: false
+        note: the name of the company that you want to identify
+      website:
+        type: string
+        required: false
+        note: the website of the company that you want to identify
+      profile:
+        type: string
+        required: false
+        note: the social profile URL of the company
+      pretty:
+        type: boolean
+        required: false
+    note: at least one of name | website | profile required
+  docs_url: https://docs.peopledatalabs.com/docs/cleaner-apis-reference
+  tier: extended
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    note: free — 10 requests/minute, 10,000/month
+  tool: true
+- id: pdl.x.location-clean
+  capability: pdl.tools
+  name: Clean and standardize a free-text location
+  summary: Clean company, school and location data that you employ in your API queries
+  method: GET
+  path: /location/clean
+  input:
+    queryParams:
+      location:
+        type: string
+        required: true
+        note: the name of the location that you want to identify
+      pretty:
+        type: boolean
+        required: false
+  docs_url: https://docs.peopledatalabs.com/docs/cleaner-apis-reference
+  tier: extended
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    note: free — 10 requests/minute, 10,000/month
+  tool: true
+- id: pdl.x.school-clean
+  capability: people.school.clean
+  name: Clean and standardize a school identifier
+  summary: Clean company, school and location data that you employ in your API queries
+  method: GET
+  path: /school/clean
+  input:
+    queryParams:
+      name:
+        type: string
+        required: false
+        note: the school name identifier
+      website:
+        type: string
+        required: false
+      profile:
+        type: string
+        required: false
+        note: the school's social profile URL
+      pretty:
+        type: boolean
+        required: false
+    note: at least one of name | website | profile required
+  docs_url: https://docs.peopledatalabs.com/docs/cleaner-apis-reference
+  tier: extended
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    note: free — 10 requests/minute, 10,000/month
+  tool: true
+- id: pdl.x.subscription-list
+  capability: pdl.tools
+  name: List active subscriptions
+  summary: List subscriptions on the account
+  method: GET
+  path: /subscription
+  docs_url: https://docs.peopledatalabs.com/docs/reference-subscriptions-api
+  tier: extended
+  tool: true
+- id: pdl.x.subscription-create
+  capability: pdl.tools
+  name: Create a subscription
+  summary: Create a subscription that streams matching records to a webhook or dataset
+    on an ongoing basis
+  method: POST
+  path: /subscription
+  docs_url: https://docs.peopledatalabs.com/docs/reference-subscriptions-api
+  tier: extended
+  tool: true
+- id: pdl.x.subscription-get
+  capability: pdl.tools
+  name: Get a subscription by ID
+  summary: Retrieve a single subscription's details
+  method: GET
+  path: /subscription/{subscription_id}
+  input:
+    pathParams:
+      subscription_id:
+        type: string
+        required: true
+  docs_url: https://docs.peopledatalabs.com/docs/reference-subscriptions-api
+  tier: extended
+  tool: true
+- id: pdl.x.subscription-update
+  capability: pdl.tools
+  name: Update a subscription
+  summary: Update an existing subscription's parameters
+  method: PUT
+  path: /subscription/{subscription_id}
+  input:
+    pathParams:
+      subscription_id:
+        type: string
+        required: true
+  docs_url: https://docs.peopledatalabs.com/docs/reference-subscriptions-api
+  tier: extended
+  tool: true
+- id: pdl.x.subscription-delete
+  capability: pdl.tools
+  name: Delete a subscription
+  summary: Delete an existing subscription
+  method: DELETE
+  path: /subscription/{subscription_id}
+  input:
+    pathParams:
+      subscription_id:
+        type: string
+        required: true
+  docs_url: https://docs.peopledatalabs.com/docs/reference-subscriptions-api
+  tier: extended
+  tool: true
+- id: pdl.x.person-subjectrequest
+  capability: pdl.tools
+  name: Submit person opt-out request
+  summary: Submit a GDPR/CCPA data subject request (e.g. opt-out) for a person record
+  method: GET
+  path: /person/subjectrequest
+  docs_url: https://docs.peopledatalabs.com/docs/data-subject-requests
+  tier: extended
+  tool: true
+- id: pdl.people.search
+  capability: people.search
+  name: Search people by title, company, skills or location
+  summary: Search PDL people by title, company, seniority, skills or location — pays
+    per record
+  method: GET
+  path: /person/search
+  input:
+    queryParams:
+      sql:
+        type: string
+        required: false
+        note: SQL WHERE clause over the Person schema, e.g. "SELECT * FROM person
+          WHERE job_title_role='engineering' AND location_country='united states'"
+      query:
+        type: string
+        required: false
+        note: Elasticsearch JSON query — the alternative to sql, more expressive
+      size:
+        type: integer
+        required: false
+        note: 'records to return, 1-100, default 1 — THIS IS THE PRICE DIAL: you pay
+          1 credit per record'
+      scroll_token:
+        type: string
+        required: false
+        note: cursor from the previous response, for paging past 100
+      dataset:
+        type: string
+        required: false
+        note: restrict to a licensed dataset, e.g. resume, email, phone
+      titlecase:
+        type: boolean
+        required: false
+      pretty:
+        type: boolean
+        required: false
+    note: 'exactly one of sql | query. GET caps `size` at 100, POST at 1000 — the
+      only real difference between the two methods. Always set an explicit small size
+      while iterating: you pay per record, so a size=100 call is a 100-credit call.
+      Rate limit 10 req/min'
+  docs_url: https://docs.peopledatalabs.com/docs/reference-person-search-api
+  cost:
+    type: per_result
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    source_url: https://www.peopledatalabs.com/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 1 PDL credit PER RECORD in the data array — a size=100 call costs 100 credits,
+      a size=1000 POST costs 1000. A query matching nothing is free.
+  tool: true
+- id: pdl.account.usage
+  capability: account.usage
+  name: Autocomplete filter values (free key check)
+  summary: Check the key works and get suggested values for a filter field (free —
+    0 credits)
+  method: GET
+  path: /autocomplete
+  input:
+    queryParams:
+      field:
+        type: string
+        required: true
+        note: 'which vocabulary to complete: title, company, school, skill, role,
+          sub_role, industry, major, location, country, region, tag'
+      text:
+        type: string
+        required: false
+        note: prefix to complete; empty returns the most common values
+      size:
+        type: integer
+        required: false
+        note: suggestions to return, max 100, default 10
+      titlecase:
+        type: boolean
+        required: false
+      pretty:
+        type: boolean
+        required: false
+    note: doubles as the free key-health check (it is the registry's probe) and as
+      the way to discover the exact filter values the search endpoints expect. Rate-limited
+      to 60/min and 1,000/day, and a zero-result call still counts against that daily
+      cap
+  docs_url: https://docs.peopledatalabs.com/docs/reference-autocomplete-api
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    note: free — PDL states all active keys have free access to Autocomplete, and
+      a live call 2026-07-31 returned no x-call-credits-spent header at all, only
+      the rate-limit ones. Rate-limited to 60/min and 1,000/day. The Cleaner APIs
+      (/company/clean, /location/clean, /school/clean) are likewise free, 10,000/month
+  tool: true

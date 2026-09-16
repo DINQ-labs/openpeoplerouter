@@ -1,0 +1,1986 @@
+adapters:
+  rocketreach.contact.find:
+    accepts:
+    - - linkedin_url
+    - - full_name
+      - company
+    in:
+      linkedin_url: query.li_url
+      full_name: query.name
+      company: query.current_employer
+    out:
+      emails: contacts(where(emails, 'grade', 'A', 'B'), 'email', 'type', 'grade')
+      phones: contacts(phones, 'number', 'type')
+      full_name: name
+      title: current_title
+      company: current_employer
+      linkedin_url: linkedin_url
+      email: first_value(contacts(where(emails, 'grade', 'A', 'B'), 'email'))
+    miss: where(emails, 'grade', 'A', 'B') == []
+  apollo.contact.find:
+    accepts:
+    - - linkedin_url
+    - - full_name
+      - domain
+    - - full_name
+      - company
+    in:
+      linkedin_url: query.linkedin_url
+      full_name: query.name
+      domain: query.domain
+      company: query.organization_name
+    out:
+      emails: contacts(list(person.email))
+      phones: contacts(person.phone_numbers, 'sanitized_number', 'type')
+      full_name: person.name
+      title: person.title
+      company: person.organization.name
+      linkedin_url: person.linkedin_url
+      email: person.email
+      verified: person.email_status == 'verified'
+    miss: person.email == null
+  contactout.contact.find:
+    accepts:
+    - - linkedin_url
+    - - full_name
+      - company
+    in:
+      linkedin_url: body.linkedin_url
+      full_name: body.full_name
+    in_expr:
+      body.company: list(company)
+    out:
+      emails: contacts(coalesce(profile.work_email, profile.email, profile.personal_email))
+      phones: contacts(profile.phone)
+      full_name: profile.full_name
+      title: profile.headline
+      company: profile.company.name
+      linkedin_url: profile.url
+      email: first_value(contacts(coalesce(profile.work_email, profile.email, profile.personal_email)))
+    miss: coalesce(profile.work_email, profile.email, profile.personal_email, profile.phone)
+      == null
+  apollo.people.enrich:
+    accepts:
+    - - email
+    - - linkedin_url
+    - - full_name
+      - domain
+    - - full_name
+      - company
+    in:
+      email: query.email
+      linkedin_url: query.linkedin_url
+      full_name: query.name
+      domain: query.domain
+      company: query.organization_name
+    out:
+      full_name: person.name
+      title: person.title
+      company: person.organization.name
+      company_domain: host(person.organization.website_url)
+      location: person.city
+      linkedin_url: person.linkedin_url
+      emails: contacts(list(person.email))
+    miss: person.name == null
+  rocketreach.people.enrich:
+    accepts:
+    - - linkedin_url
+    - - full_name
+      - company
+    in:
+      linkedin_url: query.li_url
+      full_name: query.name
+      company: query.current_employer
+    out:
+      full_name: name
+      title: current_title
+      company: current_employer
+      location: location
+      linkedin_url: linkedin_url
+      emails: contacts(where(emails, 'grade', 'A', 'B'), 'email', 'type', 'grade')
+    miss: name == null
+  contactout.people.enrich:
+    accepts:
+    - - linkedin_url
+    - - email
+    in:
+      linkedin_url: body.linkedin_url
+      email: body.email
+    out:
+      full_name: profile.full_name
+      title: profile.headline
+      company: profile.company.name
+      company_domain: profile.company.domain
+      location: profile.location
+      linkedin_url: profile.url
+      emails: contacts(coalesce(profile.work_email, profile.email, profile.personal_email))
+    miss: profile.full_name == null
+  tikhub.people.enrich:
+    accepts:
+    - - linkedin_url
+    in:
+      linkedin_url: query.url
+    out:
+      full_name: data.name
+      title: data.position
+      company: coalesce(data.current_company_name, data.current_company.name)
+      location: coalesce(data.city, data.location)
+      linkedin_url: coalesce(data.input_url, data.url)
+      emails: contacts(missing)
+    miss: data.id == null
+  tikhub.x.people.enrich:
+    accepts:
+    - - x_handle
+    in_expr:
+      query.screen_name: handle_of(x_handle)
+    out:
+      full_name: data.name
+      title: data.desc
+      location: data.location
+      emails: contacts(missing)
+    miss: data.profile == null
+  apollo.people.search:
+    accepts:
+    - - query
+    - - title
+    - - company_domain
+    in:
+      query: query.q_keywords
+    in_expr:
+      query.person_titles[]: title
+      query.q_organization_domains: company_domain
+      query.person_locations[]: location
+      query.person_seniorities[]: seniority
+      query.per_page: limit
+    out:
+      people: rows(people, 'name|first_name+last_name', 'linkedin_url', 'organization.primary_domain')
+      count: pagination.total_entries
+    miss: people == []
+  aviato.people.enrich:
+    accepts:
+    - - linkedin_url
+    - - email
+    in:
+      linkedin_url: query.linkedinURL
+      email: query.email
+    out:
+      full_name: fullName
+      linkedin_url: URLs.linkedin
+    miss: fullName == null
+  aviato.people.email.find:
+    accepts:
+    - - linkedin_url
+    in:
+      linkedin_url: query.linkedinURL
+    const:
+      query.type: work
+    out:
+      email: emails[0].email
+      emails: contacts(emails[0].email)
+    miss: emails == []
+  aviato.people.phone.find:
+    accepts:
+    - - linkedin_url
+    - - email
+    in:
+      linkedin_url: query.linkedinURL
+      email: query.email
+    out:
+      phones: contacts(phones, 'phoneNumber', 'type')
+    miss: phones == []
+  aviato.people.search:
+    accepts:
+    - - q
+    in_expr:
+      body.dsl: obj('filters', list(obj('headline', obj('operation', 'fts', 'value',
+        q))), 'limit', limit, 'offset', 0, 'sort', [])
+    out:
+      people: rows(items, 'fullName', 'URLs.linkedin', '')
+      count: count.value
+    miss: items == []
+  aviato.people.search.simple:
+    accepts:
+    - - full_name
+    in:
+      full_name: query.fullName
+    in_expr:
+      query.perPage: limit
+    const:
+      query.page: '1'
+      query.enrich: 'false'
+    out:
+      people: rows(items, 'fullName', 'URLs.linkedin', '')
+      count: totalResults
+    miss: items == []
+  companyenrich.people.search:
+    accepts:
+    - - company_domain
+      - title
+    - - company_domain
+    in:
+      company_domain: body.domains
+      title: body.positionQuery
+    in_expr:
+      body.domains: list(company_domain)
+      body.positionQuery: list(title)
+      body.pageSize: limit
+      body.page: '1'
+    out:
+      people: rows(items, 'name|first_name+last_name', 'socials.linkedin_url', '')
+      count: totalItems
+    miss: items == []
+  companyenrich.people.search.scroll:
+    accepts:
+    - - company_domain
+      - title
+    - - company_domain
+    in:
+      company_domain: body.domains
+      title: body.positionQuery
+    in_expr:
+      body.domains: list(company_domain)
+      body.positionQuery: list(title)
+      body.pageSize: limit
+    out:
+      people: rows(items, 'name|first_name+last_name', 'socials.linkedin_url', '')
+      count: totalItems
+      next_cursor: nextCursor
+    miss: items == []
+  companyenrich.people.lookup:
+    accepts:
+    - - email
+    in:
+      email: body.email
+    out:
+      full_name: name
+      first_name: first_name
+      last_name: last_name
+      title: position
+      linkedin_url: socials.linkedin_url
+      location: location.address
+    miss: name == null
+  crustdata.people.search:
+    accepts:
+    - - full_name
+    in:
+      full_name: body.filters.value
+    in_expr:
+      body.filters: obj('field', 'basic_profile.name', 'type', '=', 'value', full_name)
+      body.limit: limit
+    out:
+      people: rows(profiles, 'basic_profile.name', 'basic_profile.linkedin_profile_url|basic_profile.linkedin_url',
+        '')
+      count: total_count
+      next_cursor: next_cursor
+    miss: profiles == []
+  exa.people.search:
+    accepts:
+    - - q
+    in:
+      q: body.query
+    in_expr:
+      body.query: join(q, csv(keywords))
+      body.numResults: limit
+    const:
+      body.category: people
+    out:
+      people: rows(results, 'title|entities[0].properties.name', 'url', '')
+      count: len(results)
+    miss: results == []
+  fiber-ai.people.contacts.reveal:
+    accepts:
+    - - linkedin_url
+    in:
+      linkedin_url: body.linkedinUrl
+    const:
+      body.enrichmentType:
+        getWorkEmails: true
+        getPersonalEmails: false
+        getPhoneNumbers: false
+      body.validateEmails: true
+    out:
+      email: output.profile.emails[0].email
+      emails: contacts(output.profile.emails[0].email)
+      verified: output.profile.success == true
+    miss: output.profile.emails == []
+  fiber-ai.people.contacts.turbo:
+    accepts:
+    - - linkedin_url
+    in:
+      linkedin_url: body.linkedinUrl
+    out:
+      email: output.profile.emails[0].email
+      emails: contacts(output.profile.emails[0].email)
+      verified: output.profile.emails[0].status == 'valid'
+    miss: output.profile.emails == []
+  fiber-ai.people.enrich:
+    accepts:
+    - - linkedin_url
+    in_expr:
+      body.profileIdentifier: obj('identifier', 'linkedinUrl', 'value', linkedin_url)
+    out:
+      full_name: output.data[0].name
+      first_name: output.data[0].first_name
+      last_name: output.data[0].last_name
+      title: output.data[0].headline
+      location: output.data[0].locality
+      linkedin_url: output.data[0].url
+    miss: output.data == []
+  fiber-ai.people.identity.resolve:
+    accepts:
+    - - email
+    in:
+      email: body.email
+    out:
+      profiles: profiles(output.data[0].url)
+      linkedin_url: output.data[0].url
+      full_name: output.data[0].name
+      count: len(profiles(output.data[0].url))
+    miss: output.data[0].url == null
+  fiber-ai.people.search:
+    accepts:
+    - - company_domain
+    in_expr:
+      body.currentCompanies: list(obj('domain', company_domain))
+      body.pageSize: limit
+    out:
+      people: rows(output.data, 'name|full_name|first_name+last_name', 'linkedin_url|linkedinUrl',
+        'company_domain|domain')
+      next_cursor: output.nextCursor
+    miss: output.data == []
+  findymail.search.name:
+    accepts:
+    - - full_name
+      - domain
+    - - first_name
+      - last_name
+      - domain
+    in:
+      full_name: body.name
+      domain: body.domain
+    out:
+      email: contact.email
+      emails: contacts(contact.email)
+      first_name: split_first(contact.name)
+      last_name: split_last(contact.name)
+    miss: contact.email == null
+  findymail.search.business-profile:
+    accepts:
+    - - linkedin_url
+    in:
+      linkedin_url: body.linkedin_url
+    out:
+      email: contact.email
+      emails: contacts(contact.email)
+      first_name: split_first(contact.name)
+      last_name: split_last(contact.name)
+    miss: contact.email == null
+  findymail.search.domain:
+    accepts:
+    - - company_domain
+      - title
+    in:
+      company_domain: body.domain
+    in_expr:
+      body.roles: list(title)
+    out:
+      people: rows(contacts, 'name|first_name', '', 'domain')
+      count: len(contacts)
+    miss: contacts == []
+  findymail.search.employees:
+    accepts:
+    - - company_domain
+      - title
+    in:
+      company_domain: body.website
+      title: body.job_titles
+    in_expr:
+      body.job_titles: list(title)
+      body.count: limit
+    out:
+      people: rows(., 'name', 'linkedinUrl', 'companyWebsite')
+      count: len(.)
+    miss: . == []
+  findymail.search.phone:
+    accepts:
+    - - linkedin_url
+    in:
+      linkedin_url: body.linkedin_url
+    out:
+      phones: contacts(list(obj('value', phone, 'type', line_type)), 'value', 'type')
+    miss: phone == null
+  findymail.search.reverse-email:
+    accepts:
+    - - email
+    in:
+      email: body.email
+    out:
+      profiles: profiles(linkedin_url)
+      linkedin_url: linkedin_url
+      full_name: contact.name
+      count: len(profiles(linkedin_url))
+    miss: linkedin_url == null
+  hunter.x.combined-find:
+    accepts:
+    - - email
+    in:
+      email: query.email
+    out:
+      full_name: data.person.name.fullName
+      first_name: data.person.name.givenName
+      last_name: data.person.name.familyName
+      title: data.person.employment.title
+      company: data.company.name
+      company_domain: data.company.domain
+      location: data.person.location
+    miss: data.person.name.fullName == null
+  hunter.people.email.find:
+    accepts:
+    - - full_name
+      - domain
+    - - first_name
+      - last_name
+      - domain
+    in:
+      full_name: query.full_name
+      domain: query.domain
+    out:
+      email: data.email
+      emails: contacts(data.email)
+      confidence: data.score / 100
+      first_name: data.first_name
+      last_name: data.last_name
+      verified: data.verification.status == 'valid'
+    miss: data.email == null
+  hunter.people.email.verify:
+    accepts:
+    - - email
+    in:
+      email: query.email
+    out:
+      valid: data.status == 'valid'
+      status: data.status
+      score: data.score
+    miss: data.status == null
+  hunter.companies.emails:
+    accepts:
+    - - company_domain
+    in:
+      company_domain: query.domain
+    in_expr:
+      query.limit: limit
+    out:
+      people: rows(data.emails, 'first_name+last_name', 'linkedin', '')
+      count: meta.results
+    miss: data.emails == []
+  hunter.people.enrich:
+    accepts:
+    - - email
+    - - linkedin_handle
+    in:
+      email: query.email
+      linkedin_handle: query.linkedin_handle
+    out:
+      full_name: data.name.fullName
+      first_name: data.name.givenName
+      last_name: data.name.familyName
+      title: data.employment.title
+      company: data.employment.name
+      company_domain: data.employment.domain
+      linkedin_url: data.linkedin.handle
+      location: coalesce(data.location, data.geo.country)
+    miss: data.name.fullName == null
+  icypeas.people.identity.resolve:
+    accepts:
+    - - email
+    in:
+      email: body.email
+    out:
+      profiles: profiles(result)
+      linkedin_url: result
+      full_name: results[0].fullname
+      count: len(profiles(result))
+    miss: result == null
+  icypeas.people.search:
+    accepts:
+    - - company_domain
+      - title
+    - - company_domain
+    - - title
+    in:
+      company_domain: body.query.currentCompanyWebsite.include
+      title: body.query.currentJobTitle.include
+    in_expr:
+      body.query.currentCompanyWebsite.include: list(company_domain)
+      body.query.currentJobTitle.include: list(title)
+      body.query.location.include: list(coalesce(location, country_name(country)))
+      body.pagination.size: limit
+      body.query.keyword.include: list(keywords)
+    out:
+      people: rows(leads, 'firstname+lastname', 'profileUrl', 'lastCompanyWebsite')
+      count: total
+      next_cursor: pagination.token
+    miss: leads == []
+  icypeas.people.enrich:
+    accepts:
+    - - linkedin_url
+    in:
+      linkedin_url: query.url
+    out:
+      full_name: join(result.firstname, result.lastname)
+      first_name: result.firstname
+      last_name: result.lastname
+      title: result.headline
+      company: result.worksFor[0].name
+      linkedin_url: result.url
+      location: result.address.addressLocality
+    miss: result == null
+  leadmagic.x.personal-email-finder:
+    accepts:
+    - - linkedin_url
+    in:
+      linkedin_url: body.profile_url
+    out:
+      email: first_personal_email
+      emails: contacts(first_personal_email)
+    miss: first_personal_email == null
+  leadmagic.x.role-finder:
+    accepts:
+    - - company_domain
+      - title
+    in:
+      title: body.job_title
+      company_domain: body.company_domain
+    out:
+      people: rows(list(obj('name', name, 'profile_url', profile_url, 'first_name',
+        first_name, 'last_name', last_name, 'company_name', company_name)), 'name',
+        'profile_url', '')
+      count: len(list(name))
+    miss: name == null
+  leadmagic.x.employee-finder:
+    accepts:
+    - - company_domain
+    in:
+      company_domain: body.company_domain
+    in_expr:
+      body.limit: limit
+    out:
+      people: rows(data, 'full_name|first_name+last_name', 'profile_url', 'website')
+      count: total_count
+    miss: data == []
+  leadmagic.people.email.find:
+    accepts:
+    - - full_name
+      - domain
+    - - first_name
+      - last_name
+      - domain
+    in:
+      full_name: body.full_name
+      domain: body.domain
+    out:
+      email: email
+      emails: contacts(email)
+      first_name: first_name
+      last_name: last_name
+      verified: status == 'valid'
+    miss: email == null
+  leadmagic.people.email.verify:
+    accepts:
+    - - email
+    in:
+      email: body.email
+    out:
+      valid: email_status == 'valid'
+      status: email_status
+    miss: email_status == null
+  leadmagic.people.enrich:
+    accepts:
+    - - linkedin_url
+    in:
+      linkedin_url: body.profile_url
+    out:
+      full_name: full_name
+      first_name: first_name
+      last_name: last_name
+      title: professional_title
+      company: company_name
+      company_domain: company_website
+      linkedin_url: profile_url
+      location: location
+    miss: full_name == null
+  leadmagic.people.phone.find:
+    accepts:
+    - - linkedin_url
+    - - email
+    in:
+      linkedin_url: body.profile_url
+      email: body.work_email
+    out:
+      phones: contacts(list(obj('value', mobile_number, 'type', 'mobile')), 'value',
+        'type')
+    miss: mobile_number == null
+  leadmagic.people.search:
+    accepts:
+    - - company_domain
+      - title
+    - - company_domain
+    in:
+      company_domain: body.company_domain
+      title: body.titles
+    in_expr:
+      body.titles: list(title)
+      body.limit: limit
+    const:
+      body.include_contact_details: false
+    out:
+      people: rows(people, 'name|full_name|first_name+last_name', 'profile_url|linkedin_url',
+        'company_domain|domain')
+      count: count
+      next_cursor: next_cursor
+    miss: people == []
+  leadsforge.people.search:
+    accepts:
+    - - company_domain
+    in:
+      company_domain: body.companyDomains.include
+    in_expr:
+      body.companyDomains.include: list(company_domain)
+      body.limit: limit
+      body.keywords.include: list(keywords)
+    out:
+      people: rows(leads, 'firstName+lastName', 'linkedinUrl|linkedin', 'company.domain')
+      next_cursor: cursor
+    miss: leads == []
+  leadsforge.people.email.find:
+    accepts:
+    - - first_name
+      - last_name
+      - domain
+    - - full_name
+      - domain
+    - - linkedin_url
+    in:
+      first_name: body.firstName
+      last_name: body.lastName
+      domain: body.companyDomain
+      linkedin_url: body.linkedinURL
+    out:
+      email: email
+      emails: contacts(email)
+      verified: status == 'succeeded'
+    miss: email == null
+  leadsforge.people.phone.find:
+    accepts:
+    - - first_name
+      - last_name
+      - domain
+    - - full_name
+      - domain
+    - - linkedin_url
+    in:
+      first_name: body.firstName
+      last_name: body.lastName
+      domain: body.companyDomain
+      linkedin_url: body.linkedinURL
+    out:
+      phones: contacts(phoneNumber)
+    miss: phoneNumber == null
+  lusha.people.enrich:
+    accepts:
+    - - first_name
+      - last_name
+      - domain
+    - - full_name
+      - domain
+    in_expr:
+      body.contacts: list(obj('firstName', first_name, 'lastName', last_name, 'companyDomain',
+        domain))
+    const:
+      body.reveal:
+      - emails
+    out:
+      full_name: results[0].fullName
+      first_name: results[0].firstName
+      last_name: results[0].lastName
+      title: results[0].jobTitle
+      company: results[0].company.name
+      linkedin_url: results[0].socialLinks.linkedin
+      location: results[0].location.raw
+    miss: results[0].error != null
+  lusha.people.search:
+    accepts:
+    - - title
+    in:
+      title: body.filters.contacts.include.jobTitles
+    in_expr:
+      body.filters.contacts.include.jobTitles: list(title)
+      body.pagination.size: at_least(limit, 10)
+      body.pagination.page: '0'
+    out:
+      people: rows(results, 'firstName+lastName', 'socialLinks.linkedin', 'company.domain')
+      count: pagination.total
+    miss: results == []
+  pdl.x.person-identify:
+    accepts:
+    - - email
+    in:
+      email: query.email
+    out:
+      profiles: profiles(matches[0].data.linkedin_url)
+      linkedin_url: matches[0].data.linkedin_url
+      full_name: matches[0].data.full_name
+      count: len(profiles(matches[0].data.linkedin_url))
+    miss: matches[0].data.linkedin_url == null
+  pdl.people.enrich:
+    accepts:
+    - - email
+    - - linkedin_url
+    - - full_name
+      - domain
+    in:
+      email: query.email
+      linkedin_url: query.profile
+      full_name: query.name
+      domain: query.company
+    out:
+      full_name: data.full_name
+      first_name: data.first_name
+      last_name: data.last_name
+      title: data.job_title
+      company: data.job_company_name
+      company_domain: data.job_company_website
+      linkedin_url: data.linkedin_url
+      location: data.location_name
+    miss: data.full_name == null
+  apollo.people.identity.resolve:
+    accepts:
+    - - email
+    - - linkedin_url
+    - - full_name
+      - domain
+    - - full_name
+      - company
+    in:
+      email: query.email
+      linkedin_url: query.linkedin_url
+      full_name: query.name
+      domain: query.domain
+      company: query.organization_name
+    out:
+      profiles: profiles(person.linkedin_url, person.github_url, person.twitter_url,
+        person.facebook_url, person.blog_url)
+      full_name: person.name
+      linkedin_url: person.linkedin_url
+      count: len(profiles(person.linkedin_url, person.github_url, person.twitter_url,
+        person.facebook_url, person.blog_url))
+    miss: person.linkedin_url == null
+  contactout.people.identity.resolve:
+    accepts:
+    - - linkedin_url
+    - - email
+    in:
+      linkedin_url: body.linkedin_url
+      email: body.email
+    out:
+      profiles: profiles(profile.url, profile.github, profile.twitter)
+      full_name: profile.full_name
+      linkedin_url: profile.url
+      count: len(profiles(profile.url, profile.github, profile.twitter))
+    miss: profile.full_name == null
+  akta.companies.search:
+    accepts:
+    - - domain
+    in:
+      domain: query.query
+    out:
+      companies: rows(data, 'name', '', 'website')
+      count: count
+    miss: data == []
+  apollo.companies.enrich:
+    accepts:
+    - - domain
+    in:
+      domain: query.domain
+    out:
+      name: organization.name
+      domain: organization.primary_domain
+      website: organization.website_url
+      description: organization.short_description
+      industry: organization.industry
+      employees: organization.estimated_num_employees
+      founded: organization.founded_year
+      location: join(organization.city, organization.country)
+      linkedin_url: organization.linkedin_url
+    miss: organization.name == null
+  aviato.companies.enrich:
+    accepts:
+    - - domain
+    in:
+      domain: query.website
+    out:
+      name: name
+      website: URLs.website
+      linkedin_url: URLs.linkedin
+    miss: name == null
+  aviato.companies.search:
+    accepts:
+    - - name
+    in_expr:
+      body.dsl: obj('filters', list(obj('name', obj('operation', 'fts', 'value', name))),
+        'limit', limit, 'offset', 0, 'sort', [])
+    out:
+      companies: rows(items, 'name', 'URLs.linkedin', 'URLs.website')
+      count: count
+    miss: items == []
+  branddev.brand.retrieve:
+    accepts:
+    - - domain
+    in:
+      domain: query.domain
+    out:
+      name: brand.title
+      domain: brand.domain
+      description: brand.description
+      employees: coalesce(brand.employees.exact, brand.employees.range)
+      location: join(brand.address.city, brand.address.country)
+    miss: brand.title == null
+  branddev.brand.retrieve-by-name:
+    accepts:
+    - - name
+    in:
+      name: query.name
+    out:
+      name: brand.title
+      domain: brand.domain
+      description: brand.description
+      employees: coalesce(brand.employees.exact, brand.employees.range)
+      location: join(brand.address.city, brand.address.country)
+    miss: brand.title == null
+  branddev.brand.retrieve-by-email:
+    accepts:
+    - - email
+    in:
+      email: query.email
+    out:
+      name: brand.title
+      domain: brand.domain
+      description: brand.description
+      employees: coalesce(brand.employees.exact, brand.employees.range)
+      location: join(brand.address.city, brand.address.country)
+    miss: brand.title == null
+  companyenrich.companies.enrich:
+    accepts:
+    - - domain
+    in:
+      domain: query.domain
+    out:
+      name: name
+      domain: domain
+      website: website
+      description: description
+      industry: industry
+      employees: employees
+      founded: founded_year
+    miss: name == null
+  companyenrich.companies.enrich.by_properties:
+    accepts:
+    - - name
+    - - linkedin_url
+    in:
+      name: body.name
+      linkedin_url: body.linkedinUrl
+    out:
+      name: name
+      domain: domain
+      website: website
+      description: description
+      industry: industry
+      employees: employees
+      founded: founded_year
+    miss: name == null
+  companyenrich.companies.search:
+    accepts:
+    - - technology
+    in:
+      technology: body.technologies
+      country: body.countries
+    in_expr:
+      body.technologies: list(technology)
+      body.countries: list(country)
+      body.pageSize: limit
+      body.page: '1'
+    out:
+      companies: rows(items, 'name|legalName', '', 'domain')
+      count: totalItems
+    miss: items == []
+  crustdata.companies.search:
+    accepts:
+    - - domain
+    in:
+      domain: body.filters.value
+    in_expr:
+      body.filters: obj('field', 'basic_info.primary_domain', 'type', '=', 'value',
+        domain)
+      body.limit: limit
+    const:
+      body.fields:
+      - basic_info.name
+      - basic_info.primary_domain
+    out:
+      companies: rows(companies, 'basic_info.name', '', 'basic_info.primary_domain')
+      count: total_count
+      next_cursor: next_cursor
+    miss: companies == []
+  exa.companies.search:
+    accepts:
+    - - q
+    in:
+      q: body.query
+    in_expr:
+      body.numResults: limit
+    const:
+      body.category: company
+    out:
+      companies: rows(results, 'title|entities[0].properties.name', 'url', '')
+      count: len(results)
+    miss: results == []
+  fiber-ai.companies.enrich:
+    accepts:
+    - - domain
+    in:
+      domain: body.companyDomain.value
+    out:
+      name: output.data[0].preferred_name
+      domain: output.data[0].domains[0]
+      website: output.data[0].websites[0]
+      description: output.data[0].li_description
+      industry: output.data[0].standard_industries[0]
+      employees: output.data[0].employee_count_consensus.gte
+      location: join(output.data[0].location_consensus.city, output.data[0].location_consensus.country_name)
+      linkedin_url: fmt('https://www.linkedin.com/company/{}', output.data[0].linkedin_primary_slug)
+    miss: output.data == []
+  fiber-ai.companies.search:
+    accepts:
+    - - domain
+    in_expr:
+      body.searchParams: obj('exactCompanyV2', obj('anyOf', list(obj('identifier',
+        'domain', 'domain', domain))))
+      body.pageSize: limit
+    out:
+      companies: rows(output.data, 'name', 'linkedin_url|linkedinUrl', 'domain|website')
+      next_cursor: output.nextCursor
+    miss: output.data == []
+  findymail.search.company:
+    accepts:
+    - - domain
+    in:
+      domain: body.domain
+    out:
+      name: name
+      domain: domain
+      description: description
+      industry: industry
+      employees: company_size
+      location: join(city, country)
+      linkedin_url: linkedin_url
+    miss: name == null
+  hunter.x.discover-companies:
+    accepts:
+    - - q
+    in:
+      q: body.query
+    out:
+      companies: rows(data, 'organization', '', 'domain')
+      count: meta.results
+    miss: data == []
+  hunter.companies.enrich:
+    accepts:
+    - - domain
+    in:
+      domain: query.domain
+    out:
+      name: data.name
+      domain: data.domain
+      description: data.description
+      industry: data.category.industry
+      employees: data.metrics.employees
+      founded: data.foundedYear
+      location: data.location
+      linkedin_url: fmt('https://www.linkedin.com/{}', data.linkedin.handle)
+    miss: data.name == null
+  icypeas.companies.search:
+    accepts:
+    - - domain
+    in:
+      domain: body.query.companyId.include
+    in_expr:
+      body.query.companyId.include: list(domain)
+      body.pagination.size: limit
+    out:
+      companies: rows(leads, 'name', 'url', 'website')
+      count: total
+      next_cursor: pagination.token
+    miss: leads == []
+  icypeas.companies.enrich:
+    accepts:
+    - - linkedin_url
+    in:
+      linkedin_url: query.url
+    out:
+      name: result.name
+      website: result.website
+      description: result.description
+      industry: result.industry
+      employees: result.numberOfEmployees
+      linkedin_url: result.url
+      location: join(result.address.addressLocality, result.address.addressCountry)
+    miss: result.name == null
+  leadmagic.x.companies-search-v3:
+    accepts:
+    - - domain
+    in:
+      domain: body.company_domain
+    in_expr:
+      body.limit: limit
+    out:
+      companies: rows(companies, 'company_name', 'company_linkedin_url', 'company_domain|company_website')
+      count: count
+    miss: companies == []
+  leadmagic.companies.enrich:
+    accepts:
+    - - domain
+    in:
+      domain: body.company_domain
+    out:
+      name: companyName
+      website: websiteUrl
+      description: description
+      industry: industry
+      employees: employeeCount
+      founded: founded_year
+      location: locations[0].description
+      linkedin_url: linkedin_url
+    miss: companyName == null
+  lusha.companies.enrich:
+    accepts:
+    - - domain
+    in_expr:
+      body.companies: list(obj('domain', domain))
+    out:
+      name: results[0].name
+      domain: results[0].emailDomain
+      website: results[0].homepageUrl
+      description: results[0].description
+      industry: results[0].industry
+      employees: results[0].employeeCount.exact
+      founded: results[0].yearFounded
+      location: join(results[0].location.city, results[0].location.country)
+      linkedin_url: results[0].socialLinks.linkedin
+    miss: results[0].name == null
+  lusha.companies.search:
+    accepts:
+    - - domain
+    in:
+      domain: body.filters.companies.include.domains
+    in_expr:
+      body.filters.companies.include.domains: list(domain)
+      body.pagination.size: at_least(limit, 10)
+      body.pagination.page: '0'
+    out:
+      companies: rows(results, 'name', 'socialLinks.linkedin', 'domain')
+      count: pagination.total
+    miss: results == []
+  pdl.companies.enrich:
+    accepts:
+    - - domain
+    in:
+      domain: query.website
+    out:
+      name: display_name
+      website: website
+      description: summary
+      industry: industry
+      employees: coalesce(employee_count, size)
+      founded: founded
+      location: location.name
+      linkedin_url: linkedin_url
+    miss: name == null
+  pdl.companies.search:
+    accepts:
+    - - name
+    in_expr:
+      query.sql: fmt("SELECT * FROM company WHERE name='{}'", lower(name))
+      query.size: limit
+    out:
+      companies: rows(data, 'display_name|name', 'linkedin_url', 'website')
+      count: total
+      next_cursor: scroll_token
+    miss: data == []
+  predictleads.companies.enrich:
+    accepts:
+    - - domain
+    in:
+      domain: path.id_or_domain
+    out:
+      name: data[0].attributes.friendly_company_name
+      domain: data[0].attributes.domain
+      description: data[0].attributes.description_short
+      location: data[0].attributes.location
+    miss: data == []
+  thecompaniesapi.companies.enrich:
+    accepts:
+    - - domain
+    when: email == null
+    in:
+      domain: path.domain
+    out:
+      name: about.name
+      domain: domain.domain
+      industry: about.industry
+      description: descriptions.primary
+      employees: coalesce(about.totalEmployeesExact, about.totalEmployees)
+      founded: about.yearFounded
+      location: join(locations.headquarters.city.name, locations.headquarters.country.name)
+      linkedin_url: socials.linkedin.url
+    miss: about.name == null
+  thecompaniesapi.companies.search:
+    accepts:
+    - - industry
+    in_expr:
+      query.query: tca_filter('about.industries', industry)
+      query.size: limit
+    out:
+      companies: rows(companies, 'about.name', 'socials.linkedin.url', 'domain.domain')
+      count: meta.total
+    miss: companies == []
+  thecompaniesapi.companies.enrich_by_email:
+    accepts:
+    - - email
+    in:
+      email: query.email
+    out:
+      name: company.about.name
+      domain: company.domain.domain
+      industry: company.about.industry
+      description: company.descriptions.primary
+      employees: coalesce(company.about.totalEmployeesExact, company.about.totalEmployees)
+      founded: company.about.yearFounded
+      location: join(company.locations.headquarters.city.name, company.locations.headquarters.country.name)
+      linkedin_url: company.socials.linkedin.url
+    miss: company.about.name == null
+  tikhub.x.instagram-v1-fetch-user-info-by-id:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'instagram'
+    - host(profile_url) == 'instagram.com'
+    out:
+      handle: data.username
+      platform_id: data.id
+      name: data.full_name
+      followers: data.edge_followed_by.count
+      following: data.edge_follow.count
+      posts_count: data.edge_owner_to_timeline_media.count
+      verified: data.is_verified
+      private: data.is_private
+      bio: data.biography
+      platform: '''instagram'''
+    miss: data.username == null
+  tikhub.x.instagram-v1-fetch-user-info-by-id-v2:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'instagram'
+    - host(profile_url) == 'instagram.com'
+    out:
+      handle: data.username
+      platform_id: data.id
+      name: data.full_name
+      followers: data.edge_followed_by.count
+      following: data.edge_follow.count
+      posts_count: data.edge_owner_to_timeline_media.count
+      verified: data.is_verified
+      private: data.is_private
+      bio: data.biography
+      platform: '''instagram'''
+    miss: data.username == null
+  tikhub.x.instagram-v1-fetch-user-info-by-username-v2:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'instagram'
+    - host(profile_url) == 'instagram.com'
+    out:
+      handle: data.username
+      platform_id: data.id
+      name: data.full_name
+      followers: data.edge_followed_by.count
+      following: data.edge_follow.count
+      posts_count: data.edge_owner_to_timeline_media.count
+      verified: data.is_verified
+      private: data.is_private
+      bio: data.biography
+      platform: '''instagram'''
+    miss: data.username == null
+    in:
+      handle: query.username
+  tikhub.x.instagram-v1-fetch-user-info-by-username-v3:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'instagram'
+    - host(profile_url) == 'instagram.com'
+    out:
+      handle: data.username
+      platform_id: data.id
+      name: data.full_name
+      followers: data.edge_followed_by.count
+      following: data.edge_follow.count
+      posts_count: data.edge_owner_to_timeline_media.count
+      verified: data.is_verified
+      private: data.is_private
+      bio: data.biography
+      platform: '''instagram'''
+    miss: data.username == null
+    in:
+      handle: query.username
+  tikhub.x.instagram-v3-get-user-profile:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'instagram'
+    - host(profile_url) == 'instagram.com'
+    out:
+      handle: data.username
+      platform_id: data.id
+      name: data.full_name
+      followers: data.follower_count
+      following: data.following_count
+      posts_count: data.media_count
+      verified: data.is_verified
+      private: data.is_private
+      bio: data.biography
+      platform: '''instagram'''
+    miss: data.username == null
+    in:
+      handle: query.username
+  tikhub.x.tiktok-analytics-fetch-creator-info-and-milestones:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'tiktok'
+    - host(profile_url) == 'tiktok.com'
+    out:
+      handle: data.creator_info.unique_id
+      platform_id: data.creator_info.sec_user_id
+      name: data.creator_info.nickname
+      followers: data.creator_info.follower_count
+      platform: '''tiktok'''
+    miss: data.creator_info.unique_id == null
+  tikhub.tiktok.user.profile:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'tiktok'
+    - host(profile_url) == 'tiktok.com'
+    out:
+      handle: data.userInfo.user.uniqueId
+      platform_id: data.userInfo.user.secUid
+      name: data.userInfo.user.nickname
+      followers: data.userInfo.stats.followerCount
+      following: data.userInfo.stats.followingCount
+      verified: data.userInfo.user.verified
+      bio: data.userInfo.user.signature
+      platform: '''tiktok'''
+    miss: data.userInfo.user.uniqueId == null
+    in:
+      handle: query.uniqueId
+  tikhub.instagram.user.profile:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'instagram'
+    - host(profile_url) == 'instagram.com'
+    out:
+      handle: coalesce(data.data.user.username, params.username)
+      platform_id: data.data.user.id
+      name: data.data.user.full_name
+      followers: data.data.user.edge_followed_by.count
+      following: data.data.user.edge_follow.count
+      posts_count: data.data.user.edge_owner_to_timeline_media.count
+      verified: data.data.user.is_verified
+      private: data.data.user.is_private
+      bio: data.data.user.biography
+      platform: '''instagram'''
+    miss: data.data.user == null
+    in:
+      handle: query.username
+  tikhub.x.user.profile:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'x'
+    - host(profile_url) == 'x.com'
+    out:
+      handle: data.profile
+      platform_id: data.rest_id
+      name: data.name
+      followers: data.sub_count
+      following: data.friends
+      posts_count: data.statuses_count
+      verified: data.blue_verified
+      bio: data.desc
+      platform: '''x'''
+    miss: data.profile == null
+    in:
+      handle: query.screen_name
+  justoneapi.x.twitter-get-user-detail-v1:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'x'
+    - host(profile_url) == 'x.com'
+    out:
+      handle: data.profile
+      platform_id: data.rest_id
+      name: data.name
+      followers: data.sub_count
+      following: data.friends
+      posts_count: data.statuses_count
+      verified: data.blue_verified
+      bio: data.desc
+      platform: '''x'''
+    miss: data.profile == null
+  justoneapi.tiktok.user.profile:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'tiktok'
+    - host(profile_url) == 'tiktok.com'
+    out:
+      handle: data.userInfo.user.uniqueId
+      platform_id: data.userInfo.user.secUid
+      name: data.userInfo.user.nickname
+      followers: data.userInfo.stats.followerCount
+      following: data.userInfo.stats.followingCount
+      verified: data.userInfo.user.verified
+      bio: data.userInfo.user.signature
+      platform: '''tiktok'''
+    miss: data.userInfo.user.uniqueId == null
+    in:
+      handle: query.uniqueId
+  justoneapi.instagram.user.profile:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'instagram'
+    - host(profile_url) == 'instagram.com'
+    out:
+      handle: data.username
+      platform_id: data.id
+      name: data.full_name
+      followers: data.edge_followed_by.count
+      following: data.edge_follow.count
+      posts_count: data.edge_owner_to_timeline_media.count
+      verified: data.is_verified
+      private: data.is_private
+      bio: data.biography
+      platform: '''instagram'''
+    miss: data.username == null
+    in:
+      handle: query.username
+  scrapecreators.x.v1-instagram-basic-profile:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'instagram'
+    - host(profile_url) == 'instagram.com'
+    out:
+      handle: username
+      platform_id: pk
+      name: full_name
+      followers: follower_count
+      following: following_count
+      posts_count: media_count
+      verified: is_verified
+      private: is_private
+      bio: biography
+      platform: '''instagram'''
+    miss: username == null
+  scrapecreators.tiktok.user.profile:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'tiktok'
+    - host(profile_url) == 'tiktok.com'
+    out:
+      handle: user.uniqueId
+      platform_id: user.secUid
+      name: user.nickname
+      followers: stats.followerCount
+      following: stats.followingCount
+      verified: user.verified
+      bio: user.signature
+      platform: '''tiktok'''
+    miss: user.uniqueId == null
+    in:
+      handle: query.handle
+  scrapecreators.instagram.user.profile:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'instagram'
+    - host(profile_url) == 'instagram.com'
+    out:
+      handle: data.user.username
+      platform_id: data.user.pk
+      name: data.user.full_name
+      followers: data.user.follower_count
+      following: data.user.following_count
+      posts_count: data.user.media_count
+      verified: data.user.is_verified
+      private: data.user.is_private
+      bio: data.user.biography
+      platform: '''instagram'''
+    miss: data.user.username == null
+    in:
+      handle: query.handle
+  scrapecreators.x.user.profile:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'x'
+    - host(profile_url) == 'x.com'
+    out:
+      handle: core.screen_name
+      name: core.name
+      followers: legacy.followers_count
+      following: legacy.friends_count
+      posts_count: legacy.statuses_count
+      verified: is_blue_verified
+      bio: legacy.description
+      platform: '''x'''
+    miss: core.screen_name == null
+    in:
+      handle: query.handle
+  serpapi.x.instagram-profile:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'instagram'
+    - host(profile_url) == 'instagram.com'
+    out:
+      handle: search_parameters.profile_id
+      name: full_name
+      followers: followers
+      following: following
+      posts_count: posts_count
+      verified: is_verified
+      bio: biography
+      platform: '''instagram'''
+    miss: error != null
+    in:
+      handle: query.profile_id
+    const:
+      query.engine: instagram_profile
+  tikhub.linkedin.user.profile:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'linkedin'
+    - host(profile_url) == 'linkedin.com'
+    in_expr:
+      query.url: coalesce(profile_url, linkedin_url(handle))
+    out:
+      platform: '''linkedin'''
+      handle: data.id
+      name: data.name
+      url: data.input_url
+      bio: data.about
+      followers: data.followers
+      location: data.city
+      avatar: data.avatar
+      platform_id: data.linkedin_num_id
+    miss: data.id == null
+  tikhub.linkedin.company.profile:
+    accepts:
+    - - linkedin_url
+    when:
+    - host(linkedin_url) == 'linkedin.com'
+    in:
+      linkedin_url: query.url
+    out:
+      name: data.name
+      domain: host(data.website)
+      website: data.website
+      industry: data.industries
+      employees: data.employees_in_linkedin
+      location: data.headquarters
+      linkedin_url: data.url
+      description: data.about
+      founded: data.founded
+    miss: data.name == null
+  openalex.people.search:
+    accepts:
+    - - q
+    - - full_name
+    in_expr:
+      query.search: coalesce(q, full_name)
+      query.per-page: limit
+    out:
+      people: rows(results, 'display_name', 'orcid', '')
+      count: meta.count
+    miss: results == []
+  openalex.people.from_doi:
+    accepts:
+    - - source_url
+    when:
+    - doi_of(source_url) != null
+    in_expr:
+      query.filter: fmt('doi:{}', doi_of(source_url))
+    out:
+      people: rows(results[0].authorships, 'author.display_name', 'author.orcid',
+        '')
+      count: len(results[0].authorships)
+      entity: obj('kind', 'paper', 'title', results[0].title, 'doi', results[0].doi)
+    miss: results == []
+  orcid.people.search:
+    accepts:
+    - - full_name
+    in_expr:
+      query.q: fmt('given-names:{} AND family-name:{}', split_first(full_name), split_last(full_name))
+      query.rows: limit
+    out:
+      people: rows(expanded-result, 'given-names+family-names', 'orcid-id', '', 'https://orcid.org/')
+      count: num-found
+    miss: expanded-result == []
+  wikidata.identity.from_x:
+    accepts:
+    - - x_handle
+    in_expr:
+      query.query: fmt('SELECT ?item ?itemLabel ?github ?twitter ?linkedin ?orcid
+        ?scholar ?website ?hf WHERE {{ ?item wdt:P2002 "{}" . OPTIONAL{{?item wdt:P2037
+        ?github}} OPTIONAL{{?item wdt:P2002 ?twitter}} OPTIONAL{{?item wdt:P6634 ?linkedin}}
+        OPTIONAL{{?item wdt:P496 ?orcid}} OPTIONAL{{?item wdt:P1960 ?scholar}} OPTIONAL{{?item
+        wdt:P856 ?website}} OPTIONAL{{?item wdt:P11251 ?hf}} SERVICE wikibase:label
+        {{ bd:serviceParam wikibase:language "en" }} }} LIMIT 1', handle_of(x_handle))
+    const:
+      query.format: json
+    out:
+      full_name: results.bindings[0].itemLabel.value
+      profiles: profiles(results.bindings[0].website.value, join_url('https://github.com/',
+        results.bindings[0].github.value), join_url('https://x.com/', results.bindings[0].twitter.value),
+        join_url('https://www.linkedin.com/in/', results.bindings[0].linkedin.value),
+        join_url('https://orcid.org/', results.bindings[0].orcid.value), join_url('https://scholar.google.com/citations?user=',
+        results.bindings[0].scholar.value), join_url('https://huggingface.co/', results.bindings[0].hf.value))
+      linkedin_url: join_url('https://www.linkedin.com/in/', results.bindings[0].linkedin.value)
+    miss: results.bindings == []
+  wikidata.identity.from_github:
+    accepts:
+    - - github_url
+    in_expr:
+      query.query: fmt('SELECT ?item ?itemLabel ?github ?twitter ?linkedin ?orcid
+        ?scholar ?website ?hf WHERE {{ ?item wdt:P2037 "{}" . OPTIONAL{{?item wdt:P2037
+        ?github}} OPTIONAL{{?item wdt:P2002 ?twitter}} OPTIONAL{{?item wdt:P6634 ?linkedin}}
+        OPTIONAL{{?item wdt:P496 ?orcid}} OPTIONAL{{?item wdt:P1960 ?scholar}} OPTIONAL{{?item
+        wdt:P856 ?website}} OPTIONAL{{?item wdt:P11251 ?hf}} SERVICE wikibase:label
+        {{ bd:serviceParam wikibase:language "en" }} }} LIMIT 1', handle_of(github_url))
+    const:
+      query.format: json
+    out:
+      full_name: results.bindings[0].itemLabel.value
+      profiles: profiles(results.bindings[0].website.value, join_url('https://github.com/',
+        results.bindings[0].github.value), join_url('https://x.com/', results.bindings[0].twitter.value),
+        join_url('https://www.linkedin.com/in/', results.bindings[0].linkedin.value),
+        join_url('https://orcid.org/', results.bindings[0].orcid.value), join_url('https://scholar.google.com/citations?user=',
+        results.bindings[0].scholar.value), join_url('https://huggingface.co/', results.bindings[0].hf.value))
+      linkedin_url: join_url('https://www.linkedin.com/in/', results.bindings[0].linkedin.value)
+    miss: results.bindings == []
+  bluesky.user.profile:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'bluesky'
+    - host(profile_url) == 'bsky.app'
+    in_expr:
+      query.actor: coalesce(handle, handle_of(profile_url))
+    out:
+      platform: '''bluesky'''
+      handle: handle
+      name: displayName
+      url: join_url('https://bsky.app/profile/', handle)
+      bio: description
+      followers: followersCount
+      following: followsCount
+      posts_count: postsCount
+      avatar: avatar
+      platform_id: did
+    miss: handle == null
+  crossref.people.from_doi:
+    accepts:
+    - - source_url
+    when:
+    - doi_of(source_url) != null
+    in_expr:
+      path.doi: doi_of(source_url)
+    out:
+      people: rows(message.author, 'given+family', 'ORCID', '')
+      count: len(message.author)
+      entity: obj('kind', 'paper', 'title', first(message.title), 'doi', message.DOI)
+    miss: message.author == null
+  justoneapi.x.linkedin-get-user-detail-v1:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'linkedin'
+    - host(profile_url) == 'linkedin.com'
+    in:
+      handle: query.username
+    out:
+      platform: '''linkedin'''
+      handle: data.id
+      name: data.full_name
+      bio: data.headline
+      platform_id: data.id
+    miss: data.id == null
+  justoneapi.x.zhihu-get-user-info-v1:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'zhihu'
+    - host(profile_url) == 'zhihu.com'
+    in:
+      handle: query.userUrlToken
+    out:
+      platform: '''zhihu'''
+      handle: data.url_token
+      name: data.name
+      bio: data.headline
+      followers: data.follower_count
+      avatar: data.avatar_url
+      platform_id: data.id
+    miss: data.url_token == null
+  justoneapi.weibo.user.profile:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'weibo'
+    - host(profile_url) == 'weibo.com'
+    in:
+      handle: query.uid
+    out:
+      platform: '''weibo'''
+      handle: data.data.user.screen_name
+      name: data.data.user.screen_name
+      bio: data.data.user.description
+      followers: data.data.user.followers_count
+      following: data.data.user.friends_count
+      posts_count: data.data.user.statuses_count
+      avatar: data.data.user.profile_image_url
+      location: data.data.user.location
+      verified: data.data.user.verified
+      platform_id: data.data.user.id
+    miss: data.data.user.screen_name == null
+  scrapecreators.x.v1-facebook-profile:
+    accepts:
+    - - profile_url
+    when:
+    - host(profile_url) == 'facebook.com'
+    in:
+      profile_url: query.url
+    out:
+      platform: '''facebook'''
+      handle: id
+      name: name
+      platform_id: id
+    miss: id == null
+  scrapecreators.youtube.channel.profile:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'youtube'
+    - host(profile_url) == 'youtube.com'
+    in:
+      handle: query.handle
+    out:
+      platform: '''youtube'''
+      handle: handle
+      name: name
+      bio: description
+      followers: subscriberCount
+      platform_id: channelId
+    miss: handle == null
+  tikhub.x.bilibili-web-fetch-user-profile:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'bilibili'
+    - host(profile_url) == 'bilibili.com'
+    in:
+      handle: query.uid
+    out:
+      platform: '''bilibili'''
+      handle: data.data.mid
+      name: data.data.name
+      avatar: data.data.face
+      platform_id: data.data.mid
+    miss: data.data.mid == null
+  tikhub.x.douyin-web-fetch-user-profile-by-short-id:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'douyin'
+    - host(profile_url) == 'douyin.com'
+    in:
+      handle: query.short_id
+    out:
+      platform: '''douyin'''
+      handle: data.data.user.sec_uid
+      name: data.data.user.nickname
+      platform_id: data.data.user.sec_uid
+    miss: data.data.user.sec_uid == null
+  tikhub.x.douyin-web-fetch-user-profile-by-uid:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'douyin'
+    - host(profile_url) == 'douyin.com'
+    in:
+      handle: query.uid
+    out:
+      platform: '''douyin'''
+      handle: data.data.id
+      name: data.data.nickname
+      bio: data.data.signature
+      verified: data.data.verified
+      platform_id: data.data.id
+    miss: data.data.id == null
+  tikhub.x.douyin-web-handler-user-profile-v2:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'douyin'
+    - host(profile_url) == 'douyin.com'
+    in:
+      handle: query.unique_id
+    out:
+      platform: '''douyin'''
+      handle: data.user_info.unique_id
+      name: data.user_info.nickname
+      bio: data.user_info.signature
+      following: data.user_info.following_count
+      posts_count: data.user_info.aweme_count
+    miss: data.user_info.unique_id == null
+  tikhub.x.douyin-web-handler-user-profile-v3:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'douyin'
+    - host(profile_url) == 'douyin.com'
+    in:
+      handle: query.uid
+    out:
+      platform: '''douyin'''
+      handle: data.data.id
+      name: data.data.nickname
+      bio: data.data.signature
+      verified: data.data.verified
+      platform_id: data.data.id
+    miss: data.data.id == null
+  tikhub.x.instagram-v3-get-user-brief:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'instagram'
+    - host(profile_url) == 'instagram.com'
+    in:
+      handle: query.username
+    out:
+      platform: '''instagram'''
+      handle: data.username
+      name: data.full_name
+      bio: data.biography
+      followers: data.follower_count
+      following: data.following_count
+      posts_count: data.media_count
+      avatar: data.profile_pic_url
+      verified: data.is_verified
+      platform_id: data.id
+    miss: data.username == null
+  tikhub.x.reddit-app-fetch-user-profile:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'reddit'
+    - host(profile_url) == 'reddit.com'
+    in:
+      handle: query.username
+    out:
+      platform: '''reddit'''
+      handle: data.redditorInfoByName.id
+      name: data.redditorInfoByName.name
+      verified: data.redditorInfoByName.isVerified
+      platform_id: data.redditorInfoByName.id
+    miss: data.redditorInfoByName.id == null
+  tikhub.x.threads-web-fetch-user-info:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'threads'
+    - host(profile_url) == 'threads.net'
+    in:
+      handle: query.username
+    out:
+      platform: '''threads'''
+      handle: data.user.username
+      name: data.user.full_name
+      followers: data.user.follower_count
+      avatar: data.user.profile_pic_url
+      verified: data.user.is_verified
+      platform_id: data.user.id
+    miss: data.user.username == null
+  tikhub.x.weibo-web-v2-fetch-user-basic-info:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'weibo'
+    - host(profile_url) == 'weibo.com'
+    in:
+      handle: query.uid
+    out:
+      platform: '''weibo'''
+      handle: data.data.screen_name
+      name: data.data.screen_name
+      avatar: data.data.avatar
+      verified: data.data.verified
+      platform_id: data.data.id
+    miss: data.data.screen_name == null
+  tikhub.x.weibo-web-v2-fetch-user-info:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'weibo'
+    - host(profile_url) == 'weibo.com'
+    in:
+      handle: query.uid
+    out:
+      platform: '''weibo'''
+      handle: data.user.screen_name
+      name: data.user.screen_name
+      avatar: data.user.profile_image_url
+      verified: data.user.verified
+      platform_id: data.user.id
+    miss: data.user.screen_name == null
+  tikhub.x.youtube-web-get-channel-info:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'youtube'
+    - host(profile_url) == 'youtube.com'
+    in:
+      handle: query.channel_id
+    out:
+      platform: '''youtube'''
+      handle: data.channel_id
+      name: data.title
+      bio: data.description
+      location: data.country
+      verified: data.verified
+    miss: data.channel_id == null
+  tikhub.x.youtube-web-v2-get-channel-description:
+    accepts:
+    - - platform
+      - handle
+    - - profile_url
+    when:
+    - platform == 'youtube'
+    - host(profile_url) == 'youtube.com'
+    in:
+      handle: query.channel_id
+    out:
+      platform: '''youtube'''
+      handle: data.handle
+      name: data.title
+      bio: data.description
+    miss: data.handle == null
+  scrapingdog.people.from_image:
+    accepts:
+    - - image_url
+    in:
+      image_url: query.url
+    const:
+      query.exact_matches: 'true'
+    out:
+      matches: rows(lens_results, 'title', 'link', '')
+      profiles: profiles(pluck(lens_results, 'link'))
+      count: len(lens_results)
+    miss: lens_results[0].link == null

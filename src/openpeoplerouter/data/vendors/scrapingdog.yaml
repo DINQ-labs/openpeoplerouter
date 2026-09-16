@@ -1,0 +1,47 @@
+vendor: scrapingdog
+name: ScrapingDog
+base_url: https://api.scrapingdog.com
+auth:
+  kind: query
+  name: api_key
+  format: '{secret}'
+  credential: SCRAPINGDOG_API_KEY
+docs: https://docs.scrapingdog.com/google-lens-api
+homepage: https://www.scrapingdog.com
+limits: 5 of the plan's API credits per Lens request
+endpoints:
+- id: scrapingdog.people.from_image
+  capability: people.from_image
+  name: Reverse image search (Google Lens)
+  summary: Where a photo appears on the web — the pages and profiles that carry the
+    same image (exact_matches) or a similar one (visual_matches). The way in to a
+    person from a picture, on to the jobs from there.
+  method: GET
+  path: /google_lens
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        description: A public image URL
+      exact_matches:
+        type: string
+        description: true to return only pages carrying this exact image — the mode
+          for finding the person
+      visual_matches:
+        type: string
+        description: true to also return visually similar images
+      country:
+        type: string
+        description: ISO country code, default us
+      language:
+        type: string
+        description: Result language, default en
+  cost:
+    type: per_call
+    value: 0.001
+    currency: USD
+    source: 5 API credits per request on ScrapingDog's plans, about $0.0002 a credit
+    confidence: estimated
+  latency: 3-10 s
+  docs_url: https://docs.scrapingdog.com/google-lens-api

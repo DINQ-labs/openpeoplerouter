@@ -1,0 +1,27 @@
+vendor: crossref
+name: Crossref
+base_url: https://api.crossref.org
+auth:
+  kind: none
+  extra_headers:
+    User-Agent: OpenPeopleRouter/0.1
+docs: https://api.crossref.org/swagger-ui/index.html
+homepage: https://api.crossref.org/swagger-ui/index.html
+limits: ''
+endpoints:
+- id: crossref.people.from_doi
+  capability: people.search
+  name: Authors of a paper, by DOI
+  summary: The author list Crossref holds for a DOI, with ORCIDs and affiliations
+    where given
+  method: GET
+  path: /works/{doi}
+  input:
+    queryParams: {}
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    source: public API, no key
+    confidence: verified
+  latency: 1-3 s

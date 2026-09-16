@@ -1,0 +1,104 @@
+vendor: contactout
+name: ContactOut
+homepage: https://contactout.com
+docs: https://api.contactout.com/docs
+pricing_url: https://contactout.com/pricing
+limits: reveal credits per seat per month
+base_url: https://api.contactout.com/v1
+auth:
+  kind: header
+  name: token
+  format: '{secret}'
+  credential: CONTACTOUT_API_TOKEN
+endpoints:
+- id: contactout.contact.find
+  capability: people.contact.find
+  name: Reveal emails and phones for a LinkedIn profile
+  summary: Work and personal emails plus phone numbers for a person, keyed on their
+    LinkedIn URL.
+  method: POST
+  path: /people/enrich
+  latency: 1-5 s
+  input:
+    body:
+      linkedin_url:
+        type: string
+        required: false
+      email:
+        type: string
+        required: false
+      full_name:
+        type: string
+        required: false
+      company:
+        type: string
+        required: false
+  miss:
+    status: 404
+    means: no profile behind that identifier
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    source_url: https://contactout.com/pricing
+    checked: '2026-09-03'
+    confidence: documented
+  docs_url: https://api.contactout.com/docs#people-enrich
+  provides:
+  - email
+- id: contactout.people.enrich
+  capability: people.enrich
+  name: Profile facts from a LinkedIn URL
+  summary: Name, headline, employer and location for a LinkedIn profile.
+  method: POST
+  path: /people/enrich
+  latency: 1-5 s
+  input:
+    body:
+      linkedin_url:
+        type: string
+        required: false
+      email:
+        type: string
+        required: false
+  miss:
+    status: 404
+    means: no profile behind that identifier
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    source_url: https://contactout.com/pricing
+    checked: '2026-09-03'
+    confidence: documented
+- id: contactout.people.identity.resolve
+  capability: people.identity.resolve
+  name: The profiles ContactOut has on file
+  summary: ContactOut's profile carries the GitHub and X accounts it has matched to
+    a LinkedIn.
+  method: POST
+  path: /people/enrich
+  latency: 1-5 s
+  input:
+    body:
+      linkedin_url:
+        type: string
+        required: false
+  miss:
+    status: 404
+    means: no profile behind that identifier
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    checked: '2026-09-03'
+    confidence: documented

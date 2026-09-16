@@ -1,0 +1,442 @@
+vendor: apollo
+name: Apollo
+homepage: https://www.apollo.io
+docs: https://docs.apollo.io/reference
+pricing_url: https://www.apollo.io/pricing
+limits: credit pool per plan, with per-minute caps that differ per endpoint
+base_url: https://api.apollo.io/api/v1
+auth:
+  kind: header
+  name: X-Api-Key
+  format: '{secret}'
+  credential: APOLLO_API_KEY
+endpoints:
+- id: apollo.people.enrich
+  capability: people.enrich
+  name: Match a person and return their profile
+  summary: Title, employer, location and profile links from an email, a LinkedIn URL
+    or a name with the employer.
+  method: POST
+  path: /people/match
+  latency: 1-4 s
+  input:
+    queryParams:
+      email:
+        type: string
+        required: false
+      name:
+        type: string
+        required: false
+      organization_name:
+        type: string
+        required: false
+        note: the employer, to disambiguate a common name
+      domain:
+        type: string
+        required: false
+        note: employer domain, no www and no @
+      linkedin_url:
+        type: string
+        required: false
+    note: POST, but every parameter rides in the query string — there is no JSON body.
+  miss: no person matched
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    source_url: https://www.apollo.io/pricing
+    checked: '2026-09-03'
+    confidence: documented
+    note: charged only when credit-consuming data comes back
+  docs_url: https://docs.apollo.io/reference/people-enrichment
+- id: apollo.contact.find
+  capability: people.contact.find
+  name: Reveal a person's work email
+  summary: 'The same match, asked for the contact details: work email and, on request,
+    a mobile.'
+  method: POST
+  path: /people/match
+  latency: 1-4 s
+  input:
+    queryParams:
+      email:
+        type: string
+        required: false
+      name:
+        type: string
+        required: false
+      organization_name:
+        type: string
+        required: false
+      domain:
+        type: string
+        required: false
+      linkedin_url:
+        type: string
+        required: false
+      reveal_personal_emails:
+        type: boolean
+        required: false
+  miss: no email on the matched person
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    source_url: https://www.apollo.io/pricing
+    checked: '2026-09-03'
+    confidence: documented
+  notes:
+  - Asking for a phone number costs 8 more credits and needs a webhook, so this endpoint
+    never asks.
+  docs_url: https://docs.apollo.io/reference/people-enrichment
+  provides:
+  - email
+- id: apollo.people.search
+  capability: people.search
+  name: Search for people by role, company and place
+  summary: 'Apollo''s people index: a role, optionally inside one company domain or
+    a location, returned a page at a time.'
+  method: POST
+  path: /mixed_people/search
+  latency: 1-5 s
+  input:
+    queryParams:
+      q_keywords:
+        type: string
+        required: false
+        note: free text across the whole record
+      person_titles[]:
+        type: string
+        required: false
+        note: the role, repeated for alternatives
+      q_organization_domains:
+        type: string
+        required: false
+        note: employer domain, newline separated for several
+      person_locations[]:
+        type: string
+        required: false
+      person_seniorities[]:
+        type: string
+        required: false
+        note: director | vp | c_suite | senior | entry
+      per_page:
+        type: integer
+        required: false
+        note: rows per page, the price dial
+    note: POST, but every parameter rides in the query string.
+  miss: no people matched
+  cost:
+    type: per_result
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    source_url: https://www.apollo.io/pricing
+    checked: '2026-09-03'
+    confidence: documented
+    note: search is billed per row returned, so `limit` is what it costs
+  docs_url: https://docs.apollo.io/reference/people-search
+- id: apollo.people.identity.resolve
+  capability: people.identity.resolve
+  name: The profiles Apollo has on file
+  summary: Apollo's match returns the LinkedIn, GitHub, X and Facebook it holds for
+    a person.
+  method: POST
+  path: /people/match
+  latency: 1-4 s
+  input:
+    queryParams:
+      email:
+        type: string
+        required: false
+      linkedin_url:
+        type: string
+        required: false
+  miss: no person matched
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    checked: '2026-09-03'
+    confidence: documented
+- id: apollo.companies.enrich
+  capability: companies.enrich
+  name: Enrich a company by domain, name or LinkedIn URL
+  summary: Enrich a company from domain, name or LinkedIn — industry, headcount, revenue,
+    funding
+  method: GET
+  path: /organizations/enrich
+  input:
+    queryParams:
+      domain:
+        type: string
+        required: false
+        note: company domain without protocol or www — the strongest identifier
+      website:
+        type: string
+        required: false
+        note: full website URL, as an alternative to domain
+      name:
+        type: string
+        required: false
+        note: company name; ambiguous on its own
+      linkedin_url:
+        type: string
+        required: false
+        note: the company's LinkedIn page URL
+    note: at least one of domain | website | name | linkedin_url. Requires the organizations_enrich
+      scope on the key
+  docs_url: https://docs.apollo.io/reference/organization-enrichment
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    source_url: https://www.apollo.io/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 1 credit per organization returned; unmatched requests are free.
+- id: apollo.companies.search
+  capability: companies.search
+  name: Search companies by industry or tech — headcount growth
+  summary: Search Apollo's companies by industry, headcount, revenue, funding or technology
+    — hits carry 6/12/24-month headcount growth, the hiring/growth signal
+  method: POST
+  path: /mixed_companies/search
+  input:
+    queryParams:
+      q_organization_domains_list[]:
+        type: array[string]
+        required: false
+        note: restrict to these domains; max 1,000
+      organization_num_employees_ranges[]:
+        type: array[string]
+        required: false
+        note: employee-count bands as 'min,max' strings
+      organization_locations[]:
+        type: array[string]
+        required: false
+        note: company HQ locations
+      organization_not_locations[]:
+        type: array[string]
+        required: false
+        note: locations to EXCLUDE
+      revenue_range[min]:
+        type: integer
+        required: false
+        note: annual revenue floor, integer with no symbols
+      revenue_range[max]:
+        type: integer
+        required: false
+        note: annual revenue ceiling
+      currently_using_any_of_technology_uids[]:
+        type: array[string]
+        required: false
+        note: tech-stack filter, e.g. salesforce
+      latest_funding_amount_range:
+        type: object
+        required: false
+        note: min/max of the most recent funding round
+      total_funding_range:
+        type: object
+        required: false
+        note: min/max of total funding raised
+      page:
+        type: integer
+        required: false
+      per_page:
+        type: integer
+        required: false
+        note: 'max 100 — but see the cost note: the charge is per PAGE, so a LARGER
+          per_page is cheaper per company'
+    note: query-string params on a POST, arrays in field[]=value form. Result set
+      capped at 50,000 records. UNLIKE people search, this one is not free
+  docs_url: https://docs.apollo.io/reference/organization-search
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    source_url: https://www.apollo.io/pricing
+    checked: '2026-07-28'
+    confidence: documented
+    note: 1 credit per PAGE returned (0 when there are no results) — not per company.
+      Fewer, fuller pages therefore cost less than many small ones, the opposite of
+      most providers in this catalog.
+  tool: true
+- id: apollo.companies.jobs
+  capability: companies.jobs
+  name: A company's job postings by Apollo id — hiring signal
+  summary: List a company's open job postings — title, location and posting dates
+    — the direct hiring signal
+  method: GET
+  path: /organizations/{organization_id}/job_postings
+  input:
+    pathParams:
+      organization_id:
+        type: string
+        required: true
+        note: Apollo company id — resolve it first with apollo.companies.search (or
+          the free apollo.people.search, whose hits carry organization_id)
+    queryParams:
+      page:
+        type: integer
+        required: false
+      per_page:
+        type: integer
+        required: false
+        note: the charge is per PAGE, so a larger per_page is cheaper per posting
+    note: 'two-step by design: this endpoint takes an Apollo id, not a name or domain
+      — resolve the company first. Display limit 10,000 records; rate limit ~600 calls/hour
+      (plan-dependent)'
+  docs_url: https://docs.apollo.io/reference/organization-jobs-postings
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: page
+    source: docs
+    source_url: https://www.apollo.io/pricing
+    checked: '2026-08-20'
+    confidence: documented
+    note: 1 credit per PAGE returned, same page rule as company search.
+  tool: true
+- id: apollo.companies.news
+  capability: companies.news
+  name: News about a company by Apollo id — hires, funding
+  summary: Search news articles about specific companies — hires, funding and other
+    signal categories
+  method: POST
+  path: /news_articles/search
+  input:
+    queryParams:
+      organization_ids[]:
+        type: array[string]
+        required: true
+        note: Apollo company ids to search news for — resolve with apollo.companies.search
+          first
+      categories[]:
+        type: array[string]
+        required: false
+        note: event categories, e.g. hires, investment
+      published_at[min]:
+        type: string
+        required: false
+        note: YYYY-MM-DD
+      published_at[max]:
+        type: string
+        required: false
+        note: YYYY-MM-DD
+      page:
+        type: integer
+        required: false
+      per_page:
+        type: integer
+        required: false
+        note: up to 25 per page; the charge is per PAGE
+    note: query-string params on a POST, arrays in field[]=value form — the same parameter-location
+      trap as the rest of this provider. A company with no coverage answers 200 with
+      an empty news_articles page, not an error
+  docs_url: https://docs.apollo.io/reference/news-articles-search
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: page
+    source: docs
+    source_url: https://www.apollo.io/pricing
+    checked: '2026-08-20'
+    confidence: documented
+    note: 1 credit per PAGE returned, up to 25 articles per page.
+  tool: true
+- id: apollo.people.bulk_enrich
+  capability: people.enrich
+  name: Bulk-enrich up to 10 people by email, LinkedIn URL or name
+  summary: Enrich up to 10 people in one call, using the same identifiers as single-person
+    enrichment
+  method: POST
+  path: /people/bulk_match
+  input:
+    bodyType: json
+    body:
+      details:
+        type: array[object]
+        required: true
+        note: 1-10 objects (max 10 per request), each carrying the same identifier
+          keys as /people/match — email, first_name, last_name, domain, linkedin_url,
+          …
+    queryParams:
+      reveal_personal_emails:
+        type: boolean
+        required: false
+        note: applies to the whole batch
+      reveal_phone_number:
+        type: boolean
+        required: false
+        note: applies to the whole batch; +8 credits per mobile found, and requires
+          webhook_url
+      run_waterfall_email:
+        type: boolean
+        required: false
+      run_waterfall_phone:
+        type: boolean
+        required: false
+      webhook_url:
+        type: string
+        required: false
+        note: required when reveal_phone_number is true
+    note: the ONE endpoint in this file with a real JSON body — and even here the
+      flags stay in the query string while only `details` rides in the body
+  docs_url: https://docs.apollo.io/reference/bulk-people-enrichment
+  cost:
+    type: per_success
+    value: 1
+    currency: credit
+    per: 1
+    unit: record
+    source: docs
+    source_url: https://www.apollo.io/pricing
+    checked: '2026-08-13'
+    confidence: documented
+    note: priced per person MATCHED in the batch on the same 1-credit baseline as
+      single enrichment (apollo.people.enrich), +8 if a mobile is revealed, not per
+      call; unmatched rows are free. CONFIRMED live 2026-08-13 the route matches (200,
+      1/1 person). Same documented Basic-plan rate as fx.yaml credit_rates_usd.apollo.
+  tool: true
+- id: apollo.account.usage
+  capability: account.usage
+  name: Check API key status
+  summary: Check that the Apollo API key is live and logged in (spends no credits)
+  method: GET
+  path: /auth/health
+  input:
+    note: no parameters — the key rides in the X-Api-Key header. Some third-party
+      guides show this path without the /api segment; the official base is /api/v1/auth/health,
+      which is what treg's base_url already encodes
+  docs_url: https://docs.apollo.io/reference/authentication
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    note: free in practice — absent from Apollo's pricing table, and Apollo states
+      endpoints that return no credit-consuming data cost 0 credits — but the docs
+      never say so verbatim for this route.
+  tool: true

@@ -1,0 +1,858 @@
+vendor: lusha
+name: Lusha
+base_url: https://api.lusha.com
+auth:
+  kind: header
+  name: api_key
+  format: '{secret}'
+  credential: LUSHA_API_KEY
+docs: https://dashboard.lusha.com/api
+endpoints:
+- id: lusha.people.enrich
+  capability: people.enrich
+  name: Find a person's work email and phone by LinkedIn or name
+  summary: Enrich a person — work email, direct dial and mobile — from email, LinkedIn
+    or name
+  method: POST
+  path: /v3/contacts/search-and-enrich
+  input:
+    bodyType: json
+    body:
+      contacts:
+        type: array[object]
+        required: true
+        note: the people to look up, each identified by email, linkedinUrl, or firstName
+          + lastName + companyName|companyDomain
+      reveal:
+        type: array[string]
+        required: false
+        note: 'which datapoints to unlock: emails, phones, or both — EACH REVEALED
+          DATAPOINT IS BILLED, so ask only for what you need'
+      waterfallReveal:
+        type: array[string]
+        required: false
+        note: datapoints Lusha may fall through to third-party providers for when
+          its own data misses; costs more
+    note: the v3 replacement for the old GET /v2/person. Lusha's differentiator is
+      verified DIRECT-DIAL and MOBILE numbers, not just emails — which is also why
+      phones cost more than emails
+  docs_url: https://docs.lusha.com/apis/openapi/enrichment
+  cost:
+    type: per_result
+    value: 2
+    currency: credit
+    per: 1
+    unit: result
+    source: rate_card_api
+    source_url: https://www.lusha.com/pricing/
+    checked: '2026-08-13'
+    confidence: verified
+    note: 'VERIFIED live 2026-08-13. The live rate card (GET /v3/account/usage.pricing)
+      prices contactSearch at 1 credit per 25 results and revealEmail at 1 per 1,
+      so a fresh single-contact email enrich = 1 search + 1 reveal = 2 credits — confirmed
+      by a fresh match reporting billing.creditsCharged 2 (resultsReturned 1). A phone
+      reveal is +5 (revealPhone 5 per 1), an email +1. A contact Lusha cannot match
+      is free (billing.creditsCharged 0, re-observed 2026-08-13). CAVEAT: re-revealing
+      a contact already revealed to this account recently is discounted (an immediate
+      repeat charged 1, not 2); value 2 is the fresh/upper-bound cost.'
+- id: lusha.people.search
+  capability: people.search
+  name: Search people by title, company or intent (free preview)
+  summary: Search Lusha's contacts by title, seniority, company, location or intent
+    (free preview)
+  method: POST
+  path: /v3/contacts/prospecting
+  input:
+    bodyType: json
+    body:
+      pages:
+        type: object
+        required: true
+        note: '{page: <0-based>, size: <up to 40>} — keep size small'
+      filters:
+        type: object
+        required: true
+        note: 'nested contact and company filters: job titles, seniority, departments,
+          locations, company size, revenue, industry, technologies, intent topics
+          and signals. GET /v3/contacts/prospecting/filters/{filterType} enumerates
+          the accepted values for each filter'
+    note: 'returns a requestId plus contact ids and NON-PII previews — this step is
+      free. Feed the ids to lusha.people.contacts.enrich to spend credits only on
+      the ones worth revealing. CORRECTED at verify time: the pagination field is
+      `pagination` (min size 10), not `pages`, and it DOES consume 1 credit (contactSearch,
+      per 25 results) despite the docs prose calling it a ''free preview'' — see cost
+      block below.'
+  docs_url: https://docs.lusha.com/apis/openapi/prospecting-search-and-enrich
+  cost:
+    type: per_result
+    value: 1
+    currency: credit
+    per: 25
+    unit: result
+    source: observed
+    checked: '2026-07-31'
+    confidence: verified
+    note: 'OBSERVED live 2026-07-28: billing.creditsCharged 1 for 10 results — 1 credit
+      per up to 25 results (pricing.contactSearch), NOT free as the prose on this
+      endpoint''s docs page claims. Re-confirmed 2026-07-31 against the live rate
+      card (contactSearch: {credits: 1, perQuantity: 25}). Verify against GET /v3/account/usage.pricing
+      before trusting the docs text on any Lusha endpoint'
+- id: lusha.companies.enrich
+  capability: companies.enrich
+  name: Enrich a company by domain or name — headcount, funding
+  summary: Enrich a company from domain or name — industry, headcount, revenue, funding,
+    tech
+  method: POST
+  path: /v3/companies/search-and-enrich
+  input:
+    bodyType: json
+    body:
+      companies:
+        type: array[object]
+        required: true
+        note: the companies to look up, each identified by domain (preferred), name,
+          or Lusha company id
+    note: the v3 replacement for the old GET /v2/company. Pass domains rather than
+      names wherever you have them — a name alone is ambiguous. POST /v3/companies/enrich
+      takes companyIds (max 100) when you already hold ids from a prospecting search
+  docs_url: https://docs.lusha.com/apis/openapi/company-search-and-enrich
+  cost:
+    type: per_success
+    value: 2
+    currency: credit
+    per: 1
+    unit: call
+    source: observed
+    source_url: https://www.lusha.com/pricing/
+    checked: '2026-07-31'
+    confidence: verified
+    note: 'TWO credits per company record returned, not one. OBSERVED live 2026-07-31:
+      one domain in, one result out, billing.creditsCharged 2. The rate card lists
+      revealCompany at 1 per 1, so search-and-enrich evidently bills the search (companySearch)
+      AND the reveal — which means the rate card UNDER-STATES this route by half,
+      and the two-step path (prospecting, then POST /v3/companies/enrich on the ids
+      you keep) is the cheaper one when you already hold ids. A no-match is free,
+      as on the contact side.'
+- id: lusha.companies.search
+  capability: companies.search
+  name: Search companies by industry or tech (free preview)
+  summary: Search Lusha's companies by industry, headcount, revenue or tech (free
+    preview)
+  method: POST
+  path: /v3/companies/prospecting
+  input:
+    bodyType: json
+    body:
+      pages:
+        type: object
+        required: true
+        note: '{page: <0-based>, size: <up to 40>}'
+      filters:
+        type: object
+        required: true
+        note: company filters — industry, size, revenue, location, technologies, signals.
+          GET /v3/companies/prospecting/filters/{filterType} enumerates the accepted
+          values
+    note: 'same two-step shape as the contact side: free ids and previews here, credits
+      spent by POST /v3/companies/enrich on the ids you keep. CORRECTED at verify
+      time: pagination field is `pagination` (min size 10) not `pages`; filters.companies.include
+      has no `industries` key (real fields per the OpenAPI schema: domains, names,
+      ids, sizes, revenues, mainIndustriesIds, technologies, locations, sicCodes,
+      naicsCodes, signals). It ALSO consumes 1 credit like the contact side (companySearch)
+      despite being called free preview in the prose.'
+  docs_url: https://docs.lusha.com/apis/openapi/prospecting-search-and-enrich/searchprospectingcompanies
+  cost:
+    type: per_result
+    value: 1
+    currency: credit
+    per: 25
+    unit: result
+    source: observed
+    checked: '2026-07-31'
+    confidence: verified
+    note: 'OBSERVED live 2026-07-28: billing.creditsCharged 1 for 1 result — 1 credit
+      per up to 25 results (pricing.companySearch), not free as the docs prose claims.
+      Re-confirmed 2026-07-31 against the live rate card (companySearch: {credits:
+      1, perQuantity: 25}), so a size=10 page and a size=25 page cost the same: page
+      in 25s'
+- id: lusha.x.contacts-prospecting-filters
+  capability: lusha.tools
+  name: List contact filter values
+  summary: Enumerate the accepted values for one contact-prospecting filter type (job
+    titles, seniority, departments, locations, etc.)
+  method: GET
+  path: /v3/contacts/prospecting/filters/{filterType}
+  input:
+    pathParams:
+      filterType:
+        type: string
+        required: true
+        note: 'which filter''s accepted values to list. CORRECTED at verify time from
+          the real OpenAPI bundle (https://docs.lusha.com/_bundle/apis/@v3/openapi.yaml,
+          unreachable from the client-rendered reference pages): the enum is departments
+          | seniority | existingDataPoints | countries | locations (locations additionally
+          requires a `query` param)'
+    note: companion to POST /v3/contacts/prospecting — call this first to know what
+      to pass into filters.contacts.include/exclude
+  docs_url: https://docs.lusha.com/apis/openapi/prospecting-search-and-enrich
+  tier: extended
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    source: observed
+    source_url: https://api.lusha.com/v3/account/usage
+    checked: '2026-08-07'
+    note: measured on our own account — called it twice and credits.used did not move
+      (24 -> 24); only the request rate-limit counter advanced. Filter enumeration
+      is metadata, not data
+  tool: true
+- id: lusha.x.companies-prospecting-filters
+  capability: lusha.tools
+  name: List company filter values
+  summary: Enumerate the accepted values for one company-prospecting filter type (industry,
+    size, revenue, technologies, intent topics, etc.)
+  method: GET
+  path: /v3/companies/prospecting/filters/{filterType}
+  input:
+    pathParams:
+      filterType:
+        type: string
+        required: true
+        note: 'CORRECTED at verify time from the real OpenAPI bundle: enum is names
+          | sizes | revenues | locations | sics | naics | industriesLabels | intentTopics
+          | technologies (names/technologies/locations additionally require a `query`
+          param)'
+    note: companion to POST /v3/companies/prospecting
+  docs_url: https://docs.lusha.com/apis/openapi/company-filters
+  tier: extended
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    source: observed
+    source_url: https://api.lusha.com/v3/account/usage
+    checked: '2026-08-07'
+    note: measured on our own account — called it twice and credits.used did not move
+      (24 -> 24); only the request rate-limit counter advanced. Filter enumeration
+      is metadata, not data
+  tool: true
+- id: lusha.x.companies-enrich-by-id
+  capability: lusha.tools
+  name: Enrich companies by Lusha id (up to 100)
+  summary: Enrich companies you already found in a prospecting search, by ids (max
+    100), into full firmographic records
+  method: POST
+  path: /v3/companies/enrich
+  input:
+    bodyType: json
+    body:
+      ids:
+        type: array[string]
+        required: true
+        note: '1-100 Lusha company ids from a prior prospecting search — CORRECTED
+          at verify time: the field is `ids`, not `companyIds` as the doc prose paraphrases
+          it'
+      tableId:
+        type: string
+        required: false
+        note: persist results into a Lusha Table
+    note: the id-based sibling of lusha.companies.enrich (which takes domain/name);
+      use this once you already hold ids from POST /v3/companies/prospecting
+  docs_url: https://docs.lusha.com/apis/openapi/company-search-and-enrich
+  tier: extended
+  cost:
+    type: per_result
+    value: 1
+    currency: credit
+    per: 1
+    unit: result
+    source: docs
+    source_url: https://www.lusha.com/pricing/
+    checked: '2026-07-28'
+    confidence: documented
+    note: billed on the reveal_company action per company returned; a no-match is
+      free. Lusha does not publish the numeric credit cost — read GET /v3/account/usage.pricing
+      for the calling plan's actual number.
+  tool: true
+- id: lusha.x.contacts-lookalike
+  capability: people.lookalike
+  name: Find lookalike contacts from 5-100 seed contacts
+  summary: AI-powered recommendations for contacts who share similar roles, seniority
+    and company profile to 5-100 seed contacts
+  method: POST
+  path: /v3/contacts/lookalike
+  input:
+    bodyType: json
+    body:
+      seeds:
+        type: object
+        required: true
+        note: 'CORRECTED at verify time from the real OpenAPI bundle: seeds is a single
+          object {linkedinUrls, contacts, emails, ids}, NOT an array of per-seed objects.
+          Combined items across the sub-arrays must total 5-100'
+      exclude:
+        type: object
+        required: false
+        note: same ContactIdentifiersBatch shape as seeds
+      dedupeSessionId:
+        type: string
+        required: false
+        note: omit on the first call — Lusha generates one and returns it; reuse it
+          for 'get more' pagination (retained 30 days)
+      limit:
+        type: integer
+        required: false
+        note: 1-100, default 25
+      tableId:
+        type: string
+        required: false
+        note: persist results into a Lusha Table
+    note: returns lightweight previews; call lusha.people.contacts.enrich on the returned
+      ids for full details
+  docs_url: https://docs.lusha.com/apis/openapi/lookalikes
+  tier: extended
+  cost:
+    type: per_result
+    value: 1
+    currency: credit
+    per: 1
+    unit: result
+    source: observed
+    checked: '2026-07-28'
+    confidence: verified
+    note: 'OBSERVED live 2026-07-28: 1 credit for 1 returned result (lookalikeContact,
+      perQuantity 5 per account/usage pricing)'
+  tool: true
+- id: lusha.x.companies-lookalike
+  capability: lusha.tools
+  name: Find lookalike companies from 5-100 seed companies
+  summary: AI-powered recommendations for companies of similar size, industry and
+    profile to 5-100 seed companies
+  method: POST
+  path: /v3/companies/lookalike
+  input:
+    bodyType: json
+    body:
+      seeds:
+        type: object
+        required: true
+        note: 'CORRECTED at verify time: seeds is a single object {domains, linkedinUrls},
+          NOT an array of per-seed objects. Combined items must total 5-100'
+      exclude:
+        type: object
+        required: false
+        note: same CompanyIdentifiersBatch shape as seeds
+      dedupeSessionId:
+        type: string
+        required: false
+        note: omit on the first call; reuse the returned id for 'get more' pagination
+          (retained 30 days)
+      limit:
+        type: integer
+        required: false
+        note: 1-100, default 25
+      tableId:
+        type: string
+        required: false
+        note: persist results into a Lusha Table
+    note: returns lightweight previews; call lusha.companies.enrich / lusha.x.companies-enrich-by-id
+      on the returned ids for full details
+  docs_url: https://docs.lusha.com/apis/openapi/lookalikes
+  tier: extended
+  cost:
+    type: per_result
+    value: 1
+    currency: credit
+    per: 1
+    unit: result
+    source: observed
+    checked: '2026-07-28'
+    confidence: verified
+    note: 'OBSERVED live 2026-07-28: 1 credit for 1 returned result (lookalikeCompany,
+      perQuantity 5 per account/usage pricing)'
+  tool: true
+- id: lusha.x.contacts-signals
+  capability: people.signals
+  name: Job-change and promotion signals for contact ids
+  summary: Retrieve signal events for a list of contacts — job changes and promotions
+  method: POST
+  path: /v3/contacts/signals
+  input:
+    bodyType: json
+    body:
+      contactIds:
+        type: array[string]
+        required: true
+        note: up to 100 Lusha contact ids
+      signalTypes:
+        type: array[string]
+        required: false
+        note: promotion | companyChange | allSignals
+      startDate:
+        type: string
+        required: false
+        note: ISO date; only signals on/after this date
+      tableId:
+        type: string
+        required: false
+        note: persist results into a Lusha Table's Signals column
+    note: standalone alternative to the signals filter on the search/prospecting endpoints
+  docs_url: https://docs.lusha.com/apis/openapi/signals
+  tier: extended
+  cost:
+    type: per_result
+    value: 1
+    currency: credit
+    per: 1
+    unit: result
+    source: docs
+    source_url: https://www.lusha.com/pricing/
+    checked: '2026-07-28'
+    confidence: documented
+    note: billed on the showSignalsContact action per matched signal. Lusha does not
+      publish the numeric credit cost — read GET /v3/account/usage.pricing for the
+      calling plan's actual number.
+  tool: true
+- id: lusha.x.companies-signals
+  capability: lusha.tools
+  name: Hiring and headcount signals for company ids
+  summary: Retrieve signal events for a list of companies — hiring activity, headcount
+    changes, web traffic, IT spend and news
+  method: POST
+  path: /v3/companies/signals
+  input:
+    bodyType: json
+    body:
+      companyIds:
+        type: array[string]
+        required: true
+        note: up to 100 Lusha company ids
+      signalTypes:
+        type: array[string]
+        required: false
+        note: e.g. headcountIncrease1m, surgeInHiring, websiteTrafficIncrease, itSpendIncrease,
+          riskNews, allSignals — see lusha.x.company-signal-types
+      startDate:
+        type: string
+        required: false
+        note: ISO date; only signals on/after this date
+      tableId:
+        type: string
+        required: false
+        note: persist results into a Lusha Table's Signals column
+    note: standalone alternative to the signals filter on the search/prospecting endpoints
+  docs_url: https://docs.lusha.com/apis/openapi/signals
+  tier: extended
+  cost:
+    type: per_result
+    value: 1
+    currency: credit
+    per: 1
+    unit: result
+    source: docs
+    source_url: https://www.lusha.com/pricing/
+    checked: '2026-07-28'
+    confidence: documented
+    note: billed on the showSignalsCompany action per matched signal. Lusha does not
+      publish the numeric credit cost — read GET /v3/account/usage.pricing for the
+      calling plan's actual number.
+  tool: true
+- id: lusha.x.contact-signal-types
+  capability: lusha.tools
+  name: List supported contact signal types
+  summary: Returns the list of supported contact signal types (promotion, companyChange,
+    allSignals)
+  method: GET
+  path: /v3/contacts/signals/types
+  input:
+    note: no parameters
+  docs_url: https://docs.lusha.com/apis/openapi/signals
+  tier: extended
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    note: type/filter discovery endpoint; not billed
+  tool: true
+- id: lusha.x.company-signal-types
+  capability: lusha.tools
+  name: List supported company signal types
+  summary: Returns the list of supported company signal types (headcount changes,
+    hiring surges, website traffic, IT spend, news categories)
+  method: GET
+  path: /v3/companies/signals/types
+  input:
+    note: no parameters
+  docs_url: https://docs.lusha.com/apis/openapi/signals
+  tier: extended
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    note: type/filter discovery endpoint; not billed
+  tool: true
+- id: lusha.x.company-signal-filters
+  capability: lusha.tools
+  name: List the filter types available for company signals
+  summary: Returns the available filter types for company signals and their query
+    requirements
+  method: GET
+  path: /v3/companies/signals/filters
+  input:
+    note: no parameters
+  docs_url: https://docs.lusha.com/apis/openapi/signals
+  tier: extended
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    note: filter discovery endpoint; not billed
+  tool: true
+- id: lusha.x.company-signal-filter-values
+  capability: lusha.tools
+  name: List accepted values for one company signal filter
+  summary: Returns the valid values for a specific company-signals filter type
+  method: GET
+  path: /v3/companies/signals/filters/{filterType}
+  input:
+    pathParams:
+      filterType:
+        type: string
+        required: true
+        note: one of the filter type names returned by GET /v3/companies/signals/filters
+  docs_url: https://docs.lusha.com/apis/openapi/signals
+  tier: extended
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    note: filter discovery endpoint; not billed
+  tool: true
+- id: lusha.x.decision-makers
+  capability: people.decision_makers
+  name: Find the buying-committee contacts at a company
+  summary: Resolve a company to a Lusha company id, rank the most relevant decision
+    makers with the buying-committee-ranker model, and return them grouped per company
+  method: POST
+  path: /v3/contacts/decision-makers
+  input:
+    bodyType: json
+    body:
+      companies:
+        type: array[object]
+        required: true
+        note: each entry needs exactly one of domain (resolved server-side) or id
+          (encrypted vN.… Lusha company id; legacy numeric ids also accepted during
+          transition)
+    note: returns free previews (name, title, company, location, LinkedIn, seniority,
+      department); call the contacts enrich endpoint on the returned ids for emails/phones
+  docs_url: https://docs.lusha.com/apis/openapi/decision-makers
+  tier: extended
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    note: previews are free; only a subsequent enrich call on the returned contact
+      ids is billed
+  tool: true
+- id: lusha.x.companies-website-visits
+  capability: lusha.tools
+  name: Rank companies by website-visit signals
+  summary: Returns companies ranked by website-visit signals for your tracked domains,
+    combining firmographics with visit metrics (score, sessions, unique visitors,
+    avg session length)
+  method: POST
+  path: /v3/companies/website-visits
+  input:
+    bodyType: json
+    body:
+      domains:
+        type: array[string]
+        required: true
+        note: must already be configured for visitor tracking in the Lusha dashboard
+          — an untracked domain 400s
+      dateRange:
+        type: object
+        required: false
+        note: start/end dates; span limited to <= 3 months
+      limit:
+        type: integer
+        required: false
+        note: 1-150
+    note: 'account-specific: the domains must be pre-configured as tracked sites in
+      the caller''s own Lusha dashboard, which no bare key can do'
+  docs_url: https://docs.lusha.com/apis/openapi/website-visits
+  tier: extended
+  cost:
+    type: per_call
+    value: null
+    currency: USD
+    unit: call
+    source: observed
+    checked: '2026-08-07'
+    confidence: unknown
+    note: NOT on our plan — the API answers "Website Visits is not available on your
+      current plan", so there is no rate to record and treg cannot serve it on our
+      key
+  tool: true
+- id: lusha.x.webhook-subscriptions-list
+  capability: lusha.tools
+  name: List webhook subscriptions
+  summary: List all webhook subscriptions on the account, with pagination
+  method: GET
+  path: /api/subscriptions
+  input:
+    note: no required parameters
+  docs_url: https://docs.lusha.com/apis/openapi/webhooks/listsubscriptions
+  tier: extended
+  tool: true
+- id: lusha.x.webhook-subscriptions-create
+  capability: lusha.tools
+  name: Create webhook subscriptions
+  summary: Create one or more webhook subscriptions (bulk, up to 25 per request) that
+    deliver signal events to your endpoint
+  method: POST
+  path: /api/subscriptions
+  input:
+    bodyType: json
+    body:
+      defaults:
+        type: object
+        required: false
+        note: shared entityType/signalTypes/url applied to every subscription entry
+          that omits its own
+      subscriptions:
+        type: array[object]
+        required: true
+        note: up to 25 per request; each needs entityId (a real contact or company
+          id owned by this account) plus name; entityType/signalTypes/url come from
+          `defaults` unless overridden per entry
+    note: deliveries are signed with HMAC-SHA256 (X-Lusha-Signature, X-Lusha-Timestamp)
+      and must be acknowledged within 10s with a 2xx + {received, timestamp, webhookId}
+      body. NOT free-standing — each subscription is bound to one entityId, so it
+      needs a real contact/company id on hand (e.g. from lusha.companies.search)
+  docs_url: https://docs.lusha.com/apis/openapi/webhooks
+  tier: extended
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    note: webhook management is not metered against the data-credit balance
+  tool: true
+- id: lusha.x.webhook-subscription-get
+  capability: lusha.tools
+  name: Get a webhook subscription by id
+  summary: Retrieve a single webhook subscription by its id
+  method: GET
+  path: /api/subscriptions/{id}
+  input:
+    pathParams:
+      id:
+        type: string
+        required: true
+        note: a subscription id returned by create/list
+  docs_url: https://docs.lusha.com/apis/openapi/webhooks
+  tier: extended
+  tool: true
+- id: lusha.x.webhook-subscription-update
+  capability: lusha.tools
+  name: Update a webhook subscription
+  summary: Modify an existing webhook subscription's settings
+  method: PATCH
+  path: /api/subscriptions/{id}
+  input:
+    pathParams:
+      id:
+        type: string
+        required: true
+        note: a subscription id returned by create/list
+    bodyType: json
+    body:
+      note:
+        type: object
+        required: false
+        note: partial update of the subscription's target/URL/signal-type fields
+  docs_url: https://docs.lusha.com/apis/openapi/webhooks
+  tier: extended
+  tool: true
+- id: lusha.x.webhook-subscriptions-delete
+  capability: lusha.tools
+  name: Delete webhook subscriptions
+  summary: Delete one or more webhook subscriptions (bulk); each id is processed independently
+    with per-item results, invalid ids reported as NOT_FOUND. Permanent.
+  method: POST
+  path: /api/subscriptions/delete
+  input:
+    bodyType: json
+    body:
+      ids:
+        type: array[string]
+        required: true
+        note: subscription ids to delete; duplicates deduped
+    note: 'idempotent and safe to probe blind: an id that does not exist is reported
+      per-item as NOT_FOUND inside a 200, not an error, which is what the test_request
+      below deliberately exercises'
+  docs_url: https://docs.lusha.com/apis/openapi/webhooks
+  tier: extended
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    note: webhook management is not metered against the data-credit balance
+  tool: true
+- id: lusha.x.webhook-subscription-test
+  capability: lusha.tools
+  name: Send a test delivery to a webhook subscription
+  summary: Trigger a mock signal delivery to a subscription to verify the endpoint
+    receives and acknowledges it correctly
+  method: POST
+  path: /api/subscriptions/{id}/test
+  input:
+    pathParams:
+      id:
+        type: string
+        required: true
+        note: a subscription id returned by create/list
+  docs_url: https://docs.lusha.com/apis/openapi/webhooks
+  tier: extended
+  tool: true
+- id: lusha.x.webhook-audit-logs
+  capability: lusha.tools
+  name: View webhook delivery attempt logs
+  summary: Read the delivery attempt log for the account's webhook subscriptions —
+    status, response time, error details
+  method: GET
+  path: /api/audit-logs
+  input:
+    note: success logs retained 90 days, failures 180 days
+  docs_url: https://docs.lusha.com/apis/openapi/webhooks
+  tier: extended
+  tool: true
+- id: lusha.x.webhook-audit-log-stats
+  capability: lusha.tools
+  name: Get webhook delivery performance stats
+  summary: Obtain delivery performance statistics for the account's webhook subscriptions
+  method: GET
+  path: /api/audit-logs/stats
+  input:
+    note: no required parameters
+  docs_url: https://docs.lusha.com/apis/openapi/webhooks
+  tier: extended
+  tool: true
+- id: lusha.x.webhook-secret-get
+  capability: lusha.tools
+  name: Get the current webhook signing secret
+  summary: Fetch the current HMAC-SHA256 signing secret used to sign webhook deliveries
+  method: GET
+  path: /api/account/secret
+  input:
+    note: no required parameters
+  docs_url: https://docs.lusha.com/apis/openapi/webhooks
+  tier: extended
+  tool: true
+- id: lusha.x.webhook-secret-regenerate
+  capability: lusha.tools
+  name: Regenerate the webhook signing secret
+  summary: Generate a new HMAC-SHA256 signing secret, invalidating the previous one
+    for signature verification
+  method: POST
+  path: /api/account/secret/regenerate
+  input:
+    note: no parameters; destructive — invalidates the current secret immediately
+  docs_url: https://docs.lusha.com/apis/openapi/webhooks
+  tier: extended
+  tool: true
+- id: lusha.x.webhook-opt-out-subscribe
+  capability: lusha.tools
+  name: Subscribe to contact opt-out notifications
+  summary: Subscribe to notifications when a contact opts out, including which datapoints
+    (emails/phones) must be deleted on your side
+  method: POST
+  path: /api/subscriptions/opt-out
+  input:
+    note: same subscription shape as the signal webhooks (target URL, HTTPS required
+      in production)
+  docs_url: https://docs.lusha.com/apis/openapi/webhooks
+  tier: extended
+  tool: true
+- id: lusha.people.contacts.enrich
+  capability: people.enrich
+  name: Reveal emails and phone numbers for found contact ids
+  summary: Reveal emails and phone numbers for contacts you already found in a prospecting
+    search
+  method: POST
+  path: /v3/contacts/enrich
+  input:
+    bodyType: json
+    body:
+      ids:
+        type: array[string]
+        required: true
+        note: '1-100 ids from a prospecting search — CORRECTED at verify time: the
+          field is `ids`, not `contactIds` as the doc prose paraphrases it. Each revealed
+          datapoint is billed, so send only the ids you want'
+      reveal:
+        type: array[string]
+        required: false
+        note: emails | phones | both — the price dial
+      waterfallReveal:
+        type: array[string]
+        required: false
+        note: subset of `reveal` Lusha may source from third-party providers when
+          its own data misses
+      tableId:
+        type: string
+        required: false
+        note: persist the results into a Lusha Table
+    note: 'the paid half of the prospecting flow, and the endpoint that makes Lusha''s
+      pricing legible: cost scales with ids x datapoints revealed'
+  docs_url: https://docs.lusha.com/apis/openapi/enrichment
+  cost:
+    type: per_result
+    value: 1
+    currency: credit
+    per: 1
+    unit: result
+    source: observed
+    source_url: https://www.lusha.com/pricing/
+    checked: '2026-07-31'
+    confidence: verified
+    note: 'billed per revealed datapoint across the batch, email and phone charged
+      separately. OBSERVED live 2026-07-28: revealing the email of one id reported
+      billing.creditsCharged 1. A PHONE COSTS FIVE TIMES THAT — the live rate card
+      (GET /v3/account/usage.pricing) gives revealEmail 1 per 1 and revealPhone 5
+      per 1, re-read 2026-07-31, so `reveal: ["phones"]` on a 100-id batch is a 500-credit
+      call. Unlike the search-and-enrich routes this one charges the reveal only,
+      because the search was already paid for by the prospecting call.'
+  tool: true
+- id: lusha.account.usage
+  capability: account.usage
+  name: Check account credit balance and usage
+  summary: See the Lusha plan's credit balance, usage so far and reset date (free)
+  method: GET
+  path: /v3/account/usage
+  input:
+    note: no parameters — the key rides in the api_key header. Returns credits {total,
+      used, remaining}, rateLimits (daily/hourly/minute), the plan, AND a `pricing`
+      object giving the per-action credit cost for this plan — the authoritative source
+      for what the other five endpoints cost. Call it before budgeting a batch. Rate-limited
+      to 5 req/min; Lusha's migration guide also writes the route unversioned as /account/usage
+  docs_url: https://docs.lusha.com/apis/openapi/account-usage-api/get-account-usage
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+    note: 'explicitly free — consumes no credits (observed: the balance was unchanged
+      across calls on 2026-07-31). Rate limit 5 req/min'
+  tool: true

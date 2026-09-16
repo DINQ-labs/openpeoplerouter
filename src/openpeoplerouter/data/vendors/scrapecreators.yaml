@@ -1,0 +1,5599 @@
+vendor: scrapecreators
+name: ScrapeCreators
+base_url: https://api.scrapecreators.com
+auth:
+  kind: header
+  name: x-api-key
+  format: '{secret}'
+  credential: SCRAPECREATORS_API_KEY
+docs: https://scrapecreators.com
+endpoints:
+- id: scrapecreators.x.v1-instagram-basic-profile
+  capability: social.profile
+  name: Instagram basic profile by user id — bio, followers
+  summary: Fetches a lightweight Instagram profile summary by user ID, returning username,
+    full name, biography, profile picture URL, verification status, follower count,
+    following count, media count, and account privacy and type.
+  method: GET
+  path: /v1/instagram/basic-profile
+  provides:
+  - instagram
+  input:
+    queryParams:
+      userId:
+        type: string
+        required: false
+        note: Instagram user id
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/instagram/basic-profile
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+- id: scrapecreators.tiktok.user.profile
+  capability: social.profile
+  name: TikTok user profile by username or id — bio, stats
+  summary: Fetches public profile data for a TikTok user by their handle or user_id
+    — useful for looking up a creator's identity, bio, and account stats.
+  method: GET
+  path: /v1/tiktok/profile
+  provides:
+  - tiktok
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: false
+        note: TikTok handle. You can pass handle or user_id.
+      user_id:
+        type: string
+        required: false
+        note: TikTok user id.
+    note: one of handle | user_id
+  docs_url: https://docs.scrapecreators.com/tiktok/profile
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+- id: scrapecreators.instagram.user.profile
+  capability: social.profile
+  name: Instagram profile by username — bio, followers, links
+  summary: Retrieves comprehensive public Instagram profile information including
+    biography, bio links, follower and following counts, verification status, and
+    profile picture URLs.
+  method: GET
+  path: /v1/instagram/profile
+  provides:
+  - instagram
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: Instagram handle
+  docs_url: https://docs.scrapecreators.com/instagram/profile
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+- id: scrapecreators.x.user.profile
+  capability: social.profile
+  name: X (Twitter) profile by username — account stats
+  summary: Retrieves a Twitter user's profile by handle, including account metadata
+    and statistics.
+  method: GET
+  path: /v1/twitter/profile
+  provides:
+  - x
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: Twitter handle
+  docs_url: https://docs.scrapecreators.com/twitter/profile
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+- id: scrapecreators.x.v1-facebook-profile
+  capability: social.profile
+  name: Facebook page profile by URL — contact info, followers
+  summary: Retrieves public Facebook page details including category, address, email,
+    phone, website, services, priceRange, rating, likeCount, and followerCount.
+  method: GET
+  path: /v1/facebook/profile
+  provides:
+  - facebook
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Facebook profile URL
+      get_business_hours:
+        type: string
+        required: false
+        note: Get the business's hours
+      include_gated_profile:
+        type: string
+        required: false
+        note: When true, returns limited public fields for gated or age-restricted
+          profiles. Ignored for normal public profiles — those still return the full
+          response.
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  latency: 1-5 s
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  docs_url: https://docs.scrapecreators.com/facebook/profile
+- id: scrapecreators.youtube.channel.profile
+  capability: social.profile
+  name: YouTube channel profile by id or username — subscribers
+  summary: Retrieves comprehensive YouTube channel profile data including name, avatar
+    images, subscriber count, total video and view counts, join date, tags, and linked
+    social accounts.
+  method: GET
+  path: /v1/youtube/channel
+  provides:
+  - youtube
+  input:
+    queryParams:
+      channelId:
+        type: string
+        required: false
+        note: YouTube channel ID. Can pass a channelId, handle or url
+      handle:
+        type: string
+        required: false
+        note: YouTube channel handle. Can pass a channelId, handle or url
+      url:
+        type: string
+        required: false
+        note: YouTube channel URL. Can pass a channelId, handle or url
+    note: one of channelId | handle | url
+  latency: 1-5 s
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  docs_url: https://docs.scrapecreators.com/youtube/channel
+- id: scrapecreators.x.v1-account-get-api-usage
+  capability: scrapecreators.tools
+  name: List account request history
+  summary: Returns a paginated list of your API requests, including the endpoint called,
+    status code, credits used, and timestamp.
+  method: GET
+  path: /v1/account/get-api-usage
+  input:
+    queryParams:
+      page:
+        type: string
+        required: false
+        note: Page number for pagination (max 100)
+      endpoint:
+        type: string
+        required: false
+        note: Filter by endpoint name (partial match)
+      statusCode:
+        type: string
+        required: false
+        note: Filter by HTTP status code
+  docs_url: https://docs.scrapecreators.com/account/get-api-usage
+  tier: extended
+  tool: true
+- id: scrapecreators.x.v1-account-get-daily-usage-count
+  capability: scrapecreators.tools
+  name: List account daily usage
+  summary: Returns aggregated daily usage statistics for the last 30 days, including
+    total credits consumed and number of requests per day.
+  method: GET
+  path: /v1/account/get-daily-usage-count
+  docs_url: https://docs.scrapecreators.com/account/get-daily-usage-count
+  tier: extended
+  tool: true
+- id: scrapecreators.x.v1-account-get-most-used-routes
+  capability: scrapecreators.tools
+  name: List account most used routes
+  summary: Returns your top 20 most called API endpoints ranked by call count, along
+    with total credits consumed per endpoint.
+  method: GET
+  path: /v1/account/get-most-used-routes
+  input:
+    queryParams:
+      start_time:
+        type: string
+        required: false
+        note: Start of time range (ISO 8601 format)
+      end_time:
+        type: string
+        required: false
+        note: End of time range (ISO 8601 format)
+  docs_url: https://docs.scrapecreators.com/account/get-most-used-routes
+  tier: extended
+  tool: true
+- id: scrapecreators.x.v1-amazon-shop
+  capability: scrapecreators.tools
+  name: Amazon Shop storefront by URL — profile, products
+  summary: Scrapes a creator's Amazon Shop page by URL, returning their storefront
+    profile and product collections.
+  method: GET
+  path: /v1/amazon/shop
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: URL to Amazon Shop page
+  docs_url: https://docs.scrapecreators.com/amazon/shop
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-apple-music-album
+  capability: scrapecreators.tools
+  name: Apple Music album by id or URL — tracks, release info
+  summary: Retrieves public Apple Music album details, including title, artist, artwork,
+    release info, tracks, and more by the artist.
+  method: GET
+  path: /v1/apple-music/album
+  input:
+    queryParams:
+      id:
+        type: string
+        required: false
+        note: Apple Music album id. If you'd prefer to use the URL instead, you can
+          use the url parameter instead.
+      url:
+        type: string
+        required: false
+        note: Apple Music album URL. If you'd prefer to use the id instead, you can
+          use the id parameter instead.
+  docs_url: https://docs.scrapecreators.com/apple-music/album
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-apple-music-artist
+  capability: scrapecreators.tools
+  name: Apple Music artist by id or URL — top songs, albums
+  summary: Retrieves public Apple Music artist details, including artwork, editorial
+    notes, top songs, albums, music videos, playlists, and related sections.
+  method: GET
+  path: /v1/apple-music/artist
+  input:
+    queryParams:
+      id:
+        type: string
+        required: false
+        note: Apple Music artist id. If you'd prefer to use the URL instead, you can
+          use the url parameter instead.
+      url:
+        type: string
+        required: false
+        note: Apple Music artist URL. If you'd prefer to use the id instead, you can
+          use the id parameter instead.
+  docs_url: https://docs.scrapecreators.com/apple-music/artist
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-apple-music-search
+  capability: scrapecreators.tools
+  name: Search Apple Music by keyword — songs, artists, albums
+  summary: Searches Apple Music and returns public result sections for artists, albums,
+    songs, playlists, stations, and music videos.
+  method: GET
+  path: /v1/apple-music/search
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Search query
+      type:
+        type: string
+        required: false
+        note: Result type to return. Use all, song, album, artist, playlist, station,
+          music_video, or radio_episode.
+  docs_url: https://docs.scrapecreators.com/apple-music/search
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-apple-music-track
+  capability: scrapecreators.tools
+  name: Apple Music track by id or URL — song details
+  summary: Retrieves public Apple Music song details by id or URL.
+  method: GET
+  path: /v1/apple-music/track
+  input:
+    queryParams:
+      id:
+        type: string
+        required: false
+        note: Apple Music song id. Some songs have standalone song URLs; for album
+          tracks, use the url parameter.
+      url:
+        type: string
+        required: false
+        note: Apple Music song URL or album track URL.
+  docs_url: https://docs.scrapecreators.com/apple-music/track
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-bluesky-post
+  capability: bluesky.post.detail
+  name: Bluesky post by URL — text, author, engagement counts
+  summary: Fetches a single Bluesky post by URL, returning the post's record text,
+    author info, embed content, replyCount, repostCount, likeCount, and quoteCount.
+  method: GET
+  path: /v1/bluesky/post
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Bluesky post URL
+  docs_url: https://docs.scrapecreators.com/bluesky/post
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-bluesky-profile
+  capability: bluesky.user.profile
+  name: Bluesky profile by username — bio, follower counts
+  summary: Retrieves a Bluesky user's public profile including handle, displayName,
+    avatar, description, followersCount, followsCount, postsCount, createdAt, and
+    verification status.
+  method: GET
+  path: /v1/bluesky/profile
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: Bluesky handle
+  docs_url: https://docs.scrapecreators.com/bluesky/profile
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-bluesky-user-posts
+  capability: bluesky.user.posts
+  name: Bluesky user posts by username — text, engagement
+  summary: Fetches a paginated feed of posts from a Bluesky user, returning each post's
+    uri, record text, author info, embed content, replyCount, repostCount, likeCount,
+    quoteCount, and indexedAt.
+  method: GET
+  path: /v1/bluesky/user/posts
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: false
+        note: Bluesky handle
+      user_id:
+        type: string
+        required: false
+        note: Bluesky 'did'. (For some reason Bluesky calls their user ids, 'did'
+          for whatever reason)
+  docs_url: https://docs.scrapecreators.com/bluesky/user/posts
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-detect-age-gender
+  capability: scrapecreators.tools
+  name: Estimate age and gender from a profile photo URL
+  summary: Uses AI to analyze a creator's profile photo and estimate their age and
+    gender.
+  method: GET
+  path: /v1/detect-age-gender
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: URL to users social profile
+  docs_url: https://docs.scrapecreators.com/detect-age-gender
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-adlibrary-ad
+  capability: scrapecreators.tools
+  name: Facebook ad library ad details by id or URL
+  summary: Retrieves detailed information about a specific Facebook ad by its ID or
+    URL.
+  method: GET
+  path: /v1/facebook/adLibrary/ad
+  input:
+    queryParams:
+      id:
+        type: string
+        required: false
+        note: Facebook Ad Id
+      url:
+        type: string
+        required: false
+        note: Facebook Ad URL
+      trim:
+        type: boolean
+        required: false
+        note: Set to true for a trimmed down version of the response
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/facebook/adLibrary/ad
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-adlibrary-ad-transcript
+  capability: scrapecreators.tools
+  name: Facebook ad library video ad transcript by id or URL
+  summary: Retrieves a transcript for a single Facebook Ad Library video ad by ID
+    or URL.
+  method: GET
+  path: /v1/facebook/adLibrary/ad/transcript
+  input:
+    queryParams:
+      id:
+        type: string
+        required: false
+        note: Facebook Ad Id
+      url:
+        type: string
+        required: false
+        note: Facebook Ad URL
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/facebook/adLibrary/ad/transcript
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-adlibrary-company-ads
+  capability: meta-ads.library.advertiser
+  name: Facebook ad library company ads by page id or name
+  summary: Fetches all ads currently running for a specific company from the Meta
+    Ad Library.
+  method: GET
+  path: /v1/facebook/adLibrary/company/ads
+  input:
+    queryParams:
+      pageId:
+        type: string
+        required: false
+        note: The companies ad library page id. You can get this with my Search For
+          Companies Endpoint. Can either use this or companyName
+      companyName:
+        type: string
+        required: false
+        note: The name of the company. Can either use this or pageId
+      country:
+        type: string
+        required: false
+        note: This can only be one country. It has to be the 2 letter code for the
+          country. It defaults to ALL.
+      status:
+        type: string
+        required: false
+        note: Status of the ad. Defaults to ACTIVE.
+      media_type:
+        type: string
+        required: false
+        note: Media type of the ad. Defaults to ALL. Meme refers to ads with image
+          and text. Not sure why they call it meme.
+      language:
+        type: string
+        required: false
+        note: Language to filter ads on. Needs to be 2 letter language code, ie EN,
+          ES, FR, etc
+      sort_by:
+        type: string
+        required: false
+        note: Sort by impressions (high to low), or Most Recent (relevancy_monthly_grouped).
+          Defaults to impressions.
+      start_date:
+        type: string
+        required: false
+        note: 'Start date to search for. Format: YYYY-MM-DD'
+      end_date:
+        type: string
+        required: false
+        note: 'End date to search for. Format: YYYY-MM-DD'
+      cursor:
+        type: string
+        required: false
+        note: Cursor to paginate through results
+      trim:
+        type: boolean
+        required: false
+        note: Set to true for a trimmed down version of the response
+  docs_url: https://docs.scrapecreators.com/facebook/adLibrary/company/ads
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-adlibrary-search-ads
+  capability: meta-ads.library.search
+  name: Search Facebook ad library ads by keyword
+  summary: Searches the Meta Ad Library by keyword and returns matching ads.
+  method: GET
+  path: /v1/facebook/adLibrary/search/ads
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Keyword to search for
+      sort_by:
+        type: string
+        required: false
+        note: Sort by impressions (high to low), or Most Recent (relevancy_monthly_grouped).
+          Defaults to impressions.
+      search_type:
+        type: string
+        required: false
+        note: If you want to search by exact phrase or not
+      ad_type:
+        type: string
+        required: false
+        note: Search for all ads or only political and issue ads
+      country:
+        type: string
+        required: false
+        note: This can only be one country. It has to be the 2 letter code for the
+          country. It defaults to ALL.
+      status:
+        type: string
+        required: false
+        note: Status of the ad. Defaults to ACTIVE.
+      media_type:
+        type: string
+        required: false
+        note: Media type of the ad. Defaults to ALL. Meme just means the ad has text
+          and an image. No clue why they call it meme.
+      start_date:
+        type: string
+        required: false
+        note: Impressions start date. Needs to be in YYYY-MM-DD format.
+      end_date:
+        type: string
+        required: false
+        note: Impressions end date. Needs to be in YYYY-MM-DD format.
+      cursor:
+        type: string
+        required: false
+        note: Cursor to paginate through results
+      trim:
+        type: boolean
+        required: false
+        note: Set to true for a trimmed down version of the response
+  docs_url: https://docs.scrapecreators.com/facebook/adLibrary/search/ads
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-adlibrary-search-companies
+  capability: scrapecreators.tools
+  name: Search Facebook ad library companies by name — page ids
+  summary: Searches for companies by name in the Meta Ad Library and returns their
+    page IDs for use with other ad library endpoints.
+  method: GET
+  path: /v1/facebook/adLibrary/search/companies
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Keyword to search for
+  docs_url: https://docs.scrapecreators.com/facebook/adLibrary/search/companies
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-event-details
+  capability: facebook.event.detail
+  name: Facebook event details by id or URL
+  summary: Get a specific event by its URL or id.
+  method: GET
+  path: /v1/facebook/event/details
+  input:
+    queryParams:
+      id:
+        type: string
+        required: false
+        note: The ID of the event
+      url:
+        type: string
+        required: false
+        note: The URL of the event
+  docs_url: https://docs.scrapecreators.com/facebook/event/details
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-events
+  capability: facebook.events.city
+  name: Facebook events for a city by URL
+  summary: Get the events of a city.
+  method: GET
+  path: /v1/facebook/events
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: The URL of the city's Facebook Events page
+      time:
+        type: string
+        required: false
+        note: The time frame to search for. Defaults to all time
+      cursor:
+        type: string
+        required: false
+        note: The cursor to paginate to the next page
+  docs_url: https://docs.scrapecreators.com/facebook/events
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-events-search
+  capability: facebook.search.events
+  name: Search Facebook events by name
+  summary: Search for events by name.
+  method: GET
+  path: /v1/facebook/events/search
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: The query to search for
+      cursor:
+        type: string
+        required: false
+        note: The cursor to paginate to the next page
+  docs_url: https://docs.scrapecreators.com/facebook/events/search
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-group
+  capability: facebook.group.info
+  name: Facebook group profile by URL or id — members, admins
+  summary: Fetches the public information shown on a Facebook group's About page,
+    including its description, privacy and visibility, member and activity counts,
+    categories, administrators and moderators when Facebook exposes them, group history,
+    and rules.
+  method: GET
+  path: /v1/facebook/group
+  input:
+    queryParams:
+      url:
+        type: string
+        required: false
+        note: The Facebook group URL. Group sub-page URLs such as /about work too.
+      group_id:
+        type: string
+        required: false
+        note: The numeric Facebook group ID. Provide this instead of url if you already
+          have it.
+  docs_url: https://docs.scrapecreators.com/facebook/group
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-group-posts
+  capability: facebook.group.posts
+  name: Facebook group posts by URL or group id
+  summary: Fetches posts from a public Facebook group, limited to 3 posts per page
+    due to API limitations.
+  method: GET
+  path: /v1/facebook/group/posts
+  input:
+    queryParams:
+      url:
+        type: string
+        required: false
+        note: The URL of the group
+      group_id:
+        type: string
+        required: false
+        note: The ID of the group
+      sort_by:
+        type: string
+        required: false
+        note: How to sort the posts
+      cursor:
+        type: string
+        required: false
+        note: The cursor to paginate to the next page
+  docs_url: https://docs.scrapecreators.com/facebook/group/posts
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-marketplace-item
+  capability: facebook.marketplace.item.detail
+  name: Facebook Marketplace item by id or URL — price, seller
+  summary: Fetches details for a Facebook Marketplace item by item id or Marketplace
+    item URL, including title, description, price, location, condition, photos, seller,
+    and availability flags.
+  method: GET
+  path: /v1/facebook/marketplace/item
+  input:
+    queryParams:
+      id:
+        type: string
+        required: false
+        note: Facebook Marketplace item id
+      url:
+        type: string
+        required: false
+        note: Facebook Marketplace item URL
+  docs_url: https://docs.scrapecreators.com/facebook/marketplace/item
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-marketplace-location-search
+  capability: facebook.marketplace.location.search
+  name: Search Facebook Marketplace locations by city — lat/lng
+  summary: Searches Facebook Marketplace locations/cities and returns coordinates
+    you can use with the Marketplace Search endpoint.
+  method: GET
+  path: /v1/facebook/marketplace/location/search
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Location search query
+  docs_url: https://docs.scrapecreators.com/facebook/marketplace/location/search
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-marketplace-search
+  capability: facebook.marketplace.search
+  name: Search Facebook Marketplace listings by keyword and lat/lng
+  summary: Searches Facebook Marketplace listings by keyword and lat/lng.
+  method: GET
+  path: /v1/facebook/marketplace/search
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Search keyword
+      lat:
+        type: number
+        required: true
+        note: Latitude for the search location
+      lng:
+        type: number
+        required: true
+        note: Longitude for the search location
+      radius_km:
+        type: number
+        required: false
+        note: Search radius in kilometers
+      min_price:
+        type: number
+        required: false
+        note: Minimum listing price
+      max_price:
+        type: number
+        required: false
+        note: Maximum listing price
+      count:
+        type: number
+        required: false
+        note: Number of listings to return
+      sort_by:
+        type: string
+        required: false
+        note: Sort order
+      delivery_method:
+        type: string
+        required: false
+        note: Delivery filter
+      condition:
+        type: string
+        required: false
+        note: Condition filter
+      date_listed:
+        type: string
+        required: false
+        note: Date listed filter
+      availability:
+        type: string
+        required: false
+        note: Availability filter
+      cursor:
+        type: string
+        required: false
+        note: Opaque pagination cursor returned from the previous response. Pass it
+          back as-is.
+  docs_url: https://docs.scrapecreators.com/facebook/marketplace/search
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-post
+  capability: facebook.post.detail
+  name: Facebook post or reel by URL
+  summary: Retrieves a single public Facebook post or reel by URL.
+  method: GET
+  path: /v1/facebook/post
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: The URL of the post to get
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/facebook/post
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-post-comment-replies
+  capability: facebook.comment.replies
+  name: Facebook comment replies by feedback id
+  summary: Get the replies to a comment.
+  method: GET
+  path: /v1/facebook/post/comment/replies
+  input:
+    queryParams:
+      feedback_id:
+        type: string
+        required: true
+        note: The *feedback_id* of the comment. Be careful, this is not the comment
+          id. You can get the feedback_id from the /v1/facebook/post/comments endpoint.
+      expansion_token:
+        type: string
+        required: true
+        note: The expansion_token of the comment. You can get the expansion_token
+          from the /v1/facebook/post/comments endpoint.
+      cursor:
+        type: string
+        required: false
+        note: The cursor to paginate to the next page
+  docs_url: https://docs.scrapecreators.com/facebook/post/comment/replies
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-post-comments
+  capability: facebook.post.comments
+  name: Facebook post or reel comments by URL
+  summary: Fetches comments from a Facebook post or reel with cursor-based pagination.
+  method: GET
+  path: /v1/facebook/post/comments
+  input:
+    queryParams:
+      url:
+        type: string
+        required: false
+        note: Facebook post URL (or reel URL)
+      feedback_id:
+        type: string
+        required: false
+        note: Using feedback_id (instead of url) will *really* speed up the request.
+          You can get the feedback_id when you make a request to /v1/facebook/post.
+      cursor:
+        type: string
+        required: false
+        note: Cursor to get more comments. Get 'cursor' from previous response.
+  docs_url: https://docs.scrapecreators.com/facebook/post/comments
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-post-transcript
+  capability: facebook.post.transcript
+  name: Facebook video post transcript by URL
+  summary: Extracts the transcript text from a Facebook video post or reel.
+  method: GET
+  path: /v1/facebook/post/transcript
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Facebook post URL
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/facebook/post/transcript
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-profile-events
+  capability: facebook.page.events
+  name: Facebook page events by URL
+  summary: Get the events of a public Facebook page.
+  method: GET
+  path: /v1/facebook/profile/events
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: The URL of the public Facebook page
+      cursor:
+        type: string
+        required: false
+        note: The cursor to paginate to get more events
+  docs_url: https://docs.scrapecreators.com/facebook/profile/events
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-profile-photos
+  capability: facebook.page.photos
+  name: Facebook page photos by URL
+  summary: Fetches photos from a public Facebook page with pagination support.
+  method: GET
+  path: /v1/facebook/profile/photos
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Facebook page URL
+      next_page_id:
+        type: string
+        required: false
+        note: To paginate through to the next page
+      cursor:
+        type: string
+        required: false
+        note: To paginate through to the next page
+  docs_url: https://docs.scrapecreators.com/facebook/profile/photos
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-profile-posts
+  capability: facebook.user.posts
+  name: Facebook page posts by URL or page id
+  summary: Returns publicly visible Facebook profile posts, limited to 3 posts per
+    page due to API limitations.
+  method: GET
+  path: /v1/facebook/profile/posts
+  input:
+    queryParams:
+      url:
+        type: string
+        required: false
+        note: Facebook profile URL
+      pageId:
+        type: string
+        required: false
+        note: Facebook profile page id
+      cursor:
+        type: string
+        required: false
+        note: To paginate through the posts
+  docs_url: https://docs.scrapecreators.com/facebook/profile/posts
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-facebook-profile-reels
+  capability: facebook.page.reels
+  name: Facebook page reels by URL
+  summary: Fetches up to 10 reels per request from a public Facebook page.
+  method: GET
+  path: /v1/facebook/profile/reels
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Facebook page URL
+      next_page_id:
+        type: string
+        required: false
+        note: To paginate through to the next page
+      cursor:
+        type: string
+        required: false
+        note: To paginate through to the next page
+  docs_url: https://docs.scrapecreators.com/facebook/profile/reels
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-github-repository
+  capability: github.repo.profile
+  name: GitHub repository by URL — stars, forks, topics
+  summary: Retrieves public metadata for one GitHub repository, including owner, description,
+    language, stars, forks, topics, license, visibility, default branch, open issues,
+    and timestamps.
+  method: GET
+  path: /v1/github/repository
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: GitHub repository URL
+  docs_url: https://docs.scrapecreators.com/github/repository
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-github-trending-developers
+  capability: github.trending.developers
+  name: GitHub trending developers — filter by language
+  summary: Scrapes GitHub's public Trending developers page.
+  method: GET
+  path: /v1/github/trending/developers
+  input:
+    queryParams:
+      language:
+        type: string
+        required: false
+        note: Optional trending coding language, e.g. javascript, python, or go.
+      since:
+        type: string
+        required: false
+        note: 'Trending range: daily, weekly, or monthly. Defaults to daily.'
+  docs_url: https://docs.scrapecreators.com/github/trending/developers
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-github-trending-repositories
+  capability: github.trending.repositories
+  name: GitHub trending repositories — filter by language
+  summary: Scrapes GitHub's public Trending repositories page.
+  method: GET
+  path: /v1/github/trending/repositories
+  input:
+    queryParams:
+      language:
+        type: string
+        required: false
+        note: Optional coding language, e.g. javascript, python, or go.
+      since:
+        type: string
+        required: false
+        note: 'Trending range: daily, weekly, or monthly. Defaults to daily.'
+      spoken_language_code:
+        type: string
+        required: false
+        note: Optional spoken language code filter, e.g. en.
+  docs_url: https://docs.scrapecreators.com/github/trending/repositories
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-github-user
+  capability: github.user.profile
+  name: GitHub user profile by username — bio, followers
+  summary: Retrieves public GitHub user details including name, bio, avatar, company,
+    location, blog, follower counts, public repo counts, and account timestamps.
+  method: GET
+  path: /v1/github/user
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: false
+        note: GitHub username/handle of the user you want the details for
+      url:
+        type: string
+        required: false
+        note: GitHub user URL, e.g. https://github.com/torvalds.
+  docs_url: https://docs.scrapecreators.com/github/user
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-github-user-activity
+  capability: github.user.activity
+  name: GitHub user activity timeline by username
+  summary: Retrieves GitHub profile contribution activity for a user from the public
+    profile activity timeline.
+  method: GET
+  path: /v1/github/user/activity
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: false
+        note: GitHub handle
+      url:
+        type: string
+        required: false
+        note: GitHub user URL, e.g. https://github.com/kentcdodds.
+      year:
+        type: number
+        required: false
+        note: When provided, returns profile contribution activity for that year.
+          Defaults to the current year.
+      cursor:
+        type: number
+        required: false
+        note: Cursor from the previous response. Pages backward by month through the
+          selected year.
+  docs_url: https://docs.scrapecreators.com/github/user/activity
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-github-user-contributions
+  capability: github.user.contributions
+  name: GitHub contribution graph by username and year
+  summary: Retrieves the public GitHub contribution graph for a user and year, including
+    total contributions and daily contribution counts/intensity.
+  method: GET
+  path: /v1/github/user/contributions
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: false
+        note: GitHub handle
+      url:
+        type: string
+        required: false
+        note: GitHub profile URL
+      year:
+        type: number
+        required: false
+        note: Contribution graph year. Defaults to the current year.
+  docs_url: https://docs.scrapecreators.com/github/user/contributions
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-github-user-followers
+  capability: github.user.followers
+  name: GitHub user followers by username
+  summary: Retrieves public GitHub followers for a user.
+  method: GET
+  path: /v1/github/user/followers
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: false
+        note: GitHub username/handle of the user you want the followers for
+      url:
+        type: string
+        required: false
+        note: GitHub user URL, e.g. https://github.com/torvalds.
+      cursor:
+        type: number
+        required: false
+        note: Cursor from the previous response. Defaults to 1.
+  docs_url: https://docs.scrapecreators.com/github/user/followers
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-github-user-following
+  capability: github.user.following
+  name: GitHub user following list by username
+  summary: Retrieves public accounts followed by a GitHub user.
+  method: GET
+  path: /v1/github/user/following
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: false
+        note: GitHub handle
+      url:
+        type: string
+        required: false
+        note: GitHub profile URL
+      cursor:
+        type: number
+        required: false
+        note: Cursor from the previous response. Defaults to 1.
+  docs_url: https://docs.scrapecreators.com/github/user/following
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-github-user-pull-requests
+  capability: github.user.pull_requests
+  name: GitHub user pull requests by username
+  summary: Searches public GitHub pull requests authored by a user using GitHub's
+    public search index.
+  method: GET
+  path: /v1/github/user/pull-requests
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: GitHub username/handle of the user you want pull requests for
+      since:
+        type: string
+        required: false
+        note: Only return pull requests created on or after this date. Use YYYY-MM-DD.
+      until:
+        type: string
+        required: false
+        note: Only return pull requests created on or before this date. Use YYYY-MM-DD.
+      cursor:
+        type: number
+        required: false
+        note: Cursor from the previous response. Defaults to 1.
+  docs_url: https://docs.scrapecreators.com/github/user/pull-requests
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-github-user-repositories
+  capability: github.user.repos
+  name: GitHub user repositories by username — stars, language
+  summary: Retrieves a user's public repositories with repo metadata like description,
+    language, stars, forks, topics, license, visibility, default branch, and timestamps.
+  method: GET
+  path: /v1/github/user/repositories
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: false
+        note: GitHub username/handle of the user you want the repositories for
+      url:
+        type: string
+        required: false
+        note: GitHub user URL, e.g. https://github.com/kentcdodds.
+      type:
+        type: string
+        required: false
+        note: Repository type. Defaults to owner. GitHub also supports all and member.
+      sort:
+        type: string
+        required: false
+        note: Sort by created, updated, pushed, or full_name. Defaults to updated.
+      direction:
+        type: string
+        required: false
+        note: 'Sort direction: ascending or descending.'
+      cursor:
+        type: number
+        required: false
+        note: Cursor from the previous response. Defaults to 1.
+  docs_url: https://docs.scrapecreators.com/github/user/repositories
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-google-ad
+  capability: scrapecreators.tools
+  name: Google ad library ad details by URL — impressions
+  summary: Retrieves detailed information about a specific Google ad including advertiserId,
+    creativeId, format, firstShown, lastShown, and overallImpressions.
+  method: GET
+  path: /v1/google/ad
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: The url of the ad
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/google/ad
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-google-adlibrary-advertisers-search
+  capability: scrapecreators.tools
+  name: Search Google ad library advertisers by name
+  summary: Searches the Google Ad Transparency Library for advertisers by name.
+  method: GET
+  path: /v1/google/adLibrary/advertisers/search
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: The query to search for
+      region:
+        type: string
+        required: false
+        note: 2-letter country code to search in. Defaults to US when omitted.
+  docs_url: https://docs.scrapecreators.com/google/adLibrary/advertisers/search
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-google-company-ads
+  capability: scrapecreators.tools
+  name: Google ad library company ads by domain or advertiser id
+  summary: Fetches public ads for a company from the Google Ad Transparency Library
+    by domain or advertiser_id.
+  method: GET
+  path: /v1/google/company/ads
+  input:
+    queryParams:
+      domain:
+        type: string
+        required: false
+        note: The domain of the company
+      advertiser_id:
+        type: string
+        required: false
+        note: The advertiser id of the company
+      topic:
+        type: string
+        required: false
+        note: The topic to search for. If you search for 'political', you will also
+          need to pass a 'region', like 'US' or 'AU'
+      region:
+        type: string
+        required: false
+        note: The region to search for. Defaults to anywhere
+      start_date:
+        type: string
+        required: false
+        note: 'Start date to search for. Format: YYYY-MM-DD'
+      end_date:
+        type: string
+        required: false
+        note: 'End date to search for. Format: YYYY-MM-DD'
+      platform:
+        type: string
+        required: false
+        note: Platform to search for.
+      format:
+        type: string
+        required: false
+        note: Ad format to search for.
+      get_ad_details:
+        type: string
+        required: false
+        note: Set to true to get the ad details. Will cost 25 credits.
+      cursor:
+        type: string
+        required: false
+        note: Cursor to paginate through results
+  docs_url: https://docs.scrapecreators.com/google/company/ads
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-google-search
+  capability: google.serp.organic
+  name: Search Google by keyword — organic results
+  summary: Performs a Google search and returns organic results with url, title, and
+    description for each result.
+  method: GET
+  path: /v1/google/search
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Search query
+      region:
+        type: string
+        required: false
+        note: 2 letter country code, ie US, UK, CA, etc This will show results from
+          that country
+      date_posted:
+        type: string
+        required: false
+        note: Date posted
+      page:
+        type: number
+        required: false
+        note: Page number to retrieve. Must be between 1 and 11; page 12 or greater
+          returns a 400 response.
+  docs_url: https://docs.scrapecreators.com/google/search
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-instagram-audio-reels
+  capability: instagram.music.posts
+  name: Instagram reels using an audio, by audio id
+  summary: Fetches the reels Instagram exposes for an audio page like instagram.com/reels/audio/{audio_id}/.
+  method: GET
+  path: /v1/instagram/audio/reels
+  input:
+    queryParams:
+      audio_id:
+        type: string
+        required: true
+        note: The audio id from the Instagram audio page URL.
+      cursor:
+        type: string
+        required: false
+        note: Pagination cursor returned by Instagram from the previous response.
+  docs_url: https://docs.scrapecreators.com/instagram/audio/reels
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-instagram-post
+  capability: instagram.post.detail
+  name: Instagram post or reel by URL or shortcode
+  summary: Fetches detailed metadata for a single Instagram post or reel by shortcode
+    or URL.
+  method: GET
+  path: /v1/instagram/post
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Instagram post or reel URL
+      region:
+        type: string
+        required: false
+        note: 2 letter country code to set the proxy in
+      trim:
+        type: boolean
+        required: false
+        note: Set to true to get a trimmed response
+      download_media:
+        type: boolean
+        required: false
+        note: Set to true to download the video/images and get back permanent Supabase
+          URLs. Costs 10 credits if media is found, 1 credit otherwise.
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/instagram/post
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-instagram-reels-trending
+  capability: instagram.reels.recommended
+  name: Instagram trending reels feed
+  summary: Fetches trending reels from Instagram's public instagram.com/reels page.
+  method: GET
+  path: /v1/instagram/reels/trending
+  docs_url: https://docs.scrapecreators.com/instagram/reels/trending
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-instagram-search-hashtag
+  capability: instagram.hashtag.posts
+  name: Search Instagram posts by hashtag — caption, engagement
+  summary: Finds public Instagram posts for a hashtag using Google Search, then returns
+    post details such as caption, play count when available, like count, comment count,
+    owner, and post time.
+  method: GET
+  path: /v1/instagram/search/hashtag
+  input:
+    queryParams:
+      hashtag:
+        type: string
+        required: true
+        note: 'The hashtag to search for. Include or omit the #.'
+      date_posted:
+        type: string
+        required: false
+        note: Only return Google-indexed posts found in this relative window.
+      media_type:
+        type: string
+        required: false
+        note: Use all to search public posts and reels, or reels to only return reels.
+          Defaults to all.
+      cursor:
+        type: string
+        required: false
+        note: The cursor returned by the previous response. It is the next Google
+          results page number and cannot exceed 11; cursor 12 or greater returns a
+          400 response.
+  docs_url: https://docs.scrapecreators.com/instagram/search/hashtag
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-instagram-search-profiles
+  capability: instagram.search.users
+  name: Search Instagram profiles by keyword
+  summary: Searches Google for public Instagram results matching a keyword or phrase,
+    then returns matching public profiles.
+  method: GET
+  path: /v1/instagram/search/profiles
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Bio or caption keyword/phrase to search for.
+      cursor:
+        type: string
+        required: false
+        note: The cursor returned by the previous response. It is the next Google
+          results page number and cannot exceed 11; cursor 12 or greater returns a
+          400 response.
+  docs_url: https://docs.scrapecreators.com/instagram/search/profiles
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-instagram-user-embed
+  capability: scrapecreators.tools
+  name: Instagram profile embed HTML by username
+  summary: Returns the raw HTML embed snippet for an Instagram user's profile widget.
+  method: GET
+  path: /v1/instagram/user/embed
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: Instagram handle
+  docs_url: https://docs.scrapecreators.com/instagram/user/embed
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-instagram-user-highlight-detail
+  capability: instagram.highlight.items
+  name: Instagram story highlight contents by highlight id
+  summary: Fetches the full contents of a specific Instagram story highlight album
+    by its ID.
+  method: GET
+  path: /v1/instagram/user/highlight/detail
+  input:
+    queryParams:
+      id:
+        type: string
+        required: false
+        note: The ID of the highlight to get details for
+  docs_url: https://docs.scrapecreators.com/instagram/user/highlight/detail
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-instagram-user-highlights
+  capability: instagram.user.highlights
+  name: Instagram story highlights by username or user id
+  summary: Lists all story highlight albums for an Instagram user.
+  method: GET
+  path: /v1/instagram/user/highlights
+  input:
+    queryParams:
+      user_id:
+        type: string
+        required: false
+        note: Instagram user id. Use for faster response times.
+      handle:
+        type: string
+        required: false
+        note: Instagram handle. Use user_id for faster response times.
+  docs_url: https://docs.scrapecreators.com/instagram/user/highlights
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-instagram-user-reels
+  capability: instagram.user.reels
+  name: Instagram user reels by username — short videos
+  summary: Returns a paginated list of a user's public Instagram reels (short-form
+    videos).
+  method: GET
+  path: /v1/instagram/user/reels
+  input:
+    queryParams:
+      user_id:
+        type: string
+        required: false
+        note: Instagram user id. Use this for faster response times.
+      handle:
+        type: string
+        required: false
+        note: Instagram handle. Use user_id for faster response times.
+      max_id:
+        type: string
+        required: false
+        note: Max id to get more reels. Get 'max_id' from previous response.
+      trim:
+        type: boolean
+        required: false
+        note: Set to true for a trimmed down version of the response
+  docs_url: https://docs.scrapecreators.com/instagram/user/reels
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-kick-clip
+  capability: scrapecreators.tools
+  name: Kick clip by URL — video, channel info
+  summary: Fetches detailed data for a Kick clip by URL, including video, metadata,
+    and channel info.
+  method: GET
+  path: /v1/kick/clip
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Kick clip URL
+  docs_url: https://docs.scrapecreators.com/kick/clip
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-komi
+  capability: scrapecreators.tools
+  name: Komi link-in-bio page by URL — profile, social links
+  summary: Scrapes a Komi page by URL, extracting the creator's profile, social links,
+    and featured content.
+  method: GET
+  path: /v1/komi
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: URL to Komi page
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/komi
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-kwai-post
+  capability: kuaishou.video.detail
+  name: Kwai post by URL — caption, media, counts
+  summary: Fetches public Kwai post details including caption, media URLs, cover images,
+    counts, author info, and music metadata.
+  method: GET
+  path: /v1/kwai/post
+  input:
+    queryParams:
+      url:
+        type: string
+        required: false
+        note: Kwai post URL
+  docs_url: https://docs.scrapecreators.com/kwai/post
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-kwai-profile
+  capability: kuaishou.user.profile
+  name: Kwai profile by username or URL — bio, counts
+  summary: Fetches public Kwai profile data including username, bio, avatar, verification
+    status, gender, and public counts.
+  method: GET
+  path: /v1/kwai/profile
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: false
+        note: Kwai profile handle. Use this or url.
+      url:
+        type: string
+        required: false
+        note: Kwai profile URL. Use this or handle.
+  docs_url: https://docs.scrapecreators.com/kwai/profile
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-kwai-user-posts
+  capability: scrapecreators.tools
+  name: Kwai user posts by username or URL
+  summary: Fetches a paginated list of public Kwai posts for a user, including captions,
+    media URLs, covers, counts, author info, and the next cursor when more results
+    are available.
+  method: GET
+  path: /v1/kwai/user/posts
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: false
+        note: Kwai profile handle. Use this or url.
+      url:
+        type: string
+        required: false
+        note: Kwai profile URL. Use this or handle.
+      cursor:
+        type: string
+        required: false
+        note: Cursor from the previous response for the next page
+      count:
+        type: number
+        required: false
+        note: Number of posts to return, max 50
+  docs_url: https://docs.scrapecreators.com/kwai/user/posts
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-linkbio
+  capability: scrapecreators.tools
+  name: Linkbio (lnk.bio) link-in-bio page by URL
+  summary: Scrapes a Linkbio (lnk.bio) page by URL, extracting the creator's profile
+    and all their links.
+  method: GET
+  path: /v1/linkbio
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: URL to Linkbio (lnk.bio) page
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/linkbio
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-linkedin-ad
+  capability: linkedin.ad.detail
+  name: LinkedIn ad details by URL
+  summary: Retrieves detailed information about a specific LinkedIn ad by URL.
+  method: GET
+  path: /v1/linkedin/ad
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: The url of the ad
+  docs_url: https://docs.scrapecreators.com/linkedin/ad
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-linkedin-ads-search
+  capability: linkedin.search.ads
+  name: Search LinkedIn ad library by company or keyword
+  summary: Searches the LinkedIn Ad Library by company name, keyword, or companyId
+    with optional country and date filters.
+  method: GET
+  path: /v1/linkedin/ads/search
+  input:
+    queryParams:
+      company:
+        type: string
+        required: false
+        note: The company name to search for. 'Microsoft' for example
+      keyword:
+        type: string
+        required: false
+        note: The keyword to search for
+      companyId:
+        type: string
+        required: false
+        note: The company id to search for
+      countries:
+        type: string
+        required: false
+        note: 'Comma separated list of countries. Example: US,CA,MX'
+      startDate:
+        type: string
+        required: false
+        note: 'Start date to search for. Format: YYYY-MM-DD'
+      endDate:
+        type: string
+        required: false
+        note: 'End date to search for. Format: YYYY-MM-DD'
+      paginationToken:
+        type: string
+        required: false
+        note: Pagination token to paginate through results
+  docs_url: https://docs.scrapecreators.com/linkedin/ads/search
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-linkedin-company
+  capability: linkedin.company.profile
+  name: LinkedIn company profile by URL — headcount, industry
+  summary: Fetches a LinkedIn company page with details including name, description,
+    logo, cover image, slogan, location, headquarters, employee count (headcount/staff
+    size), website, industry, company type, founded year, specialties, funding rounds
+    with investors, featured employees, recent posts, and simi...
+  method: GET
+  path: /v1/linkedin/company
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: The URL of the LinkedIn company page to get
+  docs_url: https://docs.scrapecreators.com/linkedin/company
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-linkedin-company-posts
+  capability: linkedin.company.posts
+  name: LinkedIn company posts by URL — full text, dates
+  summary: Retrieves paginated posts from a LinkedIn company page, including each
+    post's URL, ID, publication date, and full text content.
+  method: GET
+  path: /v1/linkedin/company/posts
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: The URL of the LinkedIn company page to get
+      page:
+        type: number
+        required: false
+        note: The page number to get
+  docs_url: https://docs.scrapecreators.com/linkedin/company/posts
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-linkedin-post
+  capability: linkedin.post.detail
+  name: LinkedIn post or article by URL — likes, comments
+  summary: Fetches a single LinkedIn post or article, returning the title, headline,
+    full description text, author info with follower count, publication date, like
+    count (reactions), comment count, and individual comments.
+  method: GET
+  path: /v1/linkedin/post
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: The URL of the LinkedIn post to get
+  docs_url: https://docs.scrapecreators.com/linkedin/post
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-linkedin-post-transcript
+  capability: scrapecreators.tools
+  name: LinkedIn post video transcript by URL
+  summary: Fetches the transcript from a LinkedIn post video when LinkedIn exposes
+    one publicly.
+  method: GET
+  path: /v1/linkedin/post/transcript
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: The URL of the LinkedIn post to get the transcript from
+  docs_url: https://docs.scrapecreators.com/linkedin/post/transcript
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-linkedin-search-posts
+  capability: linkedin.search.posts
+  name: Search LinkedIn posts by keyword
+  summary: Finds public LinkedIn posts, feed updates, and Pulse articles by keyword
+    using Google Search, then returns post details such as description, author, media,
+    images, like count, comment count, and published date when LinkedIn exposes them
+    publicly.
+  method: GET
+  path: /v1/linkedin/search/posts
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Keyword or phrase to search for in public LinkedIn posts
+      date_posted:
+        type: string
+        required: false
+        note: Date posted filter based on Google-indexed results
+      cursor:
+        type: string
+        required: false
+        note: The cursor returned from the previous response. The maximum cursor is
+          11; cursor 12 or greater returns a 400 response.
+  docs_url: https://docs.scrapecreators.com/linkedin/search/posts
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-linkme
+  capability: scrapecreators.tools
+  name: Linkme link-in-bio profile by URL — links, contacts
+  summary: Retrieves a Linkme profile by URL, including identity, social links, and
+    contact details.
+  method: GET
+  path: /v1/linkme
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Linkme profile URL
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/linkme
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-linktree
+  capability: scrapecreators.tools
+  name: Linktree link-in-bio page by URL — profile, links
+  summary: Scrapes a Linktree page by URL, extracting the creator's profile and all
+    their links.
+  method: GET
+  path: /v1/linktree
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: URL to Linktree page
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/linktree
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-pillar
+  capability: scrapecreators.tools
+  name: Pillar link-in-bio page by URL — links, products
+  summary: Scrapes a Pillar page by URL, extracting the creator's profile, social
+    links, and products.
+  method: GET
+  path: /v1/pillar
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: URL to Pillar page
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/pillar
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-pinterest-board
+  capability: pinterest.board.pins
+  name: Pinterest board pins by board URL
+  summary: Fetches a paginated list of pins from a Pinterest board by URL, returning
+    each pin's id, description, title, images, board info, pin_join annotations, and
+    aggregated_pin_data.
+  method: GET
+  path: /v1/pinterest/board
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: The URL of the board to get
+      cursor:
+        type: string
+        required: false
+        note: The cursor to get the next page of results
+      trim:
+        type: boolean
+        required: false
+        note: Set to true for a trimmed down version of the response
+  docs_url: https://docs.scrapecreators.com/pinterest/board
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-pinterest-pin
+  capability: pinterest.pin.detail
+  name: Pinterest pin by URL — title, images, annotations
+  summary: Fetches detailed information about a single Pinterest pin by URL, returning
+    title, description, link, dominantColor, originPinner, pinner, images at multiple
+    resolutions (imageSpec_236x through imageSpec_orig), and pinJoin with visual annotations.
+  method: GET
+  path: /v1/pinterest/pin
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Pinterest pin URL
+      trim:
+        type: boolean
+        required: false
+        note: Set to true for a trimmed down version of the response
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/pinterest/pin
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-pinterest-search
+  capability: pinterest.search.pins
+  name: Search Pinterest pins by keyword
+  summary: Searches Pinterest for pins matching a query, returning results with id,
+    url, title, description, images, link, domain, board info, and pinner details.
+  method: GET
+  path: /v1/pinterest/search
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Search query
+      cursor:
+        type: string
+        required: false
+        note: Cursor
+      trim:
+        type: boolean
+        required: false
+        note: Set to true for a trimmed down version of the response
+  docs_url: https://docs.scrapecreators.com/pinterest/search
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-pinterest-user-boards
+  capability: pinterest.user.boards
+  name: Pinterest user boards by username — pin counts
+  summary: Fetches a paginated list of boards for a Pinterest user, returning each
+    board's name, url, description, pin_count, follower_count, owner info, cover_images,
+    and created_at.
+  method: GET
+  path: /v1/pinterest/user/boards
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: The username of the user to get boards for. (e.g. broadstbullycom from
+          https://www.pinterest.com/broadstbullycom/)
+      trim:
+        type: boolean
+        required: false
+        note: Set to true for a trimmed down version of the response
+  docs_url: https://docs.scrapecreators.com/pinterest/user/boards
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-reddit-post-comments
+  capability: reddit.post.comments
+  name: Reddit post comments by URL
+  summary: Retrieves comments and post details from a Reddit post by URL.
+  method: GET
+  path: /v1/reddit/post/comments
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Reddit post URL
+      cursor:
+        type: string
+        required: false
+        note: Cursor to get more comments, or replies.
+      trim:
+        type: boolean
+        required: false
+        note: Set to true for a trimmed down version of the response
+  docs_url: https://docs.scrapecreators.com/reddit/post/comments
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-reddit-post-transcript
+  capability: scrapecreators.tools
+  name: Reddit video post transcript by URL — captions
+  summary: Gets the transcript from a Reddit video post or direct v.redd.it URL when
+    Reddit exposes a VTT caption file.
+  method: GET
+  path: /v1/reddit/post/transcript
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Reddit post URL or direct v.redd.it video URL
+      language:
+        type: string
+        required: false
+        note: 2 letter language code. Defaults to en.
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/reddit/post/transcript
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-reddit-subreddit-details
+  capability: reddit.subreddit.info
+  name: Subreddit details by name or URL
+  summary: Retrieves metadata about a subreddit by name or URL.
+  method: GET
+  path: /v1/reddit/subreddit/details
+  input:
+    queryParams:
+      subreddit:
+        type: string
+        required: false
+        note: Subreddit name. MUST be case sensitive. So 'AskReddit' not 'askreddit'.
+      url:
+        type: string
+        required: false
+        note: Subreddit URL
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/reddit/subreddit/details
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-reddit-subreddit-search
+  capability: scrapecreators.tools
+  name: Search within a subreddit by keyword — posts, comments
+  summary: Searches within a specific subreddit for posts, comments, and media matching
+    a query.
+  method: GET
+  path: /v1/reddit/subreddit/search
+  input:
+    queryParams:
+      subreddit:
+        type: string
+        required: true
+        note: Subreddit name (e.g. 'Fitness', not 'r/Fitness' or a full URL)
+      query:
+        type: string
+        required: false
+        note: Search query to find matching content
+      sort:
+        type: string
+        required: false
+        note: 'Sort order. For posts/media: relevance, hot, top, new, comments. For
+          comments: relevance, top, new'
+      timeframe:
+        type: string
+        required: false
+        note: Timeframe to filter results
+      cursor:
+        type: string
+        required: false
+        note: Cursor to get more results. Get 'cursor' from previous response.
+  docs_url: https://docs.scrapecreators.com/reddit/subreddit/search
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-rumble-channel-videos
+  capability: rumble.channel.videos
+  name: Rumble channel videos by username or URL
+  summary: Gets videos from a Rumble channel by handle or URL.
+  method: GET
+  path: /v1/rumble/channel/videos
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: false
+        note: Rumble channel handle. If you'd prefer to use the URL instead, use the
+          url parameter.
+      url:
+        type: string
+        required: false
+        note: Rumble channel URL. If you'd prefer to use the handle instead, use the
+          handle parameter.
+      cursor:
+        type: string
+        required: false
+        note: Cursor from the previous response. This is the next page number, like
+          2 or 3.
+  docs_url: https://docs.scrapecreators.com/rumble/channel/videos
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-rumble-search
+  capability: rumble.search.videos
+  name: Search Rumble videos by keyword
+  summary: Searches Rumble videos by keyword.
+  method: GET
+  path: /v1/rumble/search
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Search query.
+      cursor:
+        type: string
+        required: false
+        note: Cursor from the previous response. This is the next page number, like
+          2 or 3.
+  docs_url: https://docs.scrapecreators.com/rumble/search
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-rumble-video
+  capability: rumble.video.detail
+  name: Rumble video details by URL
+  summary: Gets Rumble video details by URL.
+  method: GET
+  path: /v1/rumble/video
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Rumble video URL.
+  docs_url: https://docs.scrapecreators.com/rumble/video
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-rumble-video-comments
+  capability: rumble.video.comments
+  name: Rumble video comments by URL — top level
+  summary: Gets all top level comments for a Rumble video by URL.
+  method: GET
+  path: /v1/rumble/video/comments
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Rumble video URL.
+  docs_url: https://docs.scrapecreators.com/rumble/video/comments
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-rumble-video-transcript
+  capability: rumble.video.transcript
+  name: Rumble video transcript by URL — captions
+  summary: Gets a Rumble video's transcript when captions are available.
+  method: GET
+  path: /v1/rumble/video/transcript
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Rumble video URL.
+  docs_url: https://docs.scrapecreators.com/rumble/video/transcript
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-snapchat-profile
+  capability: scrapecreators.tools
+  name: Snapchat profile by username — stories, spotlight
+  summary: Retrieves a Snapchat user's public profile by handle, including identity,
+    stories, and spotlight content.
+  method: GET
+  path: /v1/snapchat/profile
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: Snapchat username
+  docs_url: https://docs.scrapecreators.com/snapchat/profile
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-snapchat-spotlight
+  capability: scrapecreators.tools
+  name: Snapchat Spotlight video by URL
+  summary: Fetches public data for a Snapchat Spotlight video by URL.
+  method: GET
+  path: /v1/snapchat/spotlight
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Snapchat Spotlight URL.
+  docs_url: https://docs.scrapecreators.com/snapchat/spotlight
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-snapchat-spotlight-comments
+  capability: scrapecreators.tools
+  name: Snapchat Spotlight comments by URL
+  summary: Fetches public comments from Snapchat's Spotlight comments API by URL.
+  method: GET
+  path: /v1/snapchat/spotlight/comments
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Snapchat Spotlight URL.
+      cursor:
+        type: string
+        required: false
+        note: Pagination cursor from the previous response.
+  docs_url: https://docs.scrapecreators.com/snapchat/spotlight/comments
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-soundcloud-artist
+  capability: scrapecreators.tools
+  name: SoundCloud artist profile by username or URL
+  summary: Fetches detailed information about a SoundCloud artist by its handle or
+    URL.
+  method: GET
+  path: /v1/soundcloud/artist
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: false
+        note: SoundCloud artist handle. If you'd prefer to use the URL instead, you
+          can use the url parameter instead.
+      url:
+        type: string
+        required: false
+        note: SoundCloud artist URL. If you'd prefer to use the handle instead, you
+          can use the handle parameter instead.
+  docs_url: https://docs.scrapecreators.com/soundcloud/artist
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-soundcloud-artist-tracks
+  capability: scrapecreators.tools
+  name: SoundCloud artist tracks by username or URL
+  summary: Fetches tracks/songs for a SoundCloud artist by handle or URL.
+  method: GET
+  path: /v1/soundcloud/artist/tracks
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: false
+        note: SoundCloud artist handle. If you'd prefer to use the URL instead, you
+          can use the url parameter instead.
+      url:
+        type: string
+        required: false
+        note: SoundCloud artist tracks URL. If you'd prefer to use the handle instead,
+          you can use the handle parameter instead.
+      cursor:
+        type: string
+        required: false
+        note: Cursor to get more tracks. Get 'cursor' from previous response.
+  docs_url: https://docs.scrapecreators.com/soundcloud/artist/tracks
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-soundcloud-track
+  capability: scrapecreators.tools
+  name: SoundCloud track by URL — song details
+  summary: Fetches detailed information about a SoundCloud track/song by URL.
+  method: GET
+  path: /v1/soundcloud/track
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: SoundCloud track URL.
+  docs_url: https://docs.scrapecreators.com/soundcloud/track
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-spotify-album
+  capability: spotify.album.detail
+  name: Spotify album by id or URL — tracks, release info
+  summary: Retrieves detailed information about a Spotify album by its id or URL,
+    including album metadata, artists, release date, cover art, copyright info, tracks,
+    and sharing details.
+  method: GET
+  path: /v1/spotify/album
+  input:
+    queryParams:
+      id:
+        type: string
+        required: false
+        note: Spotify album id. If you'd prefer to use the URL instead, you can use
+          the url parameter instead.
+      url:
+        type: string
+        required: false
+        note: Spotify album URL. If you'd prefer to use the id instead, you can use
+          the id parameter instead.
+  docs_url: https://docs.scrapecreators.com/spotify/album
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-spotify-artist
+  capability: spotify.artist.detail
+  name: Spotify artist by id or URL — followers, genres
+  summary: Retrieves detailed information about a Spotify artist by their handle,
+    including name, followers count, genres, and related artists.
+  method: GET
+  path: /v1/spotify/artist
+  input:
+    queryParams:
+      id:
+        type: string
+        required: false
+        note: Spotify artist id. If you'd prefer to use the URL instead, you can use
+          the url parameter instead.
+      url:
+        type: string
+        required: false
+        note: Spotify artist URL. If you'd prefer to use the id instead, you can use
+          the id parameter instead.
+  docs_url: https://docs.scrapecreators.com/spotify/artist
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-spotify-podcast
+  capability: spotify.podcast.detail
+  name: Spotify podcast details by id or URL
+  summary: Retrieves detailed information about a Spotify podcast by its id or URL.
+  method: GET
+  path: /v1/spotify/podcast
+  input:
+    queryParams:
+      id:
+        type: string
+        required: false
+        note: Spotify podcast id. If you'd prefer to use the URL instead, you can
+          use the url parameter instead.
+      url:
+        type: string
+        required: false
+        note: Spotify podcast URL. If you'd prefer to use the id instead, you can
+          use the id parameter instead.
+  docs_url: https://docs.scrapecreators.com/spotify/podcast
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-spotify-podcast-episodes
+  capability: spotify.podcast.episodes
+  name: Spotify podcast episodes by id or URL
+  summary: Returns episodes for a Spotify podcast.
+  method: GET
+  path: /v1/spotify/podcast/episodes
+  input:
+    queryParams:
+      id:
+        type: string
+        required: false
+        note: Spotify podcast id. If you'd prefer to use the URL instead, you can
+          use the url parameter instead.
+      url:
+        type: string
+        required: false
+        note: Spotify podcast URL. If you'd prefer to use the id instead, you can
+          use the id parameter instead.
+      cursor:
+        type: number
+        required: false
+        note: Cursor returned by the previous response. Omit for the first page.
+  docs_url: https://docs.scrapecreators.com/spotify/podcast/episodes
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-spotify-search
+  capability: spotify.search
+  name: Search Spotify by keyword — tracks, artists, albums
+  summary: Search Spotify for tracks, artists, albums, episodes, podcasts, and audiobooks.
+  method: GET
+  path: /v1/spotify/search
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Search query
+  docs_url: https://docs.scrapecreators.com/spotify/search
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-spotify-track
+  capability: spotify.track.detail
+  name: Spotify track by id or URL — album, duration
+  summary: Retrieves detailed information about a Spotify track by its id or URL,
+    including track metadata, artists, album info, duration, playability, and sharing
+    details.
+  method: GET
+  path: /v1/spotify/track
+  input:
+    queryParams:
+      id:
+        type: string
+        required: false
+        note: Spotify track id. If you'd prefer to use the URL instead, you can use
+          the url parameter instead.
+      url:
+        type: string
+        required: false
+        note: Spotify song URL. If you'd prefer to use the id instead, you can use
+          the id parameter instead.
+  docs_url: https://docs.scrapecreators.com/spotify/track
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-threads-post
+  capability: threads.post.detail
+  name: Threads post by URL — likes, views, replies
+  summary: Fetches a single Threads post by URL, returning the post's caption, like_count,
+    view_counts, reshare_count, direct_reply_count, image_versions2, and taken_at.
+  method: GET
+  path: /v1/threads/post
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: The URL of the post to get
+      trim:
+        type: boolean
+        required: false
+        note: Set to true for a trimmed down version of the response
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/threads/post
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-threads-profile
+  capability: threads.user.profile
+  name: Threads profile by username — bio, followers
+  summary: Retrieves a Threads user's public profile including username, full_name,
+    biography, profile_pic_url, follower_count, is_verified, bio_links, and hd_profile_pic_versions.
+  method: GET
+  path: /v1/threads/profile
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: Threads username
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/threads/profile
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-threads-search
+  capability: threads.search.posts
+  name: Search Threads posts by keyword
+  summary: Searches Threads for posts matching a keyword, returning up to 10 results
+    with caption text, like_count, reshare_count, direct_reply_count, user info, and
+    image_versions2.
+  method: GET
+  path: /v1/threads/search
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Keyword to search for
+      start_date:
+        type: string
+        required: false
+        note: Start date to search for
+      end_date:
+        type: string
+        required: false
+        note: End date to search for
+      trim:
+        type: boolean
+        required: false
+        note: Set to true for a trimmed down version of the response
+  docs_url: https://docs.scrapecreators.com/threads/search
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-threads-search-users
+  capability: threads.search.profiles
+  name: Search Threads users by name
+  summary: Searches for Threads users by username, returning matching profiles with
+    username, full_name, profile_pic_url, is_verified, and pk.
+  method: GET
+  path: /v1/threads/search/users
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Username to search for
+  docs_url: https://docs.scrapecreators.com/threads/search/users
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-threads-user-posts
+  capability: threads.user.posts
+  name: Threads user posts by username — likes, reshares
+  summary: Fetches the most recent posts from a Threads user, returning id, caption
+    text, code, like_count, reshare_count, direct_reply_count, repost_count, image_versions2,
+    video_versions, and taken_at.
+  method: GET
+  path: /v1/threads/user/posts
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: Threads username
+      trim:
+        type: boolean
+        required: false
+        note: Set to true for a trimmed down version of the response
+  docs_url: https://docs.scrapecreators.com/threads/user/posts
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-ad-library-ad
+  capability: tiktok-ads.library.ad.detail
+  name: TikTok ad library ad details by ad id
+  summary: Fetches one TikTok ad by ID or URL.
+  method: GET
+  path: /v1/tiktok/ad-library/ad
+  input:
+    queryParams:
+      ad_id:
+        type: string
+        required: true
+        note: Creative Center Top Ads material ID or URL, or a public Ads Library
+          ad ID or library.tiktok.com detail URL.
+  docs_url: https://docs.scrapecreators.com/tiktok/ad-library/ad
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-ad-library-search
+  capability: tiktok-ads.library.search
+  name: Search TikTok ad library by keyword or advertiser
+  summary: Searches TikTok's public Ads Library by advertiser name or keyword.
+  method: GET
+  path: /v1/tiktok/ad-library/search
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Advertiser name or keyword to search for.
+      cursor:
+        type: string
+        required: false
+        note: Opaque cursor returned from the previous response.
+  docs_url: https://docs.scrapecreators.com/tiktok/ad-library/search
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-creators-popular
+  capability: scrapecreators.tools
+  name: TikTok popular creators — filter by followers, country
+  summary: Discovers trending and popular TikTok creators, filterable by follower
+    count range, creator country, and audience country.
+  method: GET
+  path: /v1/tiktok/creators/popular
+  input:
+    queryParams:
+      page:
+        type: number
+        required: false
+        note: Page number
+      sortBy:
+        type: string
+        required: false
+        note: Sort creators by engagement, follower count, or average views
+      followerCount:
+        type: string
+        required: false
+        note: Filter by follower count range
+      creatorCountry:
+        type: string
+        required: false
+        note: Country code of the creator
+      audienceCountry:
+        type: string
+        required: false
+        note: Country code of the audience/follower
+  docs_url: https://docs.scrapecreators.com/tiktok/creators/popular
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-get-trending-feed
+  capability: tiktok.feed.home
+  name: TikTok trending feed by region — viral videos
+  summary: Fetches TikTok's trending/For You feed for a given region — useful for
+    discovering viral content and what's currently popular.
+  method: GET
+  path: /v1/tiktok/get-trending-feed
+  input:
+    queryParams:
+      region:
+        type: string
+        required: true
+        note: Where you want the proxy to be. This doesn't mean that you will only
+          see TikToks from this region, you will just see the content that isn't banned
+          in that region.
+      trim:
+        type: boolean
+        required: false
+        note: Set to true to get a trimmed response.
+  docs_url: https://docs.scrapecreators.com/tiktok/get-trending-feed
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-live
+  capability: tiktok.live.detail
+  name: TikTok live room info by room id or user id
+  summary: Gets curated room-level info for a TikTok live using TokAPI's live info
+    endpoint.
+  method: GET
+  path: /v1/tiktok/live
+  input:
+    queryParams:
+      room_id:
+        type: string
+        required: true
+        note: TikTok live room id. Get this from `/v1/tiktok/user/live` in `liveRoomUserInfo.roomId`
+          or `liveRoom.id` when the user is live.
+      user_id:
+        type: string
+        required: true
+        note: TikTok numeric user id for the live owner. Get this from `/v1/tiktok/profile`
+          in `user.id`.
+  docs_url: https://docs.scrapecreators.com/tiktok/live
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-product
+  capability: tiktok-shop.product.detail
+  name: TikTok Shop product by URL — stock, affiliate videos
+  summary: Fetches full details for a specific US TikTok Shop product by its URL,
+    including stock levels and affiliate videos.
+  method: GET
+  path: /v1/tiktok/product
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: The URL of the product to get details for.
+      region:
+        type: string
+        required: false
+        note: Region for the product details request. US is the reliable region right
+          now; non-US regions should not be considered reliable and may return `bad_request`
+          or missing product data. Sorry for the inconvenience.
+  docs_url: https://docs.scrapecreators.com/tiktok/product
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-profile-region
+  capability: tiktok.user.country
+  name: TikTok profile region code by username
+  summary: Returns the TikTok region code for a public profile, like `US` for United
+    States or `MX` for Mexico.
+  method: GET
+  path: /v1/tiktok/profile/region
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: TikTok handle
+  docs_url: https://docs.scrapecreators.com/tiktok/profile/region
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-search-hashtag
+  capability: tiktok.search.hashtags
+  name: Search TikTok videos by hashtag
+  summary: Searches for TikTok videos under a specific hashtag — useful for finding
+    content by topic or trend.
+  method: GET
+  path: /v1/tiktok/search/hashtag
+  input:
+    queryParams:
+      hashtag:
+        type: string
+        required: true
+        note: 'Hashtag to search for (without #)'
+      region:
+        type: string
+        required: false
+        note: 'Region the proxy will be set to. Note: this isn''t going to grab you
+          all tiktoks from this region, you''re just setting the proxy there.'
+      cursor:
+        type: number
+        required: false
+        note: Cursor to get more videos. Get 'cursor' from previous response.
+      trim:
+        type: boolean
+        required: false
+        note: Set to true to get a trimmed response
+  docs_url: https://docs.scrapecreators.com/tiktok/search/hashtag
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-search-suggestions
+  capability: tiktok.search.suggestions
+  name: TikTok search autocomplete suggestions by keyword
+  summary: Gets the autocomplete suggestions TikTok shows while someone is typing
+    in search.
+  method: GET
+  path: /v1/tiktok/search/suggestions
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Search query to get suggestions for
+      region:
+        type: string
+        required: false
+        note: Region code for suggestions
+  docs_url: https://docs.scrapecreators.com/tiktok/search/suggestions
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-search-top
+  capability: tiktok.search.general
+  name: Search TikTok top results by keyword — videos, photos
+  summary: Searches TikTok's 'Top' results by query — returns both videos and photo
+    carousels, unlike keyword search which only returns videos.
+  method: GET
+  path: /v1/tiktok/search/top
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Keyword to search for
+      publish_time:
+        type: string
+        required: false
+        note: Time Frame TikTok was posted
+      sort_by:
+        type: string
+        required: false
+        note: Sort by
+      region:
+        type: string
+        required: false
+        note: Note, this doesn't filter the tiktoks only in a specfic region, it puts
+          the proxy there. Use it in case you want to scrape posts only available
+          for some country. Use 2 letter country codes like US, GB, FR, etc
+      cursor:
+        type: number
+        required: false
+        note: Cursor to get more videos. Get 'cursor' from previous response.
+  docs_url: https://docs.scrapecreators.com/tiktok/search/top
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-search-users
+  capability: tiktok.search.users
+  name: Search TikTok users by name or keyword
+  summary: Searches for TikTok users by keyword or name — useful for finding creators
+    or accounts matching a query.
+  method: GET
+  path: /v1/tiktok/search/users
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Search query for users
+      cursor:
+        type: number
+        required: false
+        note: Cursor to get more users. Get 'cursor' from previous response.
+      trim:
+        type: boolean
+        required: false
+        note: Set to true to get a trimmed response
+  docs_url: https://docs.scrapecreators.com/tiktok/search/users
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-shop-product-reviews
+  capability: tiktok-shop.product.reviews
+  name: TikTok Shop product reviews by URL or product id
+  summary: Fetches customer reviews for a TikTok Shop product by URL or product_id.
+  method: GET
+  path: /v1/tiktok/shop/product/reviews
+  input:
+    queryParams:
+      url:
+        type: string
+        required: false
+        note: The URL of the product (required if product_id is not provided)
+      product_id:
+        type: string
+        required: false
+        note: The ID of the product (required if url is not provided)
+      region:
+        type: string
+        required: false
+        note: The region of the product. US is the reliable region right now; non-US
+          regions should not be considered reliable and may return limited or inconsistent
+          review data. Sorry for the inconvenience.
+      page:
+        type: number
+        required: false
+        note: The page number of the reviews
+  docs_url: https://docs.scrapecreators.com/tiktok/shop/product/reviews
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-shop-products
+  capability: tiktok-shop.shop.products
+  name: TikTok Shop store products by store URL
+  summary: Lists all products from a specific TikTok Shop store by its URL.
+  method: GET
+  path: /v1/tiktok/shop/products
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: The TikTok Shop store URL.
+      cursor:
+        type: string
+        required: false
+        note: Cursor parameter from the previous response to retrieve the next page
+          of products. Omit for the first page.
+      sort_by:
+        type: string
+        required: false
+        note: Sort products by best-selling items (`top`) or newest products (`new_releases`).
+          Defaults to `top`.
+      region:
+        type: string
+        required: false
+        note: Region to get shop products from. Defaults to US if not provided. Non-US
+          regions are not reliable right now and may return `not_found` or limited
+          catalog data even when the shop appears in search. Sorry for the inconv...
+  docs_url: https://docs.scrapecreators.com/tiktok/shop/products
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-shop-search
+  capability: tiktok-shop.search.products
+  name: Search TikTok Shop products by keyword
+  summary: Searches TikTok Shop for products matching a keyword query.
+  method: GET
+  path: /v1/tiktok/shop/search
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Term you want to search for
+      page:
+        type: number
+        required: false
+        note: Page number to retrieve
+      region:
+        type: string
+        required: false
+        note: Region to search shop products in. Non-US TikTok Shop regions are not
+          reliable right now and may return limited or inconsistent results. Sorry
+          for the inconvenience.
+  docs_url: https://docs.scrapecreators.com/tiktok/shop/search
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-song
+  capability: tiktok.music.detail
+  name: TikTok sound or song details by clip id
+  summary: Fetches detailed metadata for a specific TikTok sound or song by its clipId.
+  method: GET
+  path: /v1/tiktok/song
+  input:
+    queryParams:
+      clipId:
+        type: string
+        required: true
+        note: This is a little confusing because this isn't songId like you'd think.
+          It is the clipId. I guess because you can clip different portions of a song
+          🤷‍♂️
+  docs_url: https://docs.scrapecreators.com/tiktok/song
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-song-videos
+  capability: tiktok.music.videos
+  name: TikTok videos using a sound, by clip id
+  summary: Fetches TikTok videos that use a specific sound or song, identified by
+    its clipId.
+  method: GET
+  path: /v1/tiktok/song/videos
+  input:
+    queryParams:
+      clipId:
+        type: string
+        required: false
+        note: 'This is clipId. Can be found on a url like so: https://www.tiktok.com/music/That%27s-Who-I-Praise-7370375686554782506,
+          where 7370375686554782506 is the clipId'
+      cursor:
+        type: number
+        required: false
+        note: The cursor to get the next page of results.
+  docs_url: https://docs.scrapecreators.com/tiktok/song/videos
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-user-audience
+  capability: scrapecreators.tools
+  name: TikTok audience demographics by username — countries
+  summary: Retrieves audience demographic data for a TikTok user, showing where their
+    followers are located by country.
+  method: GET
+  path: /v1/tiktok/user/audience
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: TikTok handle
+  docs_url: https://docs.scrapecreators.com/tiktok/user/audience
+  tier: extended
+  cost:
+    type: per_call
+    value: 26
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-user-followers
+  capability: tiktok.user.followers
+  name: TikTok user followers by username or id
+  summary: Retrieves the follower list of a TikTok account by handle or user_id —
+    useful for seeing who follows a creator or getting subscriber data.
+  method: GET
+  path: /v1/tiktok/user/followers
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: false
+        note: TikTok handle
+      user_id:
+        type: string
+        required: false
+        note: User id. Use this for faster response times.
+      min_time:
+        type: number
+        required: false
+        note: Used to paginate. Get 'min_time' from previous response.
+      trim:
+        type: boolean
+        required: false
+        note: Set to true to get a trimmed response
+  docs_url: https://docs.scrapecreators.com/tiktok/user/followers
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-user-following
+  capability: tiktok.user.following
+  name: TikTok user following list by username
+  summary: Retrieves the following list — accounts that a TikTok user follows — by
+    their handle.
+  method: GET
+  path: /v1/tiktok/user/following
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: TikTok handle
+      min_time:
+        type: number
+        required: false
+        note: Used to paginate. Get 'min_time' from previous response.
+      trim:
+        type: boolean
+        required: false
+        note: Set to true to get a trimmed response
+  docs_url: https://docs.scrapecreators.com/tiktok/user/following
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-user-live
+  capability: tiktok.live.status
+  name: TikTok live status by username — room details
+  summary: Checks if a TikTok user is currently live streaming and retrieves their
+    live room details.
+  method: GET
+  path: /v1/tiktok/user/live
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: TikTok handle
+  docs_url: https://docs.scrapecreators.com/tiktok/user/live
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-user-showcase
+  capability: scrapecreators.tools
+  name: TikTok Shop creator showcase products by username
+  summary: Fetches products featured in a TikTok user's public showcase — the products
+    a creator promotes on their profile.
+  method: GET
+  path: /v1/tiktok/user/showcase
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: The handle of the user
+      region:
+        type: string
+        required: false
+        note: Region to put the proxy in. Non-US TikTok Shop regions are not reliable
+          right now and may return limited or inconsistent showcase data. Sorry for
+          the inconvenience.
+      cursor:
+        type: string
+        required: false
+        note: The cursor to the next page of products
+  docs_url: https://docs.scrapecreators.com/tiktok/user/showcase
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-video-comment-replies
+  capability: tiktok.comment.replies
+  name: TikTok comment replies by comment id
+  summary: Fetches replies to a specific TikTok comment by its ID.
+  method: GET
+  path: /v1/tiktok/video/comment/replies
+  input:
+    queryParams:
+      comment_id:
+        type: string
+        required: true
+        note: TikTok comment ID. This is the cid from the comments endpoint.
+      url:
+        type: string
+        required: true
+        note: TikTok video URL. This is the url from the comments endpoint.
+      cursor:
+        type: number
+        required: false
+        note: Cursor to get more replies. Get 'cursor' from previous response.
+  docs_url: https://docs.scrapecreators.com/tiktok/video/comment/replies
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-tiktok-video-transcript
+  capability: tiktok.video.captions
+  name: TikTok video transcript by URL — captions, subtitles
+  summary: Extracts the transcript, captions, or subtitles from a TikTok video by
+    URL.
+  method: GET
+  path: /v1/tiktok/video/transcript
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: TikTok video URL
+      language:
+        type: string
+        required: false
+        note: Language of the transcript. 2 letter language code, ie 'en', 'es', 'fr',
+          'de', 'it', 'ja', 'ko', 'zh'
+      use_ai_as_fallback:
+        type: string
+        required: false
+        note: Set to 'true' to use AI as a fallback to get the transcript if the transcript
+          is not found. Costs 10 credits to use this feature. And only if the video
+          is under 2 minutes.
+  docs_url: https://docs.scrapecreators.com/tiktok/video/transcript
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-truthsocial-post
+  capability: scrapecreators.tools
+  name: Truth Social post by URL — text, engagement counts
+  summary: Fetches a single Truth Social post by URL, returning text, id, created_at,
+    url, content, account details, media_attachments, card link previews, replies_count,
+    reblogs_count, and favourites_count.
+  method: GET
+  path: /v1/truthsocial/post
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Truth Social post URL
+  docs_url: https://docs.scrapecreators.com/truthsocial/post
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-truthsocial-profile
+  capability: scrapecreators.tools
+  name: Truth Social profile by username — bio, followers
+  summary: Retrieves a Truth Social user's public profile including display_name,
+    username, avatar, header, followers_count, following_count, statuses_count, verified
+    status, website, and created_at.
+  method: GET
+  path: /v1/truthsocial/profile
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: Truth Social username
+  docs_url: https://docs.scrapecreators.com/truthsocial/profile
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-truthsocial-user-posts
+  capability: scrapecreators.tools
+  name: Truth Social user posts by username
+  summary: Fetches a paginated list of posts from a Truth Social user, returning text,
+    id, created_at, url, content, account info, media_attachments, card link previews,
+    replies_count, reblogs_count, and favourites_count.
+  method: GET
+  path: /v1/truthsocial/user/posts
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: false
+        note: Truth Social username
+      user_id:
+        type: string
+        required: false
+        note: Truth Social user id. Use this for faster response times. Trumps is
+          107780257626128497. It is the 'id' field in the profile endpoint.
+      next_max_id:
+        type: string
+        required: false
+        note: Used to paginate to next page
+      trim:
+        type: boolean
+        required: false
+        note: Set to true for a trimmed down version of the response
+  docs_url: https://docs.scrapecreators.com/truthsocial/user/posts
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-twitch-clip
+  capability: twitch.clip.detail
+  name: Twitch clip by URL — video URLs, metadata
+  summary: Fetches detailed data for a Twitch clip by URL, including metadata and
+    direct video URLs.
+  method: GET
+  path: /v1/twitch/clip
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Twitch clip URL
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/twitch/clip
+  tier: extended
+  tool: true
+- id: scrapecreators.x.v1-twitch-profile
+  capability: twitch.user.profile
+  name: Twitch profile by username — identity, links
+  summary: Retrieves a Twitch user's public profile by handle, including identity,
+    social links, and content.
+  method: GET
+  path: /v1/twitch/profile
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: Twitch handle
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/twitch/profile
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-twitch-user-schedule
+  capability: twitch.user.schedule
+  name: Twitch stream schedule by username
+  summary: Fetches a user's schedule by handle, returning a list of scheduled events
+    with start time, end time, title, description, and thumbnail URL.
+  method: GET
+  path: /v1/twitch/user/schedule
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: Twitch handle
+  docs_url: https://docs.scrapecreators.com/twitch/user/schedule
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-twitch-user-videos
+  capability: twitch.user.videos
+  name: Twitch user videos by username — views, game info
+  summary: Fetches a list of videos (100 max) for a Twitch user, returning each video's
+    id, slug, url, embedURL, title, viewCount, language, durationSeconds, game info,
+    broadcaster details with follower count, thumbnailURL, and videoQualities at multiple
+    resolutions with a signed videoURL for playback.
+  method: GET
+  path: /v1/twitch/user/videos
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: Twitch handle
+      filter_by:
+        type: string
+        required: false
+        note: Filter by
+      sort_by:
+        type: string
+        required: false
+        note: Sort by
+  docs_url: https://docs.scrapecreators.com/twitch/user/videos
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-twitter-community
+  capability: x.community.detail
+  name: X (Twitter) community details by URL
+  summary: Retrieves details about a Twitter/X Community by URL.
+  method: GET
+  path: /v1/twitter/community
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Community URL
+  docs_url: https://docs.scrapecreators.com/twitter/community
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-twitter-community-tweets
+  capability: x.community.posts
+  name: X (Twitter) community tweets by URL
+  summary: Fetches tweets posted within a Twitter/X Community by URL.
+  method: GET
+  path: /v1/twitter/community/tweets
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Community URL
+  docs_url: https://docs.scrapecreators.com/twitter/community/tweets
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-twitter-tweet
+  capability: x.post.detail
+  name: X (Twitter) tweet by URL — author, engagement
+  summary: Retrieves detailed information about a specific tweet by URL, including
+    the author's profile and engagement metrics.
+  method: GET
+  path: /v1/twitter/tweet
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Tweet URL
+      trim:
+        type: boolean
+        required: false
+        note: Set to true for a trimmed down version of the response
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/twitter/tweet
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-twitter-tweet-transcript
+  capability: x.post.transcript
+  name: X (Twitter) video tweet transcript by URL
+  summary: Extracts the transcript from a Twitter video tweet using AI-powered transcription.
+  method: GET
+  path: /v1/twitter/tweet/transcript
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Tweet URL
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/twitter/tweet/transcript
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-youtube-channel-videos
+  capability: youtube.channel.videos
+  name: YouTube channel videos by id or username — views, dates
+  summary: Fetches a paginated list of videos uploaded by a YouTube channel, including
+    each video's title, URL, thumbnail, view count (views), publish date, duration,
+    and description.
+  method: GET
+  path: /v1/youtube/channel-videos
+  input:
+    queryParams:
+      channelId:
+        type: string
+        required: false
+        note: YouTube channel ID
+      handle:
+        type: string
+        required: false
+        note: YouTube channel handle
+      sort:
+        type: string
+        required: false
+        note: Sort by latest or popular
+      continuationToken:
+        type: string
+        required: false
+        note: Continuation token to get more videos. Get 'continuationToken' from
+          previous response.
+      is_paid_promotions:
+        type: string
+        required: false
+        note: Set to 'true' to search YouTube's public paid product placement / sponsorship
+          / endorsement search surface. This returns normal YouTube videos where the
+          creator declared paid promotion. Cannot be combined with filter,...
+      includeExtras:
+        type: string
+        required: false
+        note: This will get you the like + comment count and the description. To get
+          the full details of the video, use the /v1/youtube/video endpoint. Honestly,
+          if you use this param, the error rate is higher. We might deprecate t...
+  docs_url: https://docs.scrapecreators.com/youtube/channel-videos
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-youtube-channel-community-posts
+  capability: youtube.channel.posts
+  name: YouTube channel community posts by id or username
+  summary: Fetches community posts from a YouTube channel's Posts tab, including post
+    ID, URL, content, images, attached video, like count, publish time, channel info,
+    and a continuationToken when YouTube has more results.
+  method: GET
+  path: /v1/youtube/channel/community-posts
+  input:
+    queryParams:
+      channelId:
+        type: string
+        required: false
+        note: YouTube channel ID
+      handle:
+        type: string
+        required: false
+        note: YouTube channel handle
+      continuationToken:
+        type: string
+        required: false
+        note: Continuation token to get more community posts. Get 'continuationToken'
+          from previous response.
+  docs_url: https://docs.scrapecreators.com/youtube/channel/community-posts
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-youtube-channel-lives
+  capability: scrapecreators.tools
+  name: YouTube channel live streams by id or username
+  summary: Fetches live streams and past streams from a YouTube channel's Live tab,
+    including title, URL, thumbnail, view count, publish time, duration, and a continuationToken
+    when YouTube has more results.
+  method: GET
+  path: /v1/youtube/channel/lives
+  input:
+    queryParams:
+      channelId:
+        type: string
+        required: false
+        note: YouTube channel ID
+      handle:
+        type: string
+        required: false
+        note: YouTube channel handle
+      continuationToken:
+        type: string
+        required: false
+        note: Continuation token to get more lives. Get 'continuationToken' from previous
+          response.
+  docs_url: https://docs.scrapecreators.com/youtube/channel/lives
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-youtube-channel-playlists
+  capability: scrapecreators.tools
+  name: YouTube channel playlists by id or username
+  summary: Fetches playlists from a YouTube channel's Playlists tab, including playlist
+    ID, title, thumbnail, video count, channel info, playlist URL, and a continuationToken
+    when YouTube has more results.
+  method: GET
+  path: /v1/youtube/channel/playlists
+  input:
+    queryParams:
+      channelId:
+        type: string
+        required: false
+        note: YouTube channel ID
+      handle:
+        type: string
+        required: false
+        note: YouTube channel handle
+      continuationToken:
+        type: string
+        required: false
+        note: Continuation token to get more playlists. Get 'continuationToken' from
+          previous response.
+  docs_url: https://docs.scrapecreators.com/youtube/channel/playlists
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-youtube-channel-shorts
+  capability: youtube.channel.shorts
+  name: YouTube channel Shorts by id or username — views, likes
+  summary: Retrieves a paginated list of short-form videos (Shorts) from a YouTube
+    channel, including each short's title, URL, view count (views), likes, comments,
+    and description.
+  method: GET
+  path: /v1/youtube/channel/shorts
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: false
+        note: Can pass channelId or handle
+      channelId:
+        type: string
+        required: false
+        note: Can pass channelId or handle
+      sort:
+        type: string
+        required: false
+        note: Sort by newest or popular
+      continuationToken:
+        type: string
+        required: false
+        note: Continuation token to get more videos. Get 'continuationToken' from
+          previous response.
+  docs_url: https://docs.scrapecreators.com/youtube/channel/shorts
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-youtube-community-post
+  capability: youtube.post.detail
+  name: YouTube community post by URL — text, images, likes
+  summary: Retrieves the full details of a YouTube community post, including its text
+    content, attached images, like count, publish date, and associated channel info.
+  method: GET
+  path: /v1/youtube/community-post
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: The URL of the YouTube community post to get
+  docs_url: https://docs.scrapecreators.com/youtube/community-post
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-youtube-playlist
+  capability: scrapecreators.tools
+  name: YouTube playlist videos by playlist id
+  summary: Retrieves all videos in a YouTube playlist, including the playlist title,
+    owner info, total video count, and each video's title, URL, thumbnail, duration,
+    and channel.
+  method: GET
+  path: /v1/youtube/playlist
+  input:
+    queryParams:
+      playlist_id:
+        type: string
+        required: true
+        note: The ID of the YouTube playlist. In the YouTube URL it will be the 'list'
+          parameter.
+  docs_url: https://docs.scrapecreators.com/youtube/playlist
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-youtube-search
+  capability: youtube.search.videos
+  name: Search YouTube by keyword — videos, channels, playlists
+  summary: Searches YouTube by keyword query and returns matching videos, channels,
+    playlists, shorts, shelves, and live streams.
+  method: GET
+  path: /v1/youtube/search
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Search query
+      uploadDate:
+        type: string
+        required: false
+        note: Upload date
+      sortBy:
+        type: string
+        required: false
+        note: Sort by
+      type:
+        type: string
+        required: false
+        note: Type of content to search for
+      duration:
+        type: string
+        required: false
+        note: Duration of the video. Only applies to videos (not shorts).
+      region:
+        type: string
+        required: false
+        note: 2 letter country code of the country to put the proxy in.
+      continuationToken:
+        type: string
+        required: false
+        note: Continuation token to get more videos. Get 'continuationToken' from
+          previous response.
+      includeExtras:
+        type: string
+        required: false
+        note: This will get you the like + comment count and the description. To get
+          the full details of the video, use the /v1/youtube/video endpoint. *This
+          will slow down the response slightly.*
+  docs_url: https://docs.scrapecreators.com/youtube/search
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-youtube-search-hashtag
+  capability: scrapecreators.tools
+  name: Search YouTube videos by hashtag
+  summary: Searches YouTube for content matching a specific hashtag and returns matching
+    videos with title, URL, thumbnail, view count (views), publish date, duration,
+    and channel info.
+  method: GET
+  path: /v1/youtube/search/hashtag
+  input:
+    queryParams:
+      hashtag:
+        type: string
+        required: true
+        note: Hashtag to search for
+      continuationToken:
+        type: string
+        required: false
+        note: Continuation token to get more videos. Get 'continuationToken' from
+          previous response.
+      type:
+        type: string
+        required: false
+        note: Search for all types of content or only shorts
+  docs_url: https://docs.scrapecreators.com/youtube/search/hashtag
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-youtube-shorts-trending
+  capability: youtube.trending.videos
+  name: YouTube trending Shorts — views, likes, channels
+  summary: Fetches approximately 48 currently trending YouTube Shorts (viral/popular
+    short-form videos) per call, returning each short's title, URL, thumbnail, view
+    count (views), like count (likes), comment count, publish date, channel info,
+    keywords, and duration.
+  method: GET
+  path: /v1/youtube/shorts/trending
+  docs_url: https://docs.scrapecreators.com/youtube/shorts/trending
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-youtube-video-comment-replies
+  capability: youtube.comment.replies
+  name: YouTube comment replies by continuation token
+  summary: Fetches replies to a specific comment on a YouTube video, including each
+    reply's text content, author details (name, channel ID, avatar, verified/creator
+    status), like count, and publish date.
+  method: GET
+  path: /v1/youtube/video/comment/replies
+  input:
+    queryParams:
+      continuationToken:
+        type: string
+        required: true
+        note: Continuation token for the comment replies. Use 'repliesContinuationToken'
+          from the Comments endpoint, or 'continuationToken' from a previous replies
+          response to paginate.
+  docs_url: https://docs.scrapecreators.com/youtube/video/comment/replies
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-youtube-video-sponsors
+  capability: scrapecreators.tools
+  name: YouTube video sponsors by URL (experimental)
+  summary: Experimental endpoint.
+  method: GET
+  path: /v1/youtube/video/sponsors
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: YouTube video or short URL
+      language:
+        type: string
+        required: false
+        note: 2 letter language code used for transcript lookup, ie 'en', 'es', 'fr'
+          etc.
+  docs_url: https://docs.scrapecreators.com/youtube/video/sponsors
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v1-youtube-video-transcript
+  capability: youtube.video.captions
+  name: YouTube video transcript by URL — captions, subtitles
+  summary: Retrieves the captions, subtitles, or transcript of a YouTube video or
+    short.
+  method: GET
+  path: /v1/youtube/video/transcript
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: YouTube video or short URL
+      language:
+        type: string
+        required: false
+        note: 2 letter language code, ie 'en', 'es', 'fr' etc. If the transcript is
+          not available in the language you specify, the transcript will be null.
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/youtube/video/transcript
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v2-instagram-media-transcript
+  capability: scrapecreators.tools
+  name: Instagram video or reel transcript by URL
+  summary: Generates an AI-powered speech-to-text transcription for an Instagram video
+    post or reel.
+  method: GET
+  path: /v2/instagram/media/transcript
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: Instagram post or reel URL
+      cache_max_age:
+        type: string
+        required: false
+        note: 'If we have a response in the cache that is this many days old or newer,
+          return the cached response (0 credits, with "cached": true and a "cached_at"
+          timestamp). Otherwise, scrape a live result (1 credit). [See the Cac...'
+  docs_url: https://docs.scrapecreators.com/instagram/media/transcript
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v2-instagram-reels-search
+  capability: instagram.search.reels
+  name: Search Instagram reels by keyword
+  summary: Searches for Instagram reels matching a keyword or phrase via Google Search,
+    bypassing Instagram's login-gated search.
+  method: GET
+  path: /v2/instagram/reels/search
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: The keyword to search for
+      date_posted:
+        type: string
+        required: false
+        note: Date posted
+      page:
+        type: number
+        required: false
+        note: The page number to return. Must be between 1 and 11; page 12 or greater
+          returns a 400 response.
+  docs_url: https://docs.scrapecreators.com/instagram/reels/search
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.v3-tiktok-profile-videos
+  capability: tiktok.user.videos
+  name: TikTok user videos by username or id
+  summary: Fetches videos posted by a TikTok user, sortable by latest or most popular
+    — use this to get a creator's video feed or TikToks.
+  method: GET
+  path: /v3/tiktok/profile/videos
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: TikTok handle
+      user_id:
+        type: string
+        required: false
+        note: TikTok user id. Use this for faster responses.
+      sort_by:
+        type: string
+        required: false
+        note: What to sort by
+      max_cursor:
+        type: string
+        required: false
+        note: Cursor to get more videos. Get 'max_cursor' from previous response.
+      region:
+        type: string
+        required: false
+        note: Region (country) for the proxy. Defaults to GB. If a profile should
+          have videos but returns none, try US or another relevant two-letter country
+          code.
+      trim:
+        type: boolean
+        required: false
+        note: Set to true for a trimmed down version of the response
+  docs_url: https://docs.scrapecreators.com/tiktok/profile/videos
+  tier: extended
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.account.usage
+  capability: account.usage
+  name: Check credit balance
+  summary: Returns the number of API credits remaining on your Scrape Creators account.
+  method: GET
+  path: /v1/account/credit-balance
+  input:
+    queryParams: {}
+  docs_url: https://docs.scrapecreators.com/account/credit-balance
+  cost:
+    type: free
+    value: 0
+    currency: USD
+    unit: call
+  tool: true
+- id: scrapecreators.tiktok.video.detail
+  capability: tiktok.video.detail
+  name: TikTok video by URL — engagement stats, transcript
+  summary: Fetches detailed data for a single TikTok video by URL, including its metadata,
+    engagement stats, and optionally its transcript/captions.
+  method: GET
+  path: /v2/tiktok/video
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: TikTok video URL
+      get_transcript:
+        type: boolean
+        required: false
+        note: Get transcript of the video
+  docs_url: https://docs.scrapecreators.com/tiktok/video
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.tiktok.video.comments
+  capability: tiktok.video.comments
+  name: TikTok video comments by URL — replies, engagement
+  summary: Fetches comments on a TikTok video by URL — useful for reading audience
+    reactions, replies, and engagement.
+  method: GET
+  path: /v1/tiktok/video/comments
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: TikTok video URL
+      cursor:
+        type: number
+        required: false
+        note: Cursor to get more comments. Get 'cursor' from previous response.
+  docs_url: https://docs.scrapecreators.com/tiktok/video/comments
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.tiktok.search.videos
+  capability: tiktok.search.videos
+  name: Search TikTok videos by keyword
+  summary: Searches for TikTok videos by keyword or phrase — the general video search
+    across all of TikTok.
+  method: GET
+  path: /v1/tiktok/search/keyword
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Keyword to search for
+      date_posted:
+        type: string
+        required: false
+        note: Time frame
+  docs_url: https://docs.scrapecreators.com/tiktok/search/keyword
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.instagram.user.posts
+  capability: instagram.user.posts
+  name: Instagram user posts by username — reels, photos, videos
+  summary: Returns a paginated feed of a user's public Instagram posts, including
+    reels, photos, videos, and carousels.
+  method: GET
+  path: /v2/instagram/user/posts
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: Instagram handle
+      next_max_id:
+        type: string
+        required: false
+        note: Cursor to get next page of results.
+  docs_url: https://docs.scrapecreators.com/instagram/user/posts
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.instagram.post.comments
+  capability: instagram.post.comments
+  name: Instagram post or reel comments by URL
+  summary: Retrieves comments on a public Instagram post or reel.
+  method: GET
+  path: /v2/instagram/post/comments
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: The URL of the post or reel to get comments from
+      cursor:
+        type: string
+        required: false
+        note: The cursor to get more comments. Get 'cursor' from previous response.
+  docs_url: https://docs.scrapecreators.com/instagram/post/comments
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.youtube.video.detail
+  capability: youtube.video.detail
+  name: YouTube video or short by URL — views, chapters, captions
+  summary: Fetches full details for a YouTube video or short, including title, description,
+    thumbnail, view/like/comment counts, publish date, duration, chapters and caption
+    tracks.
+  method: GET
+  path: /v1/youtube/video
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: YouTube video or short URL
+  docs_url: https://docs.scrapecreators.com/youtube/video
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.youtube.video.comments
+  capability: youtube.video.comments
+  name: YouTube video comments by URL — replies, likes, authors
+  summary: Fetches comments and replies from a YouTube video, including each comment's
+    text, author details, like count, reply count, and publish date.
+  method: GET
+  path: /v1/youtube/video/comments
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: YouTube video URL
+      order:
+        type: string
+        required: false
+        note: Order of comments
+  docs_url: https://docs.scrapecreators.com/youtube/video/comments
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.x.user.posts
+  capability: x.user.posts
+  name: X (Twitter) user tweets by username
+  summary: Fetches tweets from a Twitter user's profile by handle.
+  method: GET
+  path: /v1/twitter/user-tweets
+  input:
+    queryParams:
+      handle:
+        type: string
+        required: true
+        note: Twitter handle
+  docs_url: https://docs.scrapecreators.com/twitter/user-tweets
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.linkedin.user.profile
+  capability: linkedin.user.profile
+  name: LinkedIn person profile by URL — experience, education
+  summary: Retrieves a person's public LinkedIn profile data, including their name,
+    photo, location, follower count, about/bio summary, recent posts, work experience
+    and education.
+  method: GET
+  path: /v1/linkedin/profile
+  input:
+    queryParams:
+      url:
+        type: string
+        required: true
+        note: The URL of the LinkedIn profile to get
+  docs_url: https://docs.scrapecreators.com/linkedin/profile
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.reddit.subreddit.posts
+  capability: reddit.subreddit.posts
+  name: Subreddit posts by name — sorted feed
+  summary: Fetches posts from a subreddit with sorting and filtering options.
+  method: GET
+  path: /v1/reddit/subreddit
+  input:
+    queryParams:
+      subreddit:
+        type: string
+        required: true
+        note: Subreddit name
+      sort:
+        type: string
+        required: false
+        note: Sort order
+  docs_url: https://docs.scrapecreators.com/reddit/subreddit
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.reddit.search.posts
+  capability: reddit.search.posts
+  name: Search Reddit posts by keyword
+  summary: Searches across all of Reddit for posts matching a query.
+  method: GET
+  path: /v1/reddit/search
+  input:
+    queryParams:
+      query:
+        type: string
+        required: true
+        note: Search query
+      sort:
+        type: string
+        required: false
+        note: Sort by
+  docs_url: https://docs.scrapecreators.com/reddit/search
+  cost:
+    type: per_call
+    value: 1
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-07-28'
+    confidence: verified
+  tool: true
+- id: scrapecreators.creators.socials.connected
+  capability: creators.socials.connected
+  name: Find a creator's other social profiles from one handle
+  summary: Give one handle on Instagram, TikTok, YouTube, X or Facebook and get back
+    the creator's verified profiles on the other platforms, with a confidence score
+    and the evidence for each link (bio links, link-in-bio pages, shared website,
+    reciprocal links, verified Google candidates). Deterministic, no AI; handles only,
+    not URLs. Same-handle guesses that could not be corroborated are returned separately
+    in same_handle_candidate_urls.
+  method: GET
+  path: /v1/find-social-profiles
+  input:
+    queryParams:
+      platform:
+        type: string
+        required: true
+        note: 'Source platform: instagram | tiktok | youtube | x | twitter | facebook'
+      handle:
+        type: string
+        required: true
+        note: Creator handle, no URL; leading @ optional. YouTube also accepts 24-char
+          channel ids.
+      cache_max_age:
+        type: string
+        required: false
+        note: 'Return a cached result if one is at most this old (0 credits): 1d |
+          3d | 7d | 14d | 30d'
+  docs_url: https://docs.scrapecreators.com/v1/find-social-profiles
+  cost:
+    type: per_call
+    value: 10
+    currency: credit
+    per: 1
+    unit: call
+    source: rate_card_api
+    source_url: https://docs.scrapecreators.com/openapi.json
+    checked: '2026-08-27'
+    confidence: verified
+  tool: true

@@ -129,19 +129,6 @@ has no dependency on a sibling repository or the original private project.
 
 To add a provider, see [the provider guide](docs/providers.md).
 
-## Related open-source projects
-
-**[OpenMailConnect](https://github.com/DINQ-labs/openmailconnect)** — a standalone,
-self-hosted MCP server for Gmail and SMTP, maintained by DINQ Labs under Apache-2.0.
-It provides Gmail search, reading, threads, drafts and sending, plus SMTP sending.
-Use OpenPeopleRouter to discover people and OpenMailConnect to work with your own
-mailbox; both can be configured independently in the same MCP client.
-
-OpenMailConnect is optional and is not bundled with OpenPeopleRouter. Follow its
-[installation guide](https://github.com/DINQ-labs/openmailconnect#install) to set up
-your own Gmail OAuth application or SMTP credentials. It requires no DINQ account
-or PeopleRouter credits. Sending email requires the user's authorization.
-
 ## License
 
 Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE). Catalog portions originate

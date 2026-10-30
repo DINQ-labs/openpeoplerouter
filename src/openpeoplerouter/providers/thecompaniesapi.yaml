@@ -1,0 +1,573 @@
+id: thecompaniesapi
+title: The Companies API
+about: Company profiles from a domain, email or social URL, and company search by name, prompt, similarity or filters.
+site: https://www.thecompaniesapi.com
+docs: https://www.thecompaniesapi.com/api
+pricing: https://www.thecompaniesapi.com/pricing
+api: https://api.thecompaniesapi.com
+key:
+  env: THECOMPANIESAPI_API_KEY
+  header: Authorization
+  prefix: 'Basic '
+operations:
+  search-companies:
+    title: searchCompanies
+    about: Search companies using a segmentation query.
+    request: GET /v2/companies
+    params:
+      actionId:
+        type: number
+      domainsToExclude: {}
+      linkedinToExclude: {}
+      page:
+        type: number
+      query:
+        type: array
+      search: {}
+      searchFields:
+        type: array
+      simplified:
+        type: boolean
+      size:
+        type: number
+      sortFields:
+        type: array
+      sortKey: {}
+      sortOrder:
+        choices:
+        - asc
+        - desc
+    price:
+      credits: 1
+      per: call
+  search-companies-post:
+    title: searchCompaniesPost
+    about: Search companies using a segmentation query.
+    request: POST /v2/companies
+    params:
+      actionId:
+        in: body
+        type: number
+      domainsToExclude:
+        in: body
+      linkedinToExclude:
+        in: body
+      page:
+        in: body
+        type: number
+      query:
+        in: body
+        type: array
+      search:
+        in: body
+      searchFields:
+        in: body
+        type: array
+      simplified:
+        in: body
+        type: boolean
+      size:
+        in: body
+        type: number
+      sortFields:
+        in: body
+        type: array
+      sortKey:
+        in: body
+      sortOrder:
+        in: body
+        choices:
+        - asc
+        - desc
+    price:
+      credits: 1
+      per: call
+  fetch-company:
+    title: fetchCompany
+    about: Get a single company data by its domain.
+    request: GET /v2/companies/{domain}
+    params:
+      domain:
+        in: path
+        required: true
+      refresh:
+        type: boolean
+      simplified:
+        type: boolean
+    price:
+      credits: 1
+      per: call
+    not_found: 404
+    jobs:
+      enrich_company:
+        needs:
+        - - domain
+        send:
+          domain: domain
+        result: '@'
+        fields:
+          name: about.name
+          domain: domain.domain
+          description: descriptions.primary
+          industry: about.industry
+          employees: about.totalEmployeesExact || about.totalEmployees
+          founded: about.yearFounded
+          location: locations.headquarters.city.name
+          country: locations.headquarters.country.code
+          linkedin_url: socials.linkedin.url
+          logo: assets.logoSquare.src
+          technologies: technologies.details[].slug
+          revenue: finances.revenue
+  search-companies-by-name:
+    title: searchCompaniesByName
+    about: Search companies by name.
+    request: GET /v2/companies/by-name
+    params:
+      countries: {}
+      exactWordsMatch:
+        type: boolean
+      listsToExclude: {}
+      name:
+        required: true
+      page:
+        type: number
+      searchFields:
+        type: array
+      simplified:
+        type: boolean
+      size:
+        type: number
+      sortFields:
+        type: array
+      sortKey: {}
+      sortOrder:
+        choices:
+        - asc
+        - desc
+    price:
+      credits: 1
+      per: call
+  search-companies-by-prompt:
+    title: searchCompaniesByPrompt
+    about: Search companies by prompt.
+    request: GET /v2/companies/by-prompt
+    params:
+      listsToExclude: {}
+      page:
+        type: number
+      prompt:
+        required: true
+      similarity:
+        type: number
+      simplified:
+        type: boolean
+      size:
+        type: number
+      sortFields:
+        type: array
+      sortKey: {}
+      sortOrder:
+        choices:
+        - asc
+        - desc
+    price:
+      credits: 1
+      per: call
+    jobs:
+      find_companies:
+        needs:
+        - - query
+        send:
+          query: prompt
+        limit: size
+        result: companies
+        fields:
+          name: about.name
+          domain: domain.domain
+          description: descriptions.primary
+          industry: about.industry
+          employees: about.totalEmployees
+          founded: about.yearFounded
+          country: locations.headquarters.country.code
+          linkedin_url: socials.linkedin.url
+  search-similar-companies:
+    title: searchSimilarCompanies
+    about: Get similar companies from one or many domains.
+    request: GET /v2/companies/similar
+    params:
+      domains:
+        type: array
+        required: true
+      page:
+        type: number
+      proximityExact:
+        type: number
+      proximityTerm:
+        choices:
+        - close
+        - far
+        - near
+      simplified:
+        type: boolean
+      size:
+        type: number
+      sortFields:
+        type: array
+      sortKey: {}
+      sortOrder:
+        choices:
+        - asc
+        - desc
+    price:
+      credits: 1
+      per: call
+  count-companies:
+    title: countCompanies
+    about: Get the count of companies using a segmentation query.
+    request: GET /v2/companies/count
+    params:
+      actionId:
+        type: number
+      query:
+        type: array
+      search: {}
+      searchFields:
+        type: array
+    price:
+      credits: 1
+      per: call
+  count-companies-post:
+    title: countCompaniesPost
+    about: Get the count of companies using a segmentation body.
+    request: POST /v2/companies/count
+    params:
+      actionId:
+        in: body
+        type: number
+      query:
+        in: body
+        type: array
+      search:
+        in: body
+      searchFields:
+        in: body
+        type: array
+    price:
+      credits: 1
+      per: call
+  fetch-company-by-email:
+    title: fetchCompanyByEmail
+    about: Get a company data by email.
+    request: GET /v2/companies/by-email
+    params:
+      email:
+        required: true
+      refresh:
+        type: boolean
+      simplified:
+        type: boolean
+    price:
+      credits: 1
+      per: call
+  fetch-company-by-social:
+    title: fetchCompanyBySocial
+    about: Get a company data by social media.
+    request: GET /v2/companies/by-social
+    params:
+      angellist: {}
+      dribbble: {}
+      facebook: {}
+      github: {}
+      instagram: {}
+      linkedin: {}
+      pinterest: {}
+      refresh:
+        type: boolean
+      simplified:
+        type: boolean
+      snapchat: {}
+      souncloud: {}
+      tiktok: {}
+      twitter: {}
+      wellfound: {}
+      youtube: {}
+    price:
+      credits: 1
+      per: call
+  fetch-company-email-patterns:
+    title: fetchCompanyEmailPatterns
+    about: Get email patterns for a company by its domain.
+    request: GET /v2/companies/{domain}/email-patterns
+    params:
+      domain:
+        in: path
+        required: true
+      emailsCount:
+        type: boolean
+      precision:
+        type: number
+    price:
+      credits: 1
+      per: call
+  ask-company:
+    title: askCompany
+    about: Ask a question about a company by its domain.
+    request: POST /v2/companies/{domain}/ask
+    params:
+      domain:
+        in: path
+        required: true
+      explain:
+        in: body
+        type: boolean
+      fields:
+        in: body
+        type: array
+      listId:
+        in: body
+        type: number
+      model:
+        in: body
+        choices:
+        - small
+        - large
+      query:
+        in: body
+        type: array
+      question:
+        in: body
+        required: true
+    price:
+      credits: 1
+      per: call
+  fetch-company-context:
+    title: fetchCompanyContext
+    about: Get the full context of a company by its domain.
+    request: GET /v2/companies/{domain}/context
+    params:
+      domain:
+        in: path
+        required: true
+    price:
+      credits: 1
+      per: call
+  fetch-companies-analytics:
+    title: fetchCompaniesAnalytics
+    about: Fetch analytics data for search segmentations and lists.
+    request: GET /v2/companies/analytics
+    params:
+      actionId:
+        type: number
+      attribute:
+        required: true
+      listId:
+        type: number
+      query:
+        type: array
+      size:
+        type: number
+      sort:
+        choices:
+        - asc
+        - desc
+    price:
+      credits: 1
+      per: call
+  export-companies-analytics:
+    title: exportCompaniesAnalytics
+    about: Export analytics data for search segmentations and lists.
+    request: POST /v2/companies/analytics/export
+    params:
+      actionId:
+        in: body
+        type: number
+      attributes:
+        in: body
+        type: array
+      format:
+        in: body
+        choices:
+        - csv
+        - json
+        - txt
+        - xls
+        - xml
+      full:
+        in: body
+        type: boolean
+      listId:
+        in: body
+        type: number
+      query:
+        in: body
+        type: array
+      size:
+        in: body
+        type: number
+      sort:
+        in: body
+        choices:
+        - asc
+        - desc
+    price:
+      credits: 1
+      per: call
+  search-industries:
+    title: searchIndustries
+    about: Search industries.
+    request: GET /v2/industries
+    params:
+      page:
+        type: number
+      search: {}
+      size:
+        type: number
+    price:
+      credits: 1
+      per: call
+  search-industries-similar:
+    title: searchIndustriesSimilar
+    about: Get similar industries from one or many industries.
+    request: GET /v2/industries/similar
+    params:
+      industries:
+        type: array
+        required: true
+      page:
+        type: number
+      size:
+        type: number
+    price:
+      credits: 1
+      per: call
+  search-technologies:
+    title: searchTechnologies
+    about: Search technologies.
+    request: GET /v2/technologies
+    params:
+      page:
+        type: number
+      search: {}
+      size:
+        type: number
+    price:
+      credits: 1
+      per: call
+  search-cities:
+    title: searchCities
+    about: Search cities.
+    request: GET /v2/locations/cities
+    params:
+      filters: {}
+      page:
+        type: number
+      search: {}
+      size:
+        type: number
+      sortKey:
+        choices:
+        - counts.companies
+      sortOrder:
+        choices:
+        - asc
+        - desc
+    price:
+      credits: 1
+      per: call
+  search-counties:
+    title: searchCounties
+    about: Search counties.
+    request: GET /v2/locations/counties
+    params:
+      page:
+        type: number
+      search: {}
+      size:
+        type: number
+      sortKey:
+        choices:
+        - counts.companies
+      sortOrder:
+        choices:
+        - asc
+        - desc
+    price:
+      credits: 1
+      per: call
+  search-countries:
+    title: searchCountries
+    about: Search countries.
+    request: GET /v2/locations/countries
+    params:
+      filters: {}
+      page:
+        type: number
+      search: {}
+      size:
+        type: number
+      sortKey:
+        choices:
+        - counts.companies
+      sortOrder:
+        choices:
+        - asc
+        - desc
+    price:
+      credits: 1
+      per: call
+  search-states:
+    title: searchStates
+    about: Search states.
+    request: GET /v2/locations/states
+    params:
+      page:
+        type: number
+      search: {}
+      size:
+        type: number
+      sortKey:
+        choices:
+        - counts.companies
+      sortOrder:
+        choices:
+        - asc
+        - desc
+    price:
+      credits: 1
+      per: call
+  search-continents:
+    title: searchContinents
+    about: Search continents.
+    request: GET /v2/locations/continents
+    params:
+      page:
+        type: number
+      search: {}
+      size:
+        type: number
+      sortKey:
+        choices:
+        - counts.companies
+      sortOrder:
+        choices:
+        - asc
+        - desc
+    price:
+      credits: 1
+      per: call
+  enrich-job-titles:
+    title: enrichJobTitles
+    about: Enrich job titles.
+    request: GET /v2/job-titles/enrich
+    params:
+      name: {}
+    price:
+      credits: 1
+      per: call
+  fetch-user:
+    title: fetchUser
+    about: Get current user information.
+    request: GET /v2/user
+    price:
+      usd: 0
+      per: call

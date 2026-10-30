@@ -1,0 +1,287 @@
+id: linkup
+title: Linkup
+about: Web search and page fetching with sourced answers.
+site: https://www.linkup.so
+docs: https://docs.linkup.so
+pricing: https://www.linkup.so/pricing
+api: https://api.linkup.so/v1
+key:
+  env: LINKUP_API_KEY
+  bearer: true
+operations:
+  balance:
+    title: /credits/balance
+    about: The /credits/balance endpoint allows you to retrieve your current credits balance.
+    request: GET /credits/balance
+    price:
+      per: call
+      note: standard search about 0.005 USD
+      deep about 0.05 USD; see pricing: null
+  list-extract:
+    title: /extract
+    about: '[BETA] The GET /extract method, without extract task identifier, lists all created extract tasks for
+      the authenticated organization, with pagination.'
+    request: GET /extract
+    params:
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      sortBy:
+        choices:
+        - createdAt
+        - updatedAt
+      sortDirection:
+        choices:
+        - asc
+        - desc
+    price:
+      per: call
+      note: standard search about 0.005 USD
+      deep about 0.05 USD; see pricing: null
+  create-extract:
+    title: /extract
+    about: '[BETA] The POST /extract method creates an asynchronous extract task.'
+    request: POST /extract
+    params:
+      q:
+        in: body
+        required: true
+        about: '[BETA] The natural-language query describing which rows to extract and what each row should contain.'
+      schema:
+        in: body
+        about: '[BETA] Optional JSON schema describing a single extracted row. When provided, every returned row
+          must match this schema.'
+      url:
+        in: body
+        required: true
+        about: '[BETA] The seed URL the extract task should start from.'
+      verifyUrls:
+        in: body
+        type: boolean
+        about: '[BETA] Defines whether URLs found in extracted rows should be checked for reachability after extraction.
+          Defaults to false.'
+    price:
+      per: call
+      note: standard search about 0.005 USD
+      deep about 0.05 USD; see pricing: null
+  get-extract:
+    title: /extract/:id
+    about: '[BETA] The GET /extract/:id method, with extract task identifier, retrieves a specific extract task
+      information.'
+    request: GET /extract/{id}
+    params:
+      id:
+        in: path
+        required: true
+    price:
+      per: call
+      note: standard search about 0.005 USD
+      deep about 0.05 USD; see pricing: null
+  fetch:
+    title: /fetch
+    about: The /fetch endpoint allows you to fetch a single webpage from a given URL.
+    request: POST /fetch
+    params:
+      extractImages:
+        in: body
+        type: boolean
+        about: Defines whether the API should extract the images from the webpage in its response.
+      includeRawContent:
+        in: body
+        type: boolean
+        about: Defines whether the API should include the raw page content and its content type in the response.
+      includeRawHtml:
+        in: body
+        type: boolean
+        about: Deprecated. Use includeRawContent instead. Defines whether rawHtml is returned for non-LinkedIn HTML
+          pages.
+      renderJs:
+        in: body
+        type: boolean
+        about: Defines whether the API should render the JavaScript of the webpage.
+      mode:
+        in: body
+        choices:
+        - standard
+        - pro
+        about: Defines the fetch strategy. Pro fetch delivers significantly higher success rates on hard-to-retrieve
+          pages.
+      instructions:
+        in: body
+        about: Optional instructions that guide how data is extracted. Requires schema.
+      schema:
+        in: body
+        about: Optional JSON Schema of type object describing the structured data to extract from the page. Fields
+          with no grounded value are omitted, even when marked as required.
+      url:
+        in: body
+        required: true
+        about: The URL of the webpage you want to fetch.
+    price:
+      per: call
+      note: standard search about 0.005 USD
+      deep about 0.05 USD; see pricing: null
+  search:
+    title: /search
+    about: The /search endpoint allows you to retrieve web content.
+    request: POST /search
+    params:
+      excludeDomains:
+        in: body
+        type: array
+        about: The domains you want to exclude of the search. By default, don't restrict the search.
+      fromDate:
+        in: body
+        about: The date from which the search results should be considered, in ISO 8601 format (YYYY-MM-DD). It
+          must be before toDate, if provided, and later than 1970-01-01.
+      includeDomains:
+        in: body
+        type: array
+        about: The domains you want to search on. By default, don't restrict the search. You can provide up to 100
+          domains.
+      q:
+        in: body
+        required: true
+        about: The natural language question for which you want to retrieve context.
+      structuredOutputSchema:
+        in: body
+        about: Required only when outputType is structured. Provide a JSON schema (as a string) representing the
+          desired response format. The root must be of type object.
+      toDate:
+        in: body
+        about: The date until which the search results should be considered, in ISO 8601 format (YYYY-MM-DD). It
+          must be later than fromDate, if provided, or than 1970-01-01.
+      depth:
+        in: body
+        required: true
+        choices:
+        - deep
+        - fast
+        - flash
+        - standard
+        about: 'Defines the search mode. flash is lowest latency: ranked sources and snippets in a few hundred milliseconds,
+          built for low-latency use cases. fast is higher-quality one-shot retrieval in about a…'
+      includeImages:
+        in: body
+        type: boolean
+        about: Defines whether the API should include images in its results.
+      includeInlineCitations:
+        in: body
+        type: boolean
+        about: Relevant only when outputType is sourcedAnswer. Defines whether the answer should include inline
+          citations.
+      includeSources:
+        in: body
+        type: boolean
+        about: Relevant only when outputType is structured. Defines whether the response should include sources.
+          Please note that it modifies the schema of the response, see below
+      maxResults:
+        in: body
+        type: number
+        about: The maximum number of results to return. The number of results will always be ≤ to maxResults.
+      outputType:
+        in: body
+        required: true
+        choices:
+        - searchResults
+        - sourcedAnswer
+        - structured
+        about: The type of output you want to get. Use structured for a custom-formatted response defined by structuredOutputSchema.
+    price:
+      per: call
+      note: standard search about 0.005 USD
+      deep about 0.05 USD; see pricing: null
+  list-research:
+    title: /research
+    about: The GET /research method, without research task identifier, lists all created research tasks for the
+      authenticated organization, with pagination.
+    request: GET /research
+    params:
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      sortBy:
+        choices:
+        - createdAt
+        - updatedAt
+      sortDirection:
+        choices:
+        - asc
+        - desc
+    price:
+      per: call
+      note: standard search about 0.005 USD
+      deep about 0.05 USD; see pricing: null
+  create-research:
+    title: /research
+    about: The POST /research method creates an asynchronous research task which can perform a comprehensive web
+      research.
+    request: POST /research
+    params:
+      excludeDomains:
+        in: body
+        type: array
+        about: The domains you want to exclude of the search. By default, don't restrict the search.
+      fromDate:
+        in: body
+        about: The date from which the search results should be considered, in ISO 8601 format (YYYY-MM-DD). It
+          must be before toDate, if provided, and later than 1970-01-01.
+      includeDomains:
+        in: body
+        type: array
+        about: The domains you want to search on. By default, don't restrict the search. You can provide up to 100
+          domains.
+      q:
+        in: body
+        required: true
+        about: The natural language question for which you want to retrieve context.
+      structuredOutputSchema:
+        in: body
+        about: Required only when outputType is structured. Provide a JSON schema (as a string) representing the
+          desired response format. The root must be of type object.
+      toDate:
+        in: body
+        about: The date until which the search results should be considered, in ISO 8601 format (YYYY-MM-DD). It
+          must be later than fromDate, if provided, or than 1970-01-01.
+      mode:
+        in: body
+        choices:
+        - answer
+        - auto
+        - investigate
+        - research
+        about: Pin the research agent mode. Omit to let the agent auto-classify per request based on the question.
+      outputType:
+        in: body
+        required: true
+        choices:
+        - sourcedAnswer
+        - structured
+        about: The type of output you want to get. Use structured for a custom-formatted response defined by structuredOutputSchema.
+      reasoningDepth:
+        in: body
+        choices:
+        - L
+        - M
+        - S
+        - XL
+        about: Pin the reasoning depth (S < M < L < XL). Defaults to L when omitted. Higher depths trade latency
+          for thoroughness.
+    price:
+      per: call
+      note: standard search about 0.005 USD
+      deep about 0.05 USD; see pricing: null
+  get-research:
+    title: /research/:id
+    about: The GET /research/:id method, with research task identifier, retrieves a specific research task information.
+    request: GET /research/{id}
+    params:
+      id:
+        in: path
+        required: true
+    price:
+      per: call
+      note: standard search about 0.005 USD
+      deep about 0.05 USD; see pricing: null

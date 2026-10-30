@@ -1,0 +1,73 @@
+id: apify
+title: Apify
+about: Thousands of ready-made scrapers (Actors) — LinkedIn, Instagram, TikTok, Google Maps, company sites — run on your Apify account.
+site: https://apify.com
+docs: https://docs.apify.com/api/v2
+pricing: https://apify.com/pricing
+api: https://api.apify.com/v2
+key:
+  env: APIFY_TOKEN
+  bearer: true
+operations:
+  store-search:
+    title: Find an Actor in the Apify Store
+    about: "Search by words such as 'linkedin profile', 'instagram followers'; use the Actor's username~name as actor_id."
+    request: GET /store
+    docs: https://docs.apify.com/api/v2/store-get
+    params:
+      search: {}
+      category: {}
+      limit: {type: integer}
+      offset: {type: integer}
+      sortBy: {choices: [relevance, popularity, newest, lastUpdate]}
+    price: {usd: 0, per: call}
+  actor:
+    title: An Actor's description and input schema
+    request: GET /acts/{actor_id}
+    params:
+      actor_id: {in: path, required: true, about: username~actor-name or the Actor id}
+    price: {usd: 0, per: call}
+  run-sync:
+    title: Run an Actor and wait for its results (up to 5 minutes)
+    about: Put the Actor's input in input; each Actor bills compute and results to your account.
+    request: POST /acts/{actor_id}/run-sync-get-dataset-items
+    docs: https://docs.apify.com/api/v2/act-run-sync-get-dataset-items-post
+    body: whole
+    params:
+      actor_id: {in: path, required: true}
+      input: {in: body, type: object, required: true, about: "the Actor's input object"}
+      timeout: {type: integer, about: seconds}
+      memory: {type: integer, about: megabytes}
+      maxItems: {type: integer}
+    price: {per: call, note: billed by the Actor's own pricing on your Apify account}
+  run:
+    title: Start an Actor without waiting
+    request: POST /acts/{actor_id}/runs
+    docs: https://docs.apify.com/api/v2/act-runs-post
+    body: whole
+    params:
+      actor_id: {in: path, required: true}
+      input: {in: body, type: object, required: true, about: "the Actor's input object"}
+      timeout: {type: integer}
+      memory: {type: integer}
+    price: {per: call}
+  run-status:
+    title: A run's status and its dataset id
+    request: GET /actor-runs/{run_id}
+    params:
+      run_id: {in: path, required: true}
+    price: {usd: 0, per: call}
+  dataset-items:
+    title: The items a run produced
+    request: GET /datasets/{dataset_id}/items
+    params:
+      dataset_id: {in: path, required: true}
+      limit: {type: integer}
+      offset: {type: integer}
+      clean: {type: boolean}
+      format: {default: json}
+    price: {usd: 0, per: call}
+  me:
+    title: Your Apify account, plan and usage
+    request: GET /users/me
+    price: {usd: 0, per: call}

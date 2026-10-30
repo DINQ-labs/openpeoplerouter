@@ -1,0 +1,1151 @@
+id: fiberai
+title: Fiber AI
+about: Live people and company data — search, LinkedIn live fetch, contact reveals, email validation, talent flow
+  and stealth founders.
+site: https://fiber.ai
+docs: https://docs.fiber.ai
+pricing: https://fiber.ai/pricing
+api: https://api.fiber.ai
+key:
+  env: FIBER_API_KEY
+  body: apiKey
+operations:
+  get-org-credits:
+    title: Get organization credits
+    about: 'Get credits for an organization ⚡ Rate limit: 120 requests per 1 minute 💰 Cost: FREE! No credits are
+      charged for this API.&nbsp;ⓘ'
+    request: GET /v1/get-org-credits
+    price:
+      usd: 0
+      per: call
+  get-rate-limits:
+    title: Get organization rate limits
+    about: 'Returns the effective rate limits for all API endpoints for your organization. If your organization
+      has custom rate limits on any endpoint, those are reflected here. ⚡ Rate limit: 20 requests per 1…'
+    request: GET /v1/rate-limits
+    price:
+      usd: 0
+      per: call
+  get-regions:
+    title: List countries and regions
+    about: 'Get a list of all countries and regions supported by the API, along with their names, codes, and additional
+      metadata. ⚡ Rate limit: 120 requests per 1 minute 💰 Cost: FREE! No credits are charged for…'
+    request: GET /v1/enums/regions
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  get-languages:
+    title: List languages
+    about: 'Get a list of all languages that you can pass to our API ⚡ Rate limit: 120 requests per 1 minute 💰 Cost:
+      FREE! No credits are charged for this API.&nbsp;ⓘ'
+    request: GET /v1/enums/languages
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  get-industries:
+    title: List industries
+    about: 'Get lists of various industry categorizations. Useful for our company search API. ⚡ Rate limit: 120
+      requests per 1 minute 💰 Cost: FREE! No credits are charged for this API.&nbsp;ⓘ'
+    request: GET /v1/enums/industries
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  get-job-categories:
+    title: List job functions, specialties, and seniorities
+    about: Get the job-function and specialty taxonomy behind the jobCategories people-search filter, plus every
+      value the seniority filter accepts. Each function lists the specialties nested under it, and…
+    request: GET /v1/enums/job-categories
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  get-tags:
+    title: List profile and company tags
+    about: 'Get a list of all profile and company tags that you can use to filter searches in our API, along with
+      their descriptions. ⚡ Rate limit: 120 requests per 1 minute 💰 Cost: FREE! No credits are charged…'
+    request: GET /v1/enums/tags
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  get-naics-codes:
+    title: List NAICS codes
+    about: 'Get all NAICS (North American Industry Classification System) codes from the 2022 version. Returns each
+      code and its corresponding title. ⚡ Rate limit: 120 requests per 1 minute 💰 Cost: FREE! No…'
+    request: GET /v1/enums/naics-codes
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  get-technologies:
+    title: List technologies
+    about: 'Get all searchable technologies and platforms with their synonyms. Useful for the technology search
+      API. ⚡ Rate limit: 50 requests per 1 minute 💰 Cost: FREE! No credits are charged for this…'
+    request: GET /v1/enums/technologies
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  get-skills:
+    title: List skills
+    about: 'Get the most common professional skills across profiles. Returns up to 1,000 skill names sorted by popularity.
+      Useful for building skill-based search filters. ⚡ Rate limit: 120 requests per 1 minute…'
+    request: GET /v1/enums/skills
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  get-metro-areas:
+    title: List preset metro areas
+    about: List all preset metro area regions available for geographic filtering. Each region includes a slug (usable
+      with the preset-region strategy in location-based search endpoints), geometry (center +…
+    request: GET /v1/enums/metro-areas
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  company-search:
+    title: Company search
+    about: 'Search for companies using filters ⚡ Rate limit: 180 requests per 1 minute 💰 Cost: 1 credit per company
+      found, plus 1 credit when includeCount=true&nbsp;ⓘ'
+    request: POST /v1/company-search
+    params:
+      searchParams:
+        in: body
+        type: object
+        required: true
+        about: Search parameters for company search API.
+      pageSize:
+        in: body
+        type: integer
+        about: The number of companies to return per page.
+      cursor:
+        in: body
+        about: A pagination cursor returned from a previous search response. Use this to fetch the next page of
+          results.
+      companyExclusionListIDs:
+        in: body
+        type: array
+        about: The IDs of company exclusion lists to filter out matching companies.
+      includeCount:
+        in: body
+        type: boolean
+        about: When true, returns an estimated total count of matching companies in the response and charges one
+          additional count credit. The count does not account for exclusion lists.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  company-count:
+    title: Company count
+    about: 'Get count of companies matching search filters ⚡ Rate limit: 180 requests per 1 minute 💰 Cost: 1 credit
+      per request&nbsp;ⓘ'
+    request: POST /v1/company-count
+    params:
+      searchParams:
+        in: body
+        type: object
+        required: true
+        about: Search parameters for company search API.
+      companyExclusionListIDs:
+        in: body
+        type: array
+        about: The IDs of company exclusion lists to filter out matching companies.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  job-posting-search:
+    title: Job postings search
+    about: 'Search for job postings with flexible filtering capabilities ⚡ Rate limit: 120 requests per 1 minute
+      💰 Cost: 1 credit per job posting found&nbsp;ⓘ'
+    request: POST /v1/job-search
+    params:
+      searchParams:
+        in: body
+        type: object
+        required: true
+        about: Job search filter parameters
+      pageSize:
+        in: body
+        type: integer
+        about: Number of jobs to return per page (max 1000)
+      cursor:
+        in: body
+        about: Pagination cursor for fetching next page of results
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  job-posting-search-count:
+    title: Job postings count
+    about: 'Get count of job postings matching search filters ⚡ Rate limit: 120 requests per 1 minute 💰 Cost: 1
+      credit per request&nbsp;ⓘ'
+    request: POST /v1/job-search/count
+    params:
+      searchParams:
+        in: body
+        type: object
+        required: true
+        about: Job search filter parameters
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  people-search:
+    title: People search
+    about: 'Search for people using filters ⚡ Rate limit: 180 requests per 1 minute 💰 Cost: 1 credit per profile
+      found, plus 1 credit when includeCount=true&nbsp;ⓘ'
+    request: POST /v1/people-search
+    params:
+      searchParams:
+        in: body
+        type: object
+        about: Search parameters for people search.
+      pageSize:
+        in: body
+        type: integer
+        about: The number of profiles to return, if you need to get more results, you can paginate.
+      cursor:
+        in: body
+        about: A pagination cursor returned from a previous search response. Use this to fetch the next page of
+          results.
+      currentCompanies:
+        in: body
+        type: array
+        about: Filter people by the companies they are currently working for. Results include people at every company
+          that can be matched; companies that can't be matched are skipped. If none of the companies can…
+      prospectExclusionListIDs:
+        in: body
+        type: array
+        about: Filter out people which belong to the given prospect exclusion lists
+      companyExclusionListIDs:
+        in: body
+        type: array
+        about: Filter out people who work at companies which belong to the given company exclusion lists
+      includeCount:
+        in: body
+        type: boolean
+        about: When true, returns an estimated total count of matching prospects in the response and charges one
+          additional count credit. The count does not account for exclusion lists.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+    jobs:
+      find_people:
+        needs:
+        - - keywords
+        - - title
+        - - query
+        send:
+          keywords:
+            to: searchParams.keywords
+            as:
+              containsAny:
+              - $
+          title:
+            to: searchParams.keywords
+            as:
+              containsAny:
+              - $
+          query:
+            to: searchParams.keywords
+            as:
+              containsAny:
+              - $
+        limit: pageSize
+        result: output.data
+        fields:
+          name: name
+          first_name: first_name
+          last_name: last_name
+          headline: headline
+          title: current_job.title
+          company: current_job.company_name
+          location: locality || inferred_location
+          linkedin_url: url
+          image: profile_pic
+  people-search-count:
+    title: People search count
+    about: 'Get count of profiles matching search filters ⚡ Rate limit: 180 requests per 1 minute 💰 Cost: 1 credit
+      per request&nbsp;ⓘ'
+    request: POST /v1/people-search/count
+    params:
+      searchParams:
+        in: body
+        type: object
+        about: Search parameters for people search.
+      currentCompanies:
+        in: body
+        type: array
+        about: Filter people by the companies they are currently working for. Results include people at every company
+          that can be matched; companies that can't be matched are skipped. If none of the companies can…
+      prospectExclusionListIDs:
+        in: body
+        type: array
+        about: Filter out people which belong to the given prospect exclusion lists
+      companyExclusionListIDs:
+        in: body
+        type: array
+        about: Filter out people who work at companies which belong to the given company exclusion lists
+      includeCount:
+        in: body
+        type: boolean
+        about: When true, returns an estimated total count of matching prospects in the response and charges one
+          additional count credit. The count does not account for exclusion lists.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  paginated-combined-search:
+    title: Combined people + company search
+    about: Search for companies and profiles together. Returns results page by page using cursor-based pagination.
+      Each entity type (companies, profiles) has its own cursor, so you can paginate them…
+    request: POST /v1/combined-search/paginated
+    params:
+      companyConfig:
+        in: body
+        type: object
+      profileConfig:
+        in: body
+        type: object
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  combined-search-count:
+    title: Combined search count
+    about: Get the total count of companies and people matching the provided search filters. People counts are scoped
+      to those currently or previously working (based on the job status filter) at companies that…
+    request: POST /v1/combined-search/count
+    params:
+      companyParams:
+        in: body
+        type: object
+        required: true
+        about: The company search parameters. Prospects are found from companies matching these filters.
+      profileParams:
+        in: body
+        type: object
+        about: The profile search parameters. Returns profiles matching these filters who work/used to work at companies
+          satisfying companyParams.
+      companyExclusionListIDs:
+        in: body
+        type: array
+        about: The IDs of company exclusion lists to filter out matching companies.
+      prospectExclusionListIDs:
+        in: body
+        type: array
+        about: The IDs of prospect exclusion lists to filter out matching people.
+      getFastEstimate:
+        in: body
+        type: boolean
+        about: When true, the people count is estimated rather than counted exactly — much faster, but not perfectly
+          accurate. Set to false if you need the exact count (slower).
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  quick-company-resolve:
+    title: Quickly resolve company identifiers
+    about: 'Resolves many company identifiers — LinkedIn slug, LinkedIn organization ID, LinkedIn company URL, or
+      domain — to full company records in a single request. ⚡ Rate limit: 1500 requests per 1 minute 💰…'
+    request: POST /v1/company-resolve
+    params:
+      companies:
+        in: body
+        type: array
+        required: true
+        about: Companies to resolve. Each entry is an { identifier, value } pair where identifier is "linkedinSlug",
+          "linkedinOrgId", "linkedinUrl", or "domain". Max 100 per request. You are charged only for the…
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  quick-person-resolve:
+    title: Quickly resolve person identifiers
+    about: 'Resolves many person identifiers — LinkedIn slug, numeric LinkedIn user ID, LinkedIn profile URL, or
+      LinkedIn entity URN — to full profile records in a single request. ⚡ Rate limit: 1500 requests per…'
+    request: POST /v1/person-resolve
+    params:
+      people:
+        in: body
+        type: array
+        required: true
+        about: People to resolve. Each entry is an { identifier, value } pair where identifier is "linkedinSlug",
+          "linkedinUserId", "linkedinUrl", or "entityUrn". Max 100 per request. You are charged only for the…
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  stealth-founders-search:
+    title: Search stealth/ex-stealth founders
+    about: Find stealth founders — people currently at stealth-mode companies, or who recently left stealth (launched).
+      Supports profile search filters to narrow results by location, keywords, job history,…
+    request: POST /v1/stealth-founders/search
+    params:
+      stealthConfig:
+        in: body
+        type: object
+        required: true
+        about: Stealth mode configuration. Use in-stealth for current stealth founders, or left-stealth for exited
+          stealth founders.
+      searchParams:
+        in: body
+        type: object
+        about: Profile search filters to narrow results within the stealth population. All fields are optional —
+          omit to search all stealth founders.
+      pageSize:
+        in: body
+        type: integer
+        about: Number of profiles to return per page.
+      cursor:
+        in: body
+        about: Opaque cursor from the previous response. Omit for the first page.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  stealth-founders-count:
+    title: Count stealth/ex-stealth founders
+    about: 'Count profiles matching stealth founder filters. Uses the same filters as the stealth founders search
+      endpoint but returns only the total count. ⚡ Rate limit: 120 requests per 1 minute 💰 Cost: 1…'
+    request: POST /v1/stealth-founders/count
+    params:
+      stealthConfig:
+        in: body
+        type: object
+        required: true
+        about: Stealth mode configuration. Use in-stealth for current stealth founders, or left-stealth for exited
+          stealth founders.
+      searchParams:
+        in: body
+        type: object
+        about: Profile search filters to narrow results within the stealth population. All fields are optional —
+          omit to search all stealth founders.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  sync-turbo-contact-enrichment:
+    title: Reveal contact details (turbo)
+    about: Fastest synchronous contact reveal — optimized for speed at a higher credit cost. Uses a premium enrichment
+      stack for the lowest possible latency. For a cheaper option with slightly longer response…
+    request: POST /v1/contact-details/turbo/sync
+    params:
+      linkedinUrl:
+        in: body
+        required: true
+        about: The person's LinkedIn identifier. Accepts a full LinkedIn profile URL (e.g. 'https://www.linkedin.com/in/williamhgates/'),
+          a bare slug (e.g. 'williamhgates'), a Sales Navigator URN (e.g.…
+      enrichmentType:
+        in: body
+        type: object
+        about: The enrichment types to request. Credits are charged per selected type.
+      patience:
+        in: body
+        choices:
+        - MINIMUM
+        - LOW
+        - MEDIUM
+        - HIGH
+        - EXTREME
+        - MAXIMUM
+        - null
+        about: How long to wait for email deliverability validation after a contact is found. Higher patience increases
+          average response time but improves deliverability accuracy. MINIMUM is the least thorough…
+      company:
+        in: body
+        type: object
+        about: Optional current company of the person. When provided, work emails whose domain does not match this
+          company are returned in unmatchedWorkEmails instead of emails. Set identifier to 'linkedinUrl',…
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  premium-phone-reveal:
+    title: Premium phone number lookup
+    about: 'Find and verify phone numbers for a LinkedIn profile using multiple data sources. ⚡ Rate limit: 120
+      requests per 1 minute 💰 Cost: 5 credits per request&nbsp;ⓘ ⏱ Recommended timeout: 1 minute&nbsp;ⓘ'
+    request: POST /v1/contact-details/premium-phone/sync
+    params:
+      linkedinUrl:
+        in: body
+        required: true
+        about: LinkedIn profile identifier. Accepts a full URL, a bare slug, or a LinkedIn entity URN.
+      patience:
+        in: body
+        choices:
+        - MINIMUM
+        - LOW
+        - MEDIUM
+        - HIGH
+        - EXTREME
+        - MAXIMUM
+        - null
+        about: 'How long to wait for phone-number verification after a number is found: LOW waits up to 15 seconds,
+          MEDIUM 30 seconds, HIGH 60 seconds, EXTREME 2 minutes, and MAXIMUM 10 minutes. Higher patience…'
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  sync-quick-contact-reveal:
+    title: Reveal contact details (standard)
+    about: Standard synchronous contact reveal — the best balance of speed, cost, and coverage. Accepts a LinkedIn
+      profile URL, slug, Sales Navigator URN, or numeric LinkedIn user ID; profile details are…
+    request: POST /v1/contact-details/single
+    params:
+      linkedinUrl:
+        in: body
+        required: true
+        about: The person's LinkedIn identifier. Accepts a full LinkedIn profile URL (e.g. 'https://www.linkedin.com/in/williamhgates/'),
+          a bare slug (e.g. 'williamhgates'), a Sales Navigator URN (e.g.…
+      enrichmentType:
+        in: body
+        type: object
+        about: The enrichment types to request. Credits are charged per selected type.
+      patience:
+        in: body
+        choices:
+        - MINIMUM
+        - LOW
+        - MEDIUM
+        - HIGH
+        - EXTREME
+        - MAXIMUM
+        - null
+        about: How long to wait for email deliverability validation after a contact is found. Higher patience increases
+          average response time but improves deliverability accuracy. MINIMUM is the least thorough…
+      validateEmails:
+        in: body
+        type: boolean
+        about: 'Deprecated — use patience instead. When false, maps to patience: MINIMUM. Ignored if patience is
+          also provided.'
+      company:
+        in: body
+        type: object
+        about: Optional current company of the person. When provided, work emails whose domain does not match this
+          company are returned in unmatchedWorkEmails instead of emails. Set identifier to 'linkedinUrl',…
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+    jobs:
+      find_contact:
+        needs:
+        - - linkedin_url
+        send:
+          linkedin_url: linkedinUrl
+        fixed:
+          enrichmentType:
+            getWorkEmails: true
+            getPersonalEmails: false
+            getPhoneNumbers: true
+        result: output.profile
+        fields:
+          email: emails[?type == 'work'] | [0].email || emails[0].email
+          email_status: emails[0].status
+          phone: phoneNumbers[0].number
+          name: name
+  lite-contact-reveal:
+    title: Reveal contact details (lite)
+    about: Low-cost contact reveal path that searches for emails and phone numbers. Compared with other contact
+      reveal endpoints, this endpoint is priced lower but has lower yield (it may miss contacts that…
+    request: POST /v1/contact-details/lite
+    params:
+      input:
+        in: body
+        type: object
+        required: true
+        about: Person lookup parameters. Use mode 'linkedin' or 'name-domain'.
+      enrichmentType:
+        in: body
+        type: object
+        about: Which email and phone types to look for.
+      company:
+        in: body
+        type: object
+        about: Optional current company of the person. When provided, work emails whose domain does not match this
+          company are returned in unmatchedWorkEmails instead of emails. Set identifier to 'linkedinUrl',…
+      patience:
+        in: body
+        choices:
+        - MINIMUM
+        - LOW
+        - MEDIUM
+        - HIGH
+        - EXTREME
+        - MAXIMUM
+        - null
+        about: How long to wait for email deliverability validation after a contact is found. Higher patience increases
+          average response time but improves deliverability accuracy. MINIMUM is the least thorough…
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  basic-work-email-reveal:
+    title: Find work email by name and company
+    about: 'Finds a work email from a person''s name and company information without requiring a LinkedIn profile.
+      Useful when the person is not on LinkedIn. ⚡ Rate limit: 30 requests per 1 minute 💰 Cost: 1…'
+    request: POST /v1/contact-details/basic-work-email
+    params:
+      name:
+        in: body
+        type: object
+        required: true
+        about: Person name. Provide a full name, or first and last name separately.
+      company:
+        in: body
+        type: object
+        required: true
+        about: Company to search. Provide a domain, or a company identifier.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  instant-contact-reveal:
+    title: Reveal contact details (instant)
+    about: Fast contact lookup that returns emails and phone numbers already on file for the person. Does not perform
+      additional discovery or re-verify addresses at request time, so yield is lower than other…
+    request: POST /v1/contact-details/instant
+    params:
+      input:
+        in: body
+        type: object
+        required: true
+        about: Person lookup parameters. Use mode 'linkedin' or 'name-domain'.
+      enrichmentType:
+        in: body
+        type: object
+        about: Which email and phone types to look for.
+      company:
+        in: body
+        type: object
+        about: Optional current company of the person. When provided, work emails whose domain does not match this
+          company are returned in unmatchedWorkEmails instead of emails. Set identifier to 'linkedinUrl',…
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  get-department-size:
+    title: Count employees per department
+    about: Counts how many current employees at a company fall into each department you define. Unlike the depth-chart
+      endpoint, this Synchronous endpoint provides immediate results without waiting for…
+    request: POST /v1/department-size
+    params:
+      company:
+        in: body
+        type: object
+        required: true
+        about: Company identifier. Set identifier to 'linkedinUrl', 'linkedinSlug', 'linkedinOrgId', or 'domain'
+          and provide the corresponding value.
+      departments:
+        in: body
+        type: array
+        required: true
+        about: Departments to size. Each is counted independently against ALL current employees, so overlapping
+          definitions may count the same person in more than one department.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  get-talent-flow:
+    title: Get talent flow analysis for a company
+    about: Visualizes talent movement at a company. Use 'joiners' to see where a company is hiring from — which
+      competitors, universities, and regions it pulls talent from during the time window. Use 'leavers'…
+    request: POST /v1/talent-flow
+    params:
+      company:
+        in: body
+        type: object
+        required: true
+        about: Company to analyze. Set identifier to 'linkedinUrl', 'linkedinSlug', 'linkedinOrgId', or 'domain'
+          and provide the corresponding value.
+      direction:
+        in: body
+        required: true
+        choices:
+        - joiners
+        - leavers
+        about: Direction of talent flow. 'joiners' finds people who started at the company within the window and
+          reports where they came from. 'leavers' finds people who left the company within the window and…
+      dateRange:
+        in: body
+        type: object
+        required: true
+      renderImage:
+        in: body
+        type: object
+        about: Options for generating a shareable talent-flow graphic image. Omit to skip graphic generation.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  get-talent-flow-rivals:
+    title: Get top talent sources/destinations for a company
+    about: Given a company, find the companies where most of its talent is heading to or coming from, in both directions.
+      For instance, company A might have gained N people from company X but lost M people to…
+    request: POST /v1/talent-flow/rivals
+    params:
+      company:
+        in: body
+        type: object
+        required: true
+        about: Company to analyze. Set identifier to 'linkedinUrl', 'linkedinSlug', 'linkedinOrgId', or 'domain'
+          and provide the corresponding value.
+      dateRange:
+        in: body
+        type: object
+        required: true
+      numCompaniesPerSide:
+        in: body
+        type: integer
+        about: Number of top donor and acceptor companies to include. Donors are companies the analyzed company
+          gained the most people from; acceptors are companies it lost the most people to. Overlapping companies…
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  profile-live-enrich:
+    title: Live fetch LinkedIn profile
+    about: 'Returns an enriched profile with details (work experience, education, skills, location, etc.) for a
+      given LinkedIn profile identifier. Note: This endpoint does NOT return emails or phone numbers. To…'
+    request: POST /v1/linkedin-live-fetch/profile/single
+    params:
+      identifier:
+        in: body
+        required: true
+        about: The profile's LinkedIn slug (e.g. 'williamhgates'), full LinkedIn URL (e.g. 'https://www.linkedin.com/in/williamhgates/'),
+          Sales Navigator URN, or LinkedIn user ID (e.g. '443105112').
+      getDetailedEducation:
+        in: body
+        type: boolean
+        about: Whether to include deep details about each educational item, like the school's LinkedIn URL, website,
+          location, etc. That'll be put in the detailedEducation array. This slows down the API call, so…
+      getDetailedWorkExperience:
+        in: body
+        type: boolean
+        about: Whether to include deep details about each work experience item, like the company's LinkedIn URL,
+          website, location, etc. That'll be put in the detailedWorkExperience array. This slows down the API…
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  company-live-enrich:
+    title: Live fetch LinkedIn company
+    about: 'Returns an enriched company with details for a given LinkedIn company identifier ⚡ Rate limit: 600 requests
+      per 1 minute 💰 Cost: 2 credits per company live fetch&nbsp;ⓘ'
+    request: POST /v1/linkedin-live-fetch/company/single
+    params:
+      type:
+        in: body
+        required: true
+        choices:
+        - slug
+        - orgId
+        - liUrl
+      value:
+        in: body
+        required: true
+        about: The company's LinkedIn slug (e.g. 'microsoft'), LinkedIn URL (e.g. 'https://www.linkedin.com/company/microsoft'),
+          LinkedIn organization ID (e.g. '1441'), or Fiber company ID (e.g. 'comp_1441').
+      getHistoricalHeadcount:
+        in: body
+        type: boolean
+        about: Whether to compute the company's overall employee count over time and recent growth trends. This
+          returns total headcount through time, not a per-department breakdown — for per-department headcount,…
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  profile-posts-live-fetch:
+    title: Fetch LinkedIn profile posts
+    about: 'Fetches recent posts from a LinkedIn profile. Returns a paginated feed of posts with optional cursor
+      for pagination. Each page returns up to 50 posts. ⚡ Rate limit: 300 requests per 1 minute 💰 Cost:…'
+    request: POST /v1/linkedin-live-fetch/profile-posts
+    params:
+      identifier:
+        in: body
+        required: true
+        about: Identifier can be a profile's LinkedIn slug (e.g. 'williamhgates' from ), a Sales Navigator URN (e.g.
+          'ACwAAA.....'), or a full LinkedIn URL (e.g. 'https://www.linkedin.com/in/williamhgates/')
+      cursor:
+        in: body
+        about: Pagination cursor for fetching additional pages of posts
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  post-search-by-keywords:
+    title: Search LinkedIn posts by keywords
+    about: 'Search LinkedIn posts using keyword-based queries. Returns a paginated list of matching posts. A page
+      contains at most 50 posts and may contain fewer. Keyword Search Syntax: - Quoted phrase: Wrap…'
+    request: POST /v1/linkedin-live-fetch/posts/search
+    params:
+      keywords:
+        in: body
+        required: true
+        about: Boolean keyword query for LinkedIn posts. Use at most 5 AND/OR/NOT operators in total; operators
+          inside quoted phrases don't count. See the endpoint description for syntax.
+      recency:
+        in: body
+        choices:
+        - Day
+        - Week
+        - Month
+        - Quarter
+        - HalfYear
+        - Year
+        - null
+        about: Filter posts by how recently they were published. Omit to search posts from any time. Windows longer
+          than a month can return fewer posts per page.
+      cursor:
+        in: body
+        about: Pagination cursor for fetching additional pages of posts
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  reverse-email-lookup:
+    title: Find person by email (single)
+    about: Given an email address, find the person's LinkedIn profile and personal details. If the person's name,
+      company, or other identifiers are also available, use the Kitchen Sink endpoint instead — it…
+    request: POST /v1/email-to-person/single
+    params:
+      email:
+        in: body
+        required: true
+        about: The email address of a person whose LinkedIn profile you want to find.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  hem-lookup:
+    title: Find person by hashed email (HEM)
+    about: Given up to 100 hashed email addresses (HEMs), return the address each one belongs to, plus the LinkedIn
+      identifiers we have for that person. The response is one result per supplied hash, in the same…
+    request: POST /v1/email-to-person/hashed
+    params:
+      hashedEmails:
+        in: body
+        type: array
+        required: true
+        about: Up to 100 SHA-256, MD5, or SHA-1 digests of lowercased, trimmed email addresses. Each hash must be
+          a hexadecimal digest, upper or lower case, of the lowercased and trimmed address — SHA-256 is 64…
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  lite-reverse-email-lookup:
+    title: Find person by email (lite, high-volume)
+    about: 'Given an email address, find the person''s LinkedIn profile. Lite version optimized for high-volume
+      usage at lower cost. Skips expensive yield increasing operations. ⚡ Rate limit: 3000 requests per 1…'
+    request: POST /v1/email-to-person/single/lite
+    params:
+      email:
+        in: body
+        required: true
+        about: The email address of a person whose LinkedIn profile you want to find.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  reverse-phone-lookup:
+    title: Find person or company by phone (single)
+    about: Given a phone number, find the associated LinkedIn profile or company. Mobile and home phones typically
+      resolve to people, while front desk or business phones may resolve to companies. Credits are…
+    request: POST /v1/phone-to-person/single
+    params:
+      phoneNumber:
+        in: body
+        required: true
+        about: The phone number to look up. Accepts E.164 format (+12125551234) or various national formats.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  kitchen-sink-profile:
+    title: Kitchen sink person lookup
+    about: Search for a person using a variety of parameters such as LinkedIn slug, LinkedIn URL, email, or current
+      company information. Returns profile data for the person if found. Providing more information…
+    request: POST /v1/kitchen-sink/person
+    params:
+      profileIdentifier:
+        in: body
+        type: object
+        about: LinkedIn profile identifier (slug or URL). Provides the best match accuracy.
+      emailAddress:
+        in: body
+        about: Email address to look up. Second-best accuracy after profileIdentifier.
+      personName:
+        in: body
+        type: object
+        about: Person's name for matching. Best used with companyDomain or companyIdentifier.
+      jobTitle:
+        in: body
+        type: object
+      companyIdentifier:
+        in: body
+        type: object
+        about: LinkedIn identifier for the person's current company. Used with personName for matching.
+      linkedinHeadline:
+        in: body
+        type: object
+      companyName:
+        in: body
+        type: object
+      companyDomain:
+        in: body
+        type: object
+        about: Domain of the person's current company (e.g. 'fiber.ai'). Used with personName for matching.
+      profileLocation:
+        in: body
+        type: object
+        about: Location of the person. Accepts country code, state name, and/or a free-text locality string.
+      numProfiles:
+        in: body
+        type: integer
+        about: Maximum number of profile results to return per lookup. Defaults to 1.
+      liveFetch:
+        in: body
+        type: boolean
+        about: When true, triggers a real-time LinkedIn profile fetch. Costs additional credits. Useful for profiles
+          not yet in the database or to get the freshest data.
+      forceCompanyMatch:
+        in: body
+        type: boolean
+        about: When true, requires that the matched profile works at the specified company. Without this, the API
+          may return profiles that match by name but work elsewhere.
+      schoolName:
+        in: body
+        type: object
+      schoolIdentifier:
+        in: body
+        type: object
+        about: The identifier of the school the person is currently attending or has attended. If provided, we will
+          lookup the person by school identifier.
+      schoolDomain:
+        in: body
+        type: object
+      fuzzySearch:
+        in: body
+        type: boolean
+        about: When true, enables fuzzy name matching. Useful when exact name spelling is uncertain.
+      thoroughness:
+        in: body
+        choices:
+        - low
+        - high
+        - null
+        about: Controls how thoroughly to search. Higher values spend more time searching to recover more matches;
+          lower values return faster. Omit to use the recommended default.
+      getDetailedEducation:
+        in: body
+        type: boolean
+        about: When true, returns detailed_education[] with school_details for each education entry.
+      getDetailedWorkExperience:
+        in: body
+        type: boolean
+        about: When true, returns detailed_work_experiences[] with company_details (domains, preferred_name, linkedin_primary_slug,
+          li_org_id, employee_count_consensus, revenue_estimate) for each work experience.…
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+    jobs:
+      enrich_person:
+        needs:
+        - - linkedin_url
+        - - email
+        - - full_name
+          - company_domain
+        send:
+          linkedin_url:
+            to: profileIdentifier
+            as:
+              identifier: linkedinUrl
+              value: $
+          email: emailAddress
+          full_name:
+            to: personName
+            as:
+              value: $
+          company_domain:
+            to: companyDomain
+            as:
+              value: $
+        result: output.data[0]
+        fields:
+          name: name
+          first_name: first_name
+          last_name: last_name
+          headline: headline
+          title: current_job.title
+          company: current_job.company_name
+          location: locality || inferred_location
+          linkedin_url: url
+          image: profile_pic
+          skills: skills
+          experience: experiences
+          education: education
+  kitchen-sink-company:
+    title: Kitchen sink company lookup
+    about: 'Search for a company using a variety of parameters such as LinkedIn slug, LinkedIn URL, name, etc. Returns
+      complete company data if found. ⚡ Rate limit: 120 requests per 1 minute 💰 Cost: 2 credits…'
+    request: POST /v1/kitchen-sink/company
+    params:
+      companyIdentifier:
+        in: body
+        type: object
+        about: 'A unique identifier for the company. Accepts one of: linkedinSlug, linkedinUrl, or linkedinOrgID.
+          Providing this increases the accuracy and speed of the lookup. If this is provided, you do not need…'
+      companyName:
+        in: body
+        type: object
+      companyDomain:
+        in: body
+        type: object
+      companyLocation:
+        in: body
+        type: object
+        about: Company headquarters location. Helps disambiguate companies with similar names or domains by boosting
+          matches in the specified location.
+      numCompanies:
+        in: body
+        type: integer
+        about: Maximum number of company results to return. Sorted by best match. Defaults to 1.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  company-typeahead:
+    title: Company/School/Investor Typeahead
+    about: 'Search for companies, schools/universities, and investors by name. Supports partial inputs, which can
+      enable typeaheads in your UI. ⚡ Rate limit: 240 requests per 1 minute 💰 Cost: 1 credit per…'
+    request: POST /v1/typeahead/company
+    params:
+      startsWith:
+        in: body
+        required: true
+      orgType:
+        in: body
+        choices:
+        - investor
+        - school
+        - null
+        about: The organization type filter. Use 'investor', 'school', or omit for all types.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  job-title-rewrite:
+    title: Job Title Synonym Expansion
+    about: 'Expand a job title into synonyms and related variations. Useful for broadening job title searches to
+      improve yield. ⚡ Rate limit: 240 requests per 1 minute 💰 Cost: 1 credit per request&nbsp;ⓘ'
+    request: POST /v1/typeahead/job-title
+    params:
+      query:
+        in: body
+        required: true
+        about: The job title to expand into synonyms and variations.
+      limit:
+        in: body
+        type: integer
+        about: Maximum number of suggestions to return.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  location-typeahead:
+    title: Location typeahead
+    about: 'Get the latitude/longitude of a given city, including prefixes (e.g. ''san fr''). This makes it good
+      for typeaheads in your UI. ⚡ Rate limit: 240 requests per 1 minute 💰 Cost: 1 credit per…'
+    request: POST /v1/typeahead/location
+    params:
+      query:
+        in: body
+        required: true
+        about: The search query for a location. Accepts a city name or ZIP/postal code, either complete (e.g. 'New
+          York') or partial (e.g. 'san fr'). Neighborhoods, street addresses, states, and countries are not…
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  skills-typeahead:
+    title: Skills Typeahead
+    about: 'Search for professional skills by name. Supports prefix and partial matches with relevance-based ranking.
+      Useful for building autocomplete in search UIs. ⚡ Rate limit: 240 requests per 1 minute 💰…'
+    request: POST /v1/typeahead/skills
+    params:
+      query:
+        in: body
+        required: true
+        about: Search query for skill names. Supports prefix and partial matches.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  email-bounce-detection:
+    title: Validate a single email
+    about: 'Checks if a given email is likely to bounce using a waterfall of strategies. Works for catch-all email
+      addresses, which are increasingly common yet hard for other APIs to validate. ⚡ Rate limit: 300…'
+    request: POST /v1/validate-email/single
+    params:
+      email:
+        in: body
+        required: true
+        about: The email address to validate.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+    jobs:
+      verify_email:
+        needs:
+        - - email
+        send:
+          email: email
+        result: output
+        fields:
+          email: email
+          status: verdict
+          score: deliverability_score
+          catch_all: is_catch_all
+          disposable: is_disposable
+          deliverable: verdict == 'valid' || verdict == 'deliverable'
+  validate-phone-number:
+    title: Validate a single phone number
+    about: Validates a phone number and returns detailed information including whether it's valid, reachable (active/alive),
+      carrier information, and the caller ID name associated with the number. ⚡ Rate limit:…
+    request: POST /v1/validate-phone/single
+    params:
+      phoneNumber:
+        in: body
+        required: true
+        about: Phone number to validate. E.164 (e.g. +14155551234) is recommended; other formats with spaces, dashes,
+          or parentheses are accepted.
+      patience:
+        in: body
+        choices:
+        - MINIMUM
+        - LOW
+        - MEDIUM
+        - HIGH
+        - EXTREME
+        - MAXIMUM
+        - null
+        about: 'How long to wait for phone-number verification after a number is found: LOW waits up to 15 seconds,
+          MEDIUM 30 seconds, HIGH 60 seconds, EXTREME 2 minutes, and MAXIMUM 10 minutes. Higher patience…'
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  nlp-search-parse:
+    title: Parse natural language to search params
+    about: 'Parses a natural language query into structured search parameters without executing the search. Use
+      the returned suggestedAction to determine your next step: - combinedSearch: pass…'
+    request: POST /v1/nlp-search/parse
+    params:
+      query:
+        in: body
+        required: true
+        about: Natural language search query to parse into structured filters.
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged
+  nlp-search:
+    title: Natural language search
+    about: Takes free-form text (e.g., 'Senior Product Managers at Series A FinTech startups in New York') and returns
+      matching companies or people. The API determines the result type based on query…
+    request: POST /v1/nlp-search/run
+    params:
+      query:
+        in: body
+        about: Natural language search query. Required on the first request. Ignored when pageToken is provided.
+      pageSize:
+        in: body
+        type: integer
+        about: Number of results per page. Applied to whichever result type is returned.
+      companyExclusionListIDs:
+        in: body
+        type: array
+        about: IDs of exclusion lists to filter out companies. Applied when returning companies, or to narrow company-based
+          profile filtering.
+      peopleExclusionListIDs:
+        in: body
+        type: array
+        about: IDs of exclusion lists to filter out people.
+      pageToken:
+        in: body
+        about: Pagination token from a previous response. Pass the value of nextPageToken from the prior response.
+      getDetailedEducation:
+        in: body
+        type: boolean
+        about: Whether to include deep details about each educational item, like the school's LinkedIn URL, website,
+          location, etc. That'll be put in the detailedEducation array. This slows down the API call, so…
+      getDetailedWorkExperience:
+        in: body
+        type: boolean
+        about: Whether to include deep details about each work experience item, like the company's LinkedIn URL,
+          website, location, etc. That'll be put in the detailedWorkExperience array. This slows down the API…
+    price:
+      per: call
+      note: credits charged are in chargeInfo.creditsCharged

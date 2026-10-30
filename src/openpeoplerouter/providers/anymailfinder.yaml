@@ -1,0 +1,282 @@
+id: anymailfinder
+title: Anymailfinder
+about: Verified work emails by person, LinkedIn profile, decision-maker role or company, charged only for valid
+  results.
+site: https://anymailfinder.com
+docs: https://anymailfinder.com/email-finder-api/docs
+pricing: https://anymailfinder.com/pricing
+api: https://api.anymailfinder.com/v5.1
+key:
+  env: ANYMAILFINDER_API_KEY
+  header: Authorization
+operations:
+  account:
+    title: Checking how many searches you have left.
+    request: GET /account
+  domain-email-count:
+    title: Get the number of emails we have for a specified domain.
+    about: This endpoint will return the number of emails available and the price to download the whole file.
+    request: GET /domain/{domain}/email
+    params:
+      domain:
+        in: path
+        required: true
+  bulk-create:
+    title: Create a new bulk search by sending a CSV file in the request body.
+    request: POST /bulk/json
+    params:
+      x-webhook-url:
+        in: header
+        about: If provided, the result will be POSTed to this URL instead of waiting for the response.
+      company_name_field_index:
+        in: body
+        type: number
+        about: The zero-based index of the column containing the company name in the uploaded file.
+      data:
+        in: body
+        type: array
+        required: true
+      decision_maker_category:
+        in: body
+        type: array
+        about: One or more categories of the decision maker(s) to search for. If multiple are provided, they are
+          treated in order of importance and the result will use the first category that resolves to a valid…
+      domain_field_index:
+        in: body
+        type: number
+        about: The zero-based index of the column containing the company website (domain) in the uploaded file.
+      email_field_index:
+        in: body
+        type: number
+        about: The zero-based index of the column containing the emails to validate in the uploaded file.
+      file_name:
+        in: body
+        about: A label to identify the bulk search.
+      first_name_field_index:
+        in: body
+        type: number
+        about: The zero-based index of the column containing the first name in the uploaded file.
+      full_name_field_index:
+        in: body
+        type: number
+        about: The zero-based index of the column containing the full name in the uploaded file.
+      has_header:
+        in: body
+        type: boolean
+        about: Whether the first row of the data array contains headers. Defaults to true. Set to false if the first
+          row is data.
+      last_name_field_index:
+        in: body
+        type: number
+        about: The zero-based index of the column containing the last name in the uploaded file.
+      linkedin_url_field_index:
+        in: body
+        type: number
+        about: The zero-based index of the column containing the Linkedin URL in the uploaded file.
+      webhook_url:
+        in: body
+        about: URL where we should send a webhook when the file processing has completed.
+  bulk-status:
+    title: Retrieve the details of a bulk search.
+    request: GET /bulk/{searchId}
+    params:
+      searchId:
+        in: path
+        required: true
+  find-company-email:
+    title: Search for company emails based on company details.
+    about: Retrieves emails associated with a given domain or company name. At least one parameter among "company_name"
+      or "domain" is required. For better results, we recommend using the company website…
+    request: POST /find-email/company
+    params:
+      x-webhook-url:
+        in: header
+        about: If provided, the result will be POSTed to this URL instead of waiting for the response.
+      company_name:
+        in: body
+        about: The company name (providing the domain is recommended for better accuracy).
+      domain:
+        in: body
+        about: The domain of the company to search for emails.
+      email_type:
+        in: body
+        choices:
+        - any
+        - generic
+        - personal
+        about: Specifies which type of email addresses to return in the results.
+    price:
+      credits: 1
+      per: success
+  find-decision-maker-email:
+    title: Search for a decision maker email based on company and category.
+    about: Find the details and emails of a decision maker of a specific category at a company. This search requires
+      either "company_name" or "domain" to identify the company, and the "decision_maker_category".
+    request: POST /find-email/decision-maker
+    params:
+      x-webhook-url:
+        in: header
+        about: If provided, the result will be POSTed to this URL instead of waiting for the response.
+      company_name:
+        in: body
+        about: Used if domain is not provided.
+      decision_maker_category:
+        in: body
+        type: array
+        required: true
+        about: 'The category of the decision maker to search for. One or more of the following: "ceo", "engineering",
+          "finance", "hr", "it", "logistics", "marketing", "operations", "buyer", "sales".'
+      domain:
+        in: body
+        about: Preferred. The company domain.
+    price:
+      credits: 2
+      per: success
+  find-linkedin-url-email:
+    title: Search for a person's email based on a LinkedIn profile URL.
+    about: Retrieves a specific person's email within a company by providing a LinkedIn profile URL. This search
+      requires just the "linkedin_url".
+    request: POST /find-email/linkedin-url
+    params:
+      x-webhook-url:
+        in: header
+        about: If provided, the result will be POSTed to this URL instead of waiting for the response.
+      linkedin_url:
+        in: body
+        required: true
+        about: The LinkedIn profile URL of the person.
+    price:
+      credits: 1
+      per: success
+  find-person-email:
+    title: Search for a person's email based on company and personal details.
+    about: Retrieves a specific person's email within a company. This search requires either "company_name" or "domain"
+      to identify the company, and the person's name provided as "full_name" or both…
+    request: POST /find-email/person
+    params:
+      x-webhook-url:
+        in: header
+        about: If provided, the result will be POSTed to this URL instead of waiting for the response.
+      company_name:
+        in: body
+        about: Used if domain is not provided.
+      domain:
+        in: body
+        about: Preferred. The company domain.
+      first_name:
+        in: body
+        about: First name of the person.
+      full_name:
+        in: body
+        about: Alternative to first+last name.
+      last_name:
+        in: body
+        about: Last name of the person.
+      linkedin_url:
+        in: body
+        about: Optional LinkedIn profile URL. It can be sent on its own, without company and name. When a name and
+          company are also provided, the profile is used to refine the supplied name (e.g. extending 'John…
+    price:
+      credits: 1
+      per: success
+      note: charged only for a valid email
+    jobs:
+      find_contact:
+        needs:
+        - - full_name
+          - company_domain
+        - - full_name
+          - company
+        - - linkedin_url
+        send:
+          full_name: full_name
+          company_domain: domain
+          company: company_name
+          linkedin_url: linkedin_url
+        result: '@'
+        fields:
+          email: valid_email || email
+          email_status: email_status
+          name: person_full_name
+          title: person_job_title
+  geo-lead:
+    title: Create a new GeoLead search based on geographic coordinates and search query.
+    about: Creates a bulk search that will generate leads from a specific geographic area. The search will find
+      businesses or locations matching the provided query within the specified radius from the given…
+    request: POST /geo-lead
+    params:
+      x-webhook-url:
+        in: header
+        about: If provided, the result will be POSTed to this URL instead of waiting for the response.
+      file_name:
+        in: body
+        about: A label to identify the geo lead search.
+      find_company_emails:
+        in: body
+        type: boolean
+        required: true
+        about: Whether to search for company emails. If false, only decision maker emails will be searched. Defaults
+          to true.
+      find_decision_maker_categories:
+        in: body
+        type: array
+        required: true
+        about: 'Decision maker categories to search for. If not provided, defaults to ["ceo"]. If empty array [],
+          no decision maker search will be performed. Valid categories: "ceo", "engineering", "finance", "hr",…'
+      latitude:
+        in: body
+        type: number
+        required: true
+        about: The latitude coordinate for the search center point.
+      longitude:
+        in: body
+        type: number
+        required: true
+        about: The longitude coordinate for the search center point.
+      query:
+        in: body
+        required: true
+        about: The search query to find businesses or locations within the specified radius.
+      radius_km:
+        in: body
+        type: number
+        required: true
+        about: The search radius in km from the center point.
+      result_limit:
+        in: body
+        type: number
+        about: Optional limit on the number of leads to extract. If specified, the extraction will stop once this
+          limit is reached.
+  geo-lead-status:
+    title: Retrieve the details of a GeoLead search.
+    request: GET /geo-lead/{searchId}
+    params:
+      searchId:
+        in: path
+        required: true
+  verify-email:
+    title: Validate an email.
+    about: Validates the provided email address to determine its authenticity and deliverability. The input requires
+      a single email address. The response includes a "validation" field, which can be "valid" if…
+    request: POST /verify-email
+    params:
+      x-webhook-url:
+        in: header
+        about: If provided, the result will be POSTed to this URL instead of waiting for the response.
+      email:
+        in: body
+        required: true
+        about: The email to validate.
+    price:
+      credits: 0.2
+      per: call
+    jobs:
+      verify_email:
+        needs:
+        - - email
+        send:
+          email: email
+        result: '@'
+        fields:
+          status: email_status
+          deliverable: email_status == 'valid'

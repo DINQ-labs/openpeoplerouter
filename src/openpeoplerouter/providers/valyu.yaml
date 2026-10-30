@@ -1,0 +1,536 @@
+id: valyu
+title: Valyu
+about: Search across the web and proprietary sources (papers, filings, patents), content extraction and deep research.
+site: https://www.valyu.ai
+docs: https://docs.valyu.ai
+pricing: https://www.valyu.ai/pricing
+api: https://api.valyu.ai
+key:
+  env: VALYU_API_KEY
+  header: X-API-Key
+operations:
+  search:
+    title: Search across web and proprietary data sources
+    about: Search web pages and available academic, financial and specialist datasets. Returns ranked results with
+      source URLs and extracted content for your application. Use source controls to choose the…
+    request: POST /v1/search
+    params:
+      query:
+        in: body
+        required: true
+        about: The search query to execute. Supports natural language queries.
+      max_num_results:
+        in: body
+        type: integer
+        about: Maximum number of results to return. Higher limits (up to 100) are available on request. A value
+          above your limit is lowered to it, and the response carries a max_num_results_capped warning.
+      search_type:
+        in: body
+        choices:
+        - all
+        - web
+        - proprietary
+        - news
+        about: Controls which data sources are searched. - all - Web and proprietary sources (default). An LLM router
+          selects the best sources for your query. - web - Web search only. Best for current events and…
+      max_price:
+        in: body
+        type: number
+        about: Caps the cost of the whole request. This is not a token limit or a per-result ceiling. When omitted,
+          the default is 1000. See pricing. Before searching, the request is checked against its worst-case…
+      relevance_threshold:
+        in: body
+        type: number
+        about: Minimum relevance score (0.0-1.0) for results after reranking. Results below this threshold are filtered
+          out.
+      included_sources:
+        in: body
+        type: array
+        about: 'Sources to include in the search. Accepts: - Domain names or URLs for web filtering (e.g. "arxiv.org",
+          "https://arxiv.org") - Dataset identifiers for proprietary sources (e.g. "valyu/valyu-arxiv") -…'
+      excluded_sources:
+        in: body
+        type: array
+        about: Sources to exclude from the search. Accepts domain names, URLs, dataset identifiers and preset names
+          (e.g. "finance", "academic"). Excluded datasets and presets are never searched. With scope_policy:…
+      scope_policy:
+        in: body
+        choices:
+        - advisory
+        - strict
+        about: How included_sources is applied to datasets. - advisory (default) - included_sources guides source
+          selection. With two or more dataset IDs, Valyu may search only the most relevant of them. - strict -…
+      source_biases:
+        in: body
+        type: object
+        about: Bias values for specific sources to influence ranking without hard filtering. Keys are domains (e.g.,
+          'nasa.gov') or URL paths (e.g., 'nih.gov/research'). Values are integers from -5 (strong…
+      instructions:
+        in: body
+        about: Natural language instructions to help rank results by relevance to user intent. Acts as a system
+          prompt for the search. Max 500 characters. Ignored when fast_mode is true.
+      category:
+        in: body
+        about: Deprecated. Use instructions instead. Falls back to this value if instructions is not set.
+      is_tool_call:
+        in: body
+        type: boolean
+        about: Indicates whether this request originates from an AI tool call. Affects query rewriting behavior.
+      response_length:
+        in: body
+        type: integer
+        about: Controls the maximum character length of content per result. - "short" - 25,000 characters (default)
+          - "medium" - 50,000 characters - "large" - 100,000 characters - "max" - No limit - Any positive…
+      start_date:
+        in: body
+        about: 'Filter results published on or after this date. Accepts YYYY, YYYY-MM-DD or an ISO-8601 datetime.
+          Sub-day timestamps require historical_cache: true. If set without end_date, end_date defaults to…'
+      end_date:
+        in: body
+        about: 'Filter results published on or before this date. Accepts YYYY, YYYY-MM-DD or an ISO-8601 datetime.
+          Sub-day timestamps require historical_cache: true. If set without start_date, start_date defaults to…'
+      country_code:
+        in: body
+        about: ISO 3166-1 alpha-2 country code for geo-targeted web search results.
+      fast_mode:
+        in: body
+        type: boolean
+        about: 'Skip query rewriting and reranking for lower latency. Searches the web and financial data in parallel.
+          Cannot be used with search_type: "proprietary".'
+      url_only:
+        in: body
+        type: boolean
+        about: Return only URLs without full content extraction. Only available when search_type is "web" or "news".
+          Skips reranking.
+      historical_cache:
+        in: body
+        type: boolean
+        about: Prefer cached content captured within the requested date window instead of the latest crawl. Requires
+          a date range. With the default historical_cache_strict="prefer", a result can fall back to a live…
+      historical_cache_strict:
+        in: body
+        choices:
+        - 'off'
+        - prefer
+        - only
+        about: Snapshot policy when historical_cache is true. "prefer" uses an in-window snapshot when available
+          and otherwise may fall back to a live crawl. "only" drops results without a snapshot captured at or…
+      include_abstracts:
+        in: body
+        type: boolean
+        about: Expand PubMed search from papers with available full text to the complete abstract corpus. Results
+          include the abstract and, when full text is available, the most relevant full-text chunks. Has no…
+      include_image_links:
+        in: body
+        type: boolean
+        about: 'Keep image URLs in the content. When true (default), images stay as markdown, for example !Product
+          photo. When false, each image becomes [Image: Product photo]. The API removes the image URL and…'
+      hls_coverage:
+        in: body
+        choices:
+        - hls
+        - increased_coverage
+        about: Coverage for Wiley Health & Life Sciences (wiley/wiley-hls) searches. hls returns licensed Wiley
+          content only. increased_coverage blends it with open-access biomedical literature in one ranked result…
+    price:
+      per: call
+      note: priced per result returned; see pricing
+  extract-contents:
+    title: Extract clean, structured content from URLs
+    about: 'Extract content from URLs, with optional summaries, structured extraction and screenshots. Access or
+      extraction can fail for individual URLs. - Synchronous: Submit up to 10 URLs and receive results…'
+    request: POST /v1/contents
+    params:
+      urls:
+        in: body
+        type: array
+        required: true
+        about: URLs to extract content from. Must be valid HTTP/HTTPS URLs. Duplicates are silently removed.
+      response_length:
+        in: body
+        type: integer
+        about: Maximum character length of extracted content per URL. - "short" - 25,000 characters (default) -
+          "medium" - 50,000 characters - "large" - 100,000 characters - "max" - No limit - Any positive integer…
+      max_price_dollars:
+        in: body
+        type: number
+        about: Maximum budget for this request. Defaults to 2x the maximum possible cost. - If the worst-case cost
+          exceeds this value, the request is rejected before processing with 400. - If the actual cost after…
+      summary:
+        in: body
+        type: boolean
+        about: Controls AI-powered content processing. Adds 0.2 credits per successfully extracted URL when enabled.
+          - false - No AI processing, raw extracted content only (default) - true - Generate a text summary…
+      extract_effort:
+        in: body
+        choices:
+        - auto
+        - normal
+        - high
+        about: Controls how pages are rendered for extraction. - "auto" - Automatically selects the best method
+          per URL (default) - "normal" - HTTP-only extraction, fastest - "high" - Full Chrome rendering, best…
+      start_date:
+        in: body
+        about: Start of the date window for point-in-time extraction. Accepts YYYY, YYYY-MM-DD or an ISO-8601 datetime.
+          Use with historical_cache.
+      end_date:
+        in: body
+        about: End of the date window (the cutoff) for point-in-time extraction. Accepts YYYY, YYYY-MM-DD or an
+          ISO-8601 datetime. A year alone means the last day of that year. start_date must be on or before…
+      historical_cache:
+        in: body
+        type: boolean
+        about: 'Serve a snapshot captured inside the date window instead of a live crawl. On Contents this always
+          applies historical_cache_strict: "only": a URL with no qualifying snapshot fails rather than falling…'
+      historical_cache_strict:
+        in: body
+        choices:
+        - 'off'
+        - prefer
+        - only
+        about: 'Snapshot policy. Accepted for parity with Search, but on Contents any request with historical_cache:
+          true uses only, whatever value is passed.'
+      screenshot:
+        in: body
+        type: boolean
+        about: Capture a screenshot of each page. The screenshot URL is returned in each result's screenshot_url
+          field.
+      include_image_links:
+        in: body
+        type: boolean
+        about: 'Keep image URLs in the content. When true (default), images stay as markdown, for example !Product
+          photo. When false, each image becomes [Image: Product photo]. The API removes the image URL and…'
+      max_age:
+        in: body
+        type: integer
+        about: 'The oldest cached copy of a page, in seconds, that you accept. 0 forces a live crawl. Omit it for
+          the default cache policy: a copy up to 7 days old, with a background refresh when it is older than 5…'
+      async:
+        in: body
+        type: boolean
+        about: Process URLs asynchronously in the background. Returns a job_id to poll via GET /v1/contents/jobs/{job_id}.
+          Required when submitting more than 10 URLs (maximum 50). Also useful for slow,…
+      webhook_url:
+        in: body
+        about: HTTPS URL to receive a webhook POST when async processing completes. Only used when async is true.
+          The webhook payload is signed with HMAC-SHA256.
+    price:
+      per: call
+      note: priced per result returned; see pricing
+  get-contents-job:
+    title: Poll async content extraction job status
+    about: Check the status and retrieve results of an async content extraction job.
+    request: GET /v1/contents/jobs/{job_id}
+    params:
+      job_id:
+        in: path
+        required: true
+        about: The job ID returned by the async contents request.
+    price:
+      per: call
+      note: priced per result returned; see pricing
+  answer:
+    title: Get AI-powered answers with real-time search
+    about: Searches across web, academic, and financial sources, then uses AI to generate a readable, cited response.
+      Returns results as a Server-Sent Events (SSE) stream. The AI agent performs multi-round…
+    request: POST /v1/answer
+    params:
+      query:
+        in: body
+        required: true
+        about: The question or research query to answer.
+      search_type:
+        in: body
+        choices:
+        - all
+        - web
+        - proprietary
+        - news
+        about: Controls which data sources are searched. - all - Web and proprietary sources (default) - web - Web
+          search only - proprietary - Academic, financial, and premium sources only - news - News articles…
+      included_sources:
+        in: body
+        type: array
+        about: Sources to include. Accepts domains, URLs, dataset identifiers, or presets ("finance", "medical").
+      excluded_sources:
+        in: body
+        type: array
+        about: Sources to exclude. Accepts domains, URLs and dataset identifiers. Presets are not supported.
+      data_max_price:
+        in: body
+        type: number
+        about: Maximum budget for the search component of the answer. It does not cap content extraction or AI processing.
+      start_date:
+        in: body
+        about: 'Filter results published on or after this date. Format: YYYY-MM-DD.'
+      end_date:
+        in: body
+        about: 'Filter results published on or before this date. Format: YYYY-MM-DD.'
+      country_code:
+        in: body
+        about: ISO 3166-1 alpha-2 country code for geo-targeted search.
+      fast_mode:
+        in: body
+        type: boolean
+        about: Enable fast mode for lower latency. Uses 3 tool call rounds instead of 2 and higher result counts
+          per query.
+      structured_output:
+        in: body
+        type: object
+        about: JSON Schema defining the desired output structure. When set, the AI returns a JSON object matching
+          this schema instead of free-form text. Max depth 10, max 50 properties, max 5000 characters.
+      system_instructions:
+        in: body
+        about: Custom system instructions for the AI. Replaces the default research agent prompt. Max 2000 characters.
+    price:
+      per: call
+      note: priced per result returned; see pricing
+  create-deep-research:
+    title: Create a DeepResearch task
+    about: Start an asynchronous investigation that retrieves information and produces a cited report, with optional
+      generated files. Provide the research question, source controls and output requirements. Save…
+    request: POST /v1/deepresearch/tasks
+    params:
+      query:
+        in: body
+        about: The research query or question. Use query (preferred) or input (deprecated). Maximum 25,000 characters.
+          Mutually exclusive with workflow_id.
+      input:
+        in: body
+        about: Deprecated. Use query instead.
+      workflow_id:
+        in: body
+        about: Beta. Slug of a workflow to run instead of a freeform query. When set, the task is resolved from
+          the workflow's prompt template using workflow_params. Mutually exclusive with freeform fields (query,…
+      workflow_params:
+        in: body
+        type: object
+        about: Beta. Values for the workflow's template variables, keyed by variable key. Required when workflow_id
+          is set. Values must satisfy the workflow's declared variable types and validation rules.
+      workflow_version:
+        in: body
+        type: integer
+        about: Beta. Pin the run to a specific immutable version of the workflow. Defaults to the workflow's current
+          version when omitted. Only valid with workflow_id.
+      mode:
+        in: body
+        choices:
+        - instant
+        - fast
+        - standard
+        - heavy
+        - max
+        about: Research mode controlling depth and cost. Prices are credits per task; tool add-ons are extra. See
+          pricing.
+      model:
+        in: body
+        choices:
+        - fast
+        - standard
+        - heavy
+        - max
+        about: Deprecated. Use mode instead.
+      strategy:
+        in: body
+        about: Deprecated. Use research_strategy instead. Natural language strategy to guide the research agent's
+          approach.
+      research_strategy:
+        in: body
+        about: Natural language strategy to guide the research phase. Controls how the agent searches, what sources
+          to prioritize, and research methodology. Combined length of research_strategy and report_format…
+      report_format:
+        in: body
+        about: Natural language instructions for the output format. Has highest priority and overrides default formatting.
+          Controls structure, style, length, and presentation of the final report. Combined length of…
+      search:
+        in: body
+        type: object
+        about: Search configuration for DeepResearch tasks.
+      urls:
+        in: body
+        type: array
+        about: URLs to include in the research context. Max 10.
+      files:
+        in: body
+        type: array
+        about: Files to analyze as part of the research. Max 10.
+      output_formats:
+        in: body
+        type: array
+        about: Desired output formats. Defaults to ["markdown"]. - "markdown" - Markdown report (default) - "pdf"
+          - PDF document (can combine with "markdown") - "toon" - Token-efficient structured output; requires…
+      metadata:
+        in: body
+        type: object
+        about: Arbitrary key-value metadata to attach to the task.
+      mcp_servers:
+        in: body
+        type: array
+        about: MCP servers to provide additional tools during research. Max 5.
+      code_execution:
+        in: body
+        type: boolean
+        about: 'Deprecated: use tools.code_execution instead. Enable code execution capability.'
+      tools:
+        in: body
+        type: object
+        about: Controls which optional tools the research agent can use. Each tool accepts an object with enabled
+          (boolean, default true) and optional max_calls (integer, capped at system default).
+      previous_reports:
+        in: body
+        type: array
+        about: DeepResearch task IDs to use as context for this task. Max 3.
+      webhook_url:
+        in: body
+        about: HTTPS URL to receive a webhook POST when the task completes. Signed with HMAC-SHA256.
+      alert_email:
+        in: body
+        type: object
+        about: Email notification on completion. Pass a string (email address) or an object with email and optional
+          custom_url. The custom_url must contain {id} which gets replaced with the task ID. Email must…
+      brand_collection_id:
+        in: body
+        about: Brand kit to apply to the PDF report and the deliverables. Send a kit ID from the Valyu platform,
+          or "none" for no branding. If you don't send it, the organisation's default kit applies to the report…
+      deliverables:
+        in: body
+        type: array
+        about: Deliverable files to generate from the research (e.g. Excel reports, presentations). Max 10.
+      hitl:
+        in: body
+        type: object
+        about: Human-in-the-loop configuration. Enable checkpoints that pause execution at key decision points.
+          Not available for batch requests.
+    price:
+      per: call
+      note: priced per result returned; see pricing
+  get-deep-research-status:
+    title: Get DeepResearch task status and results
+    about: Retrieve the current status, progress, and results of a DeepResearch task. Poll this endpoint to track
+      research progress and retrieve the final output.
+    request: GET /v1/deepresearch/tasks/{id}/status
+    params:
+      id:
+        in: path
+        required: true
+        about: DeepResearch task ID.
+    price:
+      per: call
+      note: priced per result returned; see pricing
+  update-deep-research:
+    title: Add a follow-up instruction to a running task
+    about: Send a follow-up instruction to a running DeepResearch task. The instruction can only be added before
+      the writing phase begins. Use this to steer the research in a specific direction based on…
+    request: POST /v1/deepresearch/tasks/{id}/update
+    params:
+      id:
+        in: path
+        required: true
+        about: DeepResearch task ID.
+      instruction:
+        in: body
+        required: true
+        about: Follow-up instruction for the research agent.
+    price:
+      per: call
+      note: priced per result returned; see pricing
+  cancel-deep-research:
+    title: Cancel a running or queued task
+    about: 'Cancel a DeepResearch task that is running, queued, awaiting_input or paused. Completed, failed or already
+      cancelled tasks cannot be cancelled. Billing: cancelling a running or awaiting_input task…'
+    request: POST /v1/deepresearch/tasks/{id}/cancel
+    params:
+      id:
+        in: path
+        required: true
+        about: DeepResearch task ID.
+    price:
+      per: call
+      note: priced per result returned; see pricing
+  delete-deep-research:
+    title: Delete a completed, failed, or cancelled task
+    about: Permanently delete a DeepResearch task and its associated data (output, sources, PDF, images). Running
+      or queued tasks must be cancelled first.
+    request: DELETE /v1/deepresearch/tasks/{id}/delete
+    params:
+      id:
+        in: path
+        required: true
+        about: DeepResearch task ID.
+    price:
+      per: call
+      note: priced per result returned; see pricing
+  toggle-deep-research-public:
+    title: Toggle public access for a task
+    about: Toggle the public visibility of a DeepResearch task. When set to true, the task results become accessible
+      via a public share link without authentication. Only the task owner can modify the public…
+    request: POST /v1/deepresearch/tasks/{id}/public
+    params:
+      id:
+        in: path
+        required: true
+        about: DeepResearch task ID.
+      public:
+        in: body
+        type: boolean
+        required: true
+        about: Set to true to make the task publicly accessible, or false to make it private.
+    price:
+      per: call
+      note: priced per result returned; see pricing
+  respond-to-deep-research:
+    title: Respond to a HITL checkpoint
+    about: Respond to a human-in-the-loop checkpoint. The task must be in awaiting_input or paused status. Pass
+      the interaction_id from the task's interaction field along with the response data matching the…
+    request: POST /v1/deepresearch/tasks/{id}/respond
+    params:
+      id:
+        in: path
+        required: true
+        about: DeepResearch task ID.
+      interaction_id:
+        in: body
+        required: true
+        about: The interaction_id from the task's interaction field.
+      response:
+        in: body
+        type: object
+        required: true
+        about: Response data - shape depends on the checkpoint type (interaction.type).
+    price:
+      per: call
+      note: priced per result returned; see pricing
+  list-datasources:
+    title: List available data sources
+    about: Discover all data sources available through Valyu's search API. Each datasource includes metadata, example
+      queries (optimized for few-shot prompting), pricing information, and response schemas. Use…
+    request: GET /v1/datasources
+    params:
+      category:
+        about: Filter datasources by category. Use the categories endpoint to discover available categories.
+    price:
+      per: call
+      note: priced per result returned; see pricing
+  list-datasource-categories:
+    title: List datasource categories
+    about: 'Retrieve all available datasource categories. Use these to filter the datasources endpoint. Categories
+      include: research, healthcare, markets, company, economic, predictions, transportation, legal,…'
+    request: GET /v1/datasources/categories
+    price:
+      per: call
+      note: priced per result returned; see pricing
+  search-datasources:
+    title: Search datasources
+    about: Find datasets by describing what you need in natural language, e.g. Wiley medical literature, FDA drug
+      labels, insider transactions, CPI inflation. Ranking is semantic (embedding similarity) blended…
+    request: GET /v1/datasources/search
+    params:
+      q:
+        required: true
+        about: Natural-language description of the data you want. query is accepted as an alias.
+      limit:
+        type: integer
+        about: Maximum number of datasets to return. Values above 100 are capped at 100.
+    price:
+      per: call
+      note: priced per result returned; see pricing

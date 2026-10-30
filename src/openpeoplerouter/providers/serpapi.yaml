@@ -1,0 +1,66 @@
+id: serpapi
+title: SerpApi
+about: Results from Google, Google Scholar, Bing, Baidu, YouTube and dozens of other engines as JSON.
+site: https://serpapi.com
+docs: https://serpapi.com/search-api
+pricing: https://serpapi.com/pricing
+api: https://serpapi.com
+key:
+  env: SERPAPI_API_KEY
+  query: api_key
+operations:
+  search:
+    title: Results from any supported engine
+    about: "engine: google, google_scholar, google_scholar_profiles, google_scholar_author, google_jobs, google_maps, bing, baidu, youtube, duckduckgo…"
+    request: GET /search.json
+    params:
+      engine: {default: google}
+      q: {}
+      location: {}
+      gl: {}
+      hl: {}
+      num: {type: integer}
+      start: {type: integer}
+      mauthors: {about: google_scholar_profiles - the author name to search}
+      author_id: {about: google_scholar_author - the profile id}
+    price: {credits: 1, per: success, note: one search credit per successful search}
+    jobs:
+      find_people:
+        audience: [professionals]
+        needs: [[title], [query]]
+        send:
+          query: q
+          title: {to: q, as: "\"$\""}
+          company: {to: q, as: "\"$\""}
+          location: {to: q, as: "\"$\""}
+        fixed: {engine: google, q: site:linkedin.com/in}
+        limit: num
+        result: organic_results
+        fields: {name: "split(title, ' - ')[0]", headline: title, linkedin_url: link, url: link}
+  scholar-profiles:
+    title: Google Scholar profiles by name or affiliation
+    request: GET /search.json
+    params:
+      engine: {default: google_scholar_profiles}
+      mauthors: {required: true}
+      after_author: {}
+    price: {credits: 1, per: success}
+    jobs:
+      find_people:
+        audience: [researchers]
+        needs: [[query]]
+        send: {query: mauthors}
+        result: profiles
+        fields: {name: name, company: affiliations, url: link, image: thumbnail}
+  scholar-author:
+    title: One Google Scholar profile with its articles and citations
+    request: GET /search.json
+    params:
+      engine: {default: google_scholar_author}
+      author_id: {required: true}
+      num: {type: integer}
+    price: {credits: 1, per: success}
+  account:
+    title: Searches left this month
+    request: GET /account.json
+    price: {usd: 0, per: call}

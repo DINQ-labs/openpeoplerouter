@@ -1,0 +1,73 @@
+id: huggingface
+title: Hugging Face
+about: People and organizations publishing models, datasets, Spaces and papers.
+site: https://huggingface.co
+docs: https://huggingface.co/docs/hub/api
+api: https://huggingface.co/api
+key:
+  env: HF_TOKEN
+  bearer: true
+  optional: true
+operations:
+  user-overview:
+    title: A user's profile and counts of models, datasets, Spaces and followers
+    request: GET /users/{username}/overview
+    params:
+      username: {in: path, required: true}
+    not_found: 404
+    price: {usd: 0, per: call}
+    jobs:
+      read_profile:
+        platform: huggingface
+        needs: [[handle]]
+        send: {handle: username}
+        result: '@'
+        fields: {name: fullname, handle: user, bio: details, followers: numFollowers, following: numFollowing, posts: numModels,
+                 image: avatarUrl}
+  org-overview:
+    title: An organization's profile and counts
+    request: GET /organizations/{name}/overview
+    params:
+      name: {in: path, required: true}
+    price: {usd: 0, per: call}
+  org-members:
+    title: An organization's members
+    request: GET /organizations/{name}/members
+    params:
+      name: {in: path, required: true}
+    price: {usd: 0, per: call}
+  models:
+    title: Models by search words, author or tag
+    about: Each model's author is a user or organization you can look up.
+    request: GET /models
+    params:
+      search: {}
+      author: {}
+      filter: {about: a tag, e.g. text-generation}
+      sort: {choices: [downloads, likes, lastModified, trendingScore]}
+      limit: {type: integer}
+    price: {usd: 0, per: call}
+  datasets:
+    title: Datasets by search words or author
+    request: GET /datasets
+    params:
+      search: {}
+      author: {}
+      sort: {}
+      limit: {type: integer}
+    price: {usd: 0, per: call}
+  spaces:
+    title: Spaces by search words or author
+    request: GET /spaces
+    params:
+      search: {}
+      author: {}
+      limit: {type: integer}
+    price: {usd: 0, per: call}
+  daily-papers:
+    title: Papers featured on Hugging Face, with their authors
+    request: GET /daily_papers
+    params:
+      date: {about: YYYY-MM-DD}
+      limit: {type: integer}
+    price: {usd: 0, per: call}

@@ -1,0 +1,119 @@
+id: x
+title: X API
+about: The official X (Twitter) API — user profiles, followers, posts and search. Needs an app bearer token with read access.
+site: https://developer.x.com
+docs: https://docs.x.com/x-api/introduction
+pricing: https://docs.x.com/x-api/getting-started/pricing
+api: https://api.x.com/2
+key:
+  env: X_BEARER_TOKEN
+  bearer: true
+operations:
+  user-by-username:
+    title: One account by username
+    request: GET /users/by/username/{username}
+    docs: https://docs.x.com/x-api/users/get-user-by-username
+    params:
+      username: {in: path, required: true}
+      user.fields: {default: "created_at,description,location,profile_image_url,public_metrics,url,verified,verified_type"}
+    price: {per: call, note: billed per read on pay-per-use plans}
+    jobs:
+      read_profile:
+        platform: x
+        needs: [[handle]]
+        send: {handle: username}
+        result: data
+        fields:
+          name: name
+          handle: username
+          bio: description
+          followers: public_metrics.followers_count
+          following: public_metrics.following_count
+          posts: public_metrics.tweet_count
+          verified: verified
+          location: location
+          website: url
+          image: profile_image_url
+          url: "join('', ['https://x.com/', username])"
+  users-by-usernames:
+    title: Up to 100 accounts by username
+    request: GET /users/by
+    params:
+      usernames: {required: true, about: comma separated}
+      user.fields: {default: "description,location,public_metrics,url,verified"}
+    price: {per: call}
+  user-by-id:
+    title: One account by id
+    request: GET /users/{id}
+    params:
+      id: {in: path, required: true}
+      user.fields: {default: "description,location,public_metrics,url,verified"}
+    price: {per: call}
+  search-users:
+    title: Accounts by words in their name or bio
+    request: GET /users/search
+    docs: https://docs.x.com/x-api/users/search-users
+    params:
+      query: {required: true}
+      max_results: {type: integer}
+      user.fields: {default: "description,location,public_metrics,url,verified"}
+    price: {per: call}
+    jobs:
+      find_people:
+        audience: [creators, professionals]
+        needs: [[query], [title]]
+        send: {query: query, title: {to: query, as: $}}
+        limit: max_results
+        result: data
+        fields:
+          name: name
+          headline: description
+          location: location
+          url: "join('', ['https://x.com/', username])"
+  followers:
+    title: Who follows an account
+    request: GET /users/{id}/followers
+    params:
+      id: {in: path, required: true}
+      max_results: {type: integer, about: up to 1000}
+      pagination_token: {}
+      user.fields: {default: "description,location,public_metrics"}
+    price: {per: call}
+  following:
+    title: Who an account follows
+    request: GET /users/{id}/following
+    params:
+      id: {in: path, required: true}
+      max_results: {type: integer}
+      pagination_token: {}
+      user.fields: {default: "description,location,public_metrics"}
+    price: {per: call}
+  user-posts:
+    title: An account's recent posts
+    request: GET /users/{id}/tweets
+    params:
+      id: {in: path, required: true}
+      max_results: {type: integer, about: 5-100}
+      tweet.fields: {default: "created_at,public_metrics"}
+    price: {per: call}
+  search-recent:
+    title: Posts from the last seven days matching a query
+    request: GET /tweets/search/recent
+    params:
+      query: {required: true, about: "X search operators, e.g. from:jack -is:retweet"}
+      max_results: {type: integer, about: 10-100}
+      expansions: {default: author_id}
+      user.fields: {default: "description,location,public_metrics"}
+    price: {per: call}
+  list-members:
+    title: The members of a list
+    request: GET /lists/{id}/members
+    params:
+      id: {in: path, required: true}
+      max_results: {type: integer}
+      user.fields: {default: "description,location,public_metrics"}
+    price: {per: call}
+  usage:
+    title: Post reads used this billing cycle
+    request: GET /usage/tweets
+    price: {usd: 0, per: call}

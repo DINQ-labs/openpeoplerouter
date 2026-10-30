@@ -1,0 +1,34 @@
+id: kickbox
+title: Kickbox
+about: Email verification with a Sendex quality score.
+site: https://kickbox.com
+docs: https://docs.kickbox.com/docs/single-verification-api
+pricing: https://kickbox.com/pricing/
+api: https://api.kickbox.com/v2
+key:
+  env: KICKBOX_API_KEY
+  query: apikey
+operations:
+  verify:
+    title: Whether an address accepts mail
+    request: GET /verify
+    params:
+      email: {required: true}
+      timeout: {type: integer, about: milliseconds}
+    price: {credits: 1, per: call}
+    jobs:
+      verify_email:
+        needs: [[email]]
+        send: {email: email}
+        result: '@'
+        fields:
+          email: email
+          status: result
+          deliverable: result == 'deliverable'
+          score: sendex
+          catch_all: accept_all
+          disposable: disposable
+  balance:
+    title: Verification credits left
+    request: GET /balance
+    price: {usd: 0, per: call}

@@ -1,137 +1,127 @@
 # OpenPeopleRouter
 
-**One MCP interface for people discovery. Bring your own provider accounts.**
+**An open-source MCP server that finds people and companies through the data
+providers you already pay for.** Bring your own keys; nothing goes through a
+middleman.
 
-Find candidates, researchers, creators, industry experts and business contacts;
-enrich profiles and companies; resolve identities and discover contact details.
-Use unified capability tools first, then search the provider endpoint catalog
-when you need a platform-specific API.
+- **7 job tools** an agent can call without knowing any provider: `find_people`,
+  `enrich_person`, `find_contact`, `verify_email`, `find_companies`,
+  `enrich_company`, `read_profile`.
+- **68 providers, 2,200+ operations** — B2B people and company data, email
+  finding and verification, phone data, research and developer profiles, social
+  platforms, web search and scraping. See [docs/providers.md](docs/providers.md).
+- **Your keys, your bills.** Each provider bills your own account. Keys stay in
+  your environment and are scrubbed from every response.
+- **One YAML file per provider.** Adding one needs no Python.
 
-This is an independent, self-hosted project. It has no DINQ login requirement,
-customer database, credit wallet, markup, payment gateway or hosted deployment
-dependency. You supply provider API keys and pay the providers directly.
-DINQ is an optional hosted provider, like a separate paid account you can choose.
+[中文说明](README.zh-CN.md) · [Provider list](docs/providers.md) · [Provider file format](docs/provider-format.md) · [How routing works](docs/architecture.md)
 
-[中文说明](README.zh-CN.md) · [Provider configuration](docs/providers.md) · [Architecture](docs/architecture.md)
-
-## Run locally
+## Run it
 
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
-From your checkout:
 
 ```bash
+git clone https://github.com/DINQ-labs/openpeoplerouter && cd openpeoplerouter
 uv sync
-cp .env.example .env
-# Edit .env locally: add only the provider keys you want to use.
+cp .env.example .env          # fill in only the providers you use
 uv run openpeoplerouter providers
-uv run openpeoplerouter check
-uv run openpeoplerouter serve
+uv run openpeoplerouter run find_contact "full_name=Jane Doe" company_domain=example.com
 ```
 
-The default transport is MCP stdio. It waits for an MCP client and is not an
-interactive chat prompt. Environment variables override `.env` values.
+Several sources work with no key at all (OpenAlex, ORCID, Crossref, Wikidata,
+GitHub, Hugging Face, Semantic Scholar, Stack Exchange, Bluesky), so the server is
+useful before you configure anything.
 
-For an MCP client supporting command-based servers, use this configuration with
-the absolute path to your checkout and your installed `uv` executable:
+### In an MCP client
+
+The default transport is stdio:
 
 ```json
 {
   "mcpServers": {
     "openpeoplerouter": {
       "command": "uv",
-      "args": ["--directory", "/absolute/path/openpeoplerouter", "run", "openpeoplerouter", "serve"]
+      "args": ["--directory", "/absolute/path/to/openpeoplerouter", "run", "openpeoplerouter", "serve"]
     }
   }
 }
 ```
 
-This is a generic MCP configuration example; individual clients can use different
-configuration formats. No provider key needs to be pasted into a conversation.
+Over HTTP, for a server you share with your own tools:
+
+```bash
+OPENPEOPLEROUTER_TOKEN=change-me uv run openpeoplerouter serve --transport http --host 0.0.0.0 --port 8080
+```
+
+Clients then connect to `http://host:8080/mcp` with `Authorization: Bearer change-me`.
+The server refuses to listen beyond localhost without a token, because it spends
+your provider credits. `docker compose up` does the same in a container.
 
 ## Tools
 
-| Tool | Purpose |
+| Tool | What it does |
 | --- | --- |
-| `people_search` | Find people by criteria or source URL |
-| `people_enrich` | Enrich a known person's profile |
-| `companies_search` | Find companies |
-| `companies_enrich` | Enrich a company's profile |
-| `social_profile` | Read social account profiles |
-| `people_identity_resolve` | Resolve identities across platforms |
-| `people_from_image` | Discover image sources |
-| `people_contact_find` | Find or verify contact details |
-| `capabilities` | Inspect coverage and available providers |
-| `find_tool` | Discover endpoints when unified capabilities are insufficient |
-| `endpoint` | Inspect arguments and provider documentation |
-| `call_tool` | Execute a provider endpoint with your own credentials |
+| `find_people` | People by title, employer, place, skills or a description. `audience` picks professionals (default), researchers, developers or creators. Rows from several providers are merged and de-duplicated. |
+| `enrich_person` | One person from an email, LinkedIn URL, phone, or name with employer. |
+| `find_contact` | Work email and phone for one person. |
+| `verify_email` | Whether an address can receive mail. |
+| `find_companies` | Companies by industry, place, size, technology or a description. |
+| `enrich_company` | One company from its domain, name or LinkedIn page. |
+| `read_profile` | One public profile on LinkedIn, X, Instagram, TikTok, YouTube, GitHub, Bluesky, Threads and more. |
+| `providers` | What is configured, and which variable each provider reads. |
+| `search_operations` | Find any provider operation by words. |
+| `describe_operation` | Its parameters, price and docs. |
+| `call_operation` | Run it with the provider's own parameters and get the raw response. |
 
-The initial catalog contains 29 direct HTTP providers and 1,641 endpoint
-definitions. **Definitions do not mean every API is enabled, tested, free or
-available on your plan.** Unified routing needs both a configured provider and a
-matching adapter. Some capabilities require DINQ or another custom provider
-adapter. Use `capabilities` and `find_tool` to inspect availability.
+Every job result lists what was `tried`: the operation, whether it answered, how
+long it took, and the error if it failed — so an agent can tell "nobody matched"
+from "the key was rejected" from "out of credit".
 
-## Provider control
+## Choosing providers
 
 ```dotenv
-# Optional allowlist: only these providers may be called.
-OPENPEOPLEROUTER_PROVIDERS=hunter,tikhub,openalex
-HUNTER_API_KEY=your-own-key
-TIKHUB_API_KEY=your-own-key
+# Only these providers may be called (default: every provider with a key, plus keyless ones)
+OPENPEOPLEROUTER_PROVIDERS=hunter,apollo,openalex
+# Try these first, in this order; the rest follow, cheapest first
+OPENPEOPLEROUTER_ORDER=apollo,hunter
 ```
 
-Set `vendor` on a unified call to select one provider or endpoint. Set
-`waterfall=false` to try only the first eligible endpoint. The default can call
-multiple providers on misses/errors; merging capabilities can call multiple
-providers even after a hit. Provider charges may apply to each request.
-There is no central credit budget or automatic invoice reconciliation.
-Catalog pricing is informational, may be outdated and may differ from your plan.
+A job call can also pass `providers: ["pdl", "lusha"]` to use only those, in that
+order, and `raw: true` to get each provider's full record next to the mapped
+fields.
 
-### Optional DINQ provider
-
-```dotenv
-DINQ_API_KEY=your-own-dinq-key
-# Include dinq if you use an allowlist:
-OPENPEOPLEROUTER_PROVIDERS=dinq,hunter
-```
-
-Select `vendor="dinq"` in a unified tool call. This sends the request to the
-public hosted PeopleRouter MCP at `https://router.dinq.me/test` using your DINQ
-API key. DINQ's own plan and charges apply. It is never selected automatically,
-and other providers work without a DINQ account. The bridge has protocol tests;
-no paid DINQ request is made during installation or CI.
-
-## HTTP / Docker
+## Command line
 
 ```bash
-# In .env, set OPENPEOPLEROUTER_TOKEN to a long random secret first.
-uv run openpeoplerouter serve --transport http --host 0.0.0.0
-# Or:
-docker compose up --build -d
+openpeoplerouter serve [--transport stdio|http] [--host] [--port]
+openpeoplerouter providers [--markdown]
+openpeoplerouter check                     # validate every provider file
+openpeoplerouter run <job> key=value ...    # run a job once
+openpeoplerouter call <provider.operation> key=value ...
 ```
 
-MCP endpoint: `http://127.0.0.1:8093/mcp`. Supply
-`Authorization: Bearer <OPENPEOPLEROUTER_TOKEN>` when enabled. Docker publishes
-only to localhost by default. Use your own TLS reverse proxy for remote access.
-This is a single-owner instance: clients share the configured provider keys.
-It does not implement per-user accounts or OAuth. Public binding requires a token.
+Values that parse as JSON are sent as JSON (`limit=5`, `filters='{"x":1}'`).
 
-## Develop
+## Adding a provider
 
-```bash
-uv run pytest -q
-uv build
-```
+Write `src/openpeoplerouter/providers/<id>.yaml` as described in
+[docs/provider-format.md](docs/provider-format.md). For APIs with an OpenAPI
+document, `scripts/from_openapi.py` drafts the operations. Run
+`openpeoplerouter check` and `uv run pytest`, then open a pull request.
 
-Tests use synthetic responses and in-process MCP clients. They do not spend
-provider credits. The catalog ships inside the Python package, so installation
-has no dependency on a sibling repository or the original private project.
+Provider definitions describe each provider's public API documentation. Most
+routes were checked against those documents and response schemas; keyless and
+test-key providers were also called live. If a provider changed its API, the
+fix is usually one line in its file.
 
-To add a provider, see [the provider guide](docs/providers.md).
+## Responsible use
+
+You are responsible for using each provider within its terms and the law where
+you and the people you look up are, including data-protection rules such as the
+GDPR and CCPA. Some providers carry their own restrictions (for example, phone
+data that is not a consumer report and must not be used for credit, insurance,
+employment or housing decisions).
 
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE). Catalog portions originate
-from the Apache-2.0-licensed treg project; attribution is retained. Provider
-services, datasets and subscriptions are governed by their own terms, not by
-this software license.
+Apache-2.0

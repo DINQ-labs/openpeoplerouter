@@ -1,0 +1,61 @@
+id: crunchbase
+title: Crunchbase
+about: Companies, founders, investors, funding rounds and acquisitions. Needs a Crunchbase API plan.
+site: https://www.crunchbase.com
+docs: https://data.crunchbase.com/docs/api-essentials
+pricing: https://data.crunchbase.com/docs/api-packages-overview
+api: https://api.crunchbase.com/v4/data
+key:
+  env: CRUNCHBASE_API_KEY
+  header: X-cb-user-key
+operations:
+  organization:
+    title: One company by permalink or UUID
+    about: card_ids adds related lists such as founders, raised_funding_rounds, investors.
+    request: GET /entities/organizations/{entity_id}
+    docs: https://data.crunchbase.com/docs/entity-lookup
+    params:
+      entity_id: {in: path, required: true, about: permalink (e.g. airbnb) or UUID}
+      field_ids: {default: "identifier,short_description,website_url,linkedin,location_identifiers,num_employees_enum,founded_on,categories,funding_total,last_funding_type"}
+      card_ids: {about: "e.g. founders,raised_funding_rounds"}
+    not_found: 404
+    price: {per: call, note: within your plan's quota}
+  person:
+    title: One person by permalink or UUID
+    request: GET /entities/people/{entity_id}
+    params:
+      entity_id: {in: path, required: true}
+      field_ids: {default: "identifier,first_name,last_name,primary_job_title,primary_organization,linkedin,location_identifiers"}
+      card_ids: {}
+    not_found: 404
+    price: {per: call}
+  search-organizations:
+    title: Companies matching filter predicates
+    about: Predicates combine with AND; use autocomplete for category and location UUIDs.
+    request: POST /searches/organizations
+    docs: https://data.crunchbase.com/docs/search-api-basics
+    params:
+      field_ids: {in: body, type: array, required: true}
+      query: {in: body, type: array, required: true, about: "[{type: predicate, field_id, operator_id, values}]"}
+      order: {in: body, type: array}
+      limit: {in: body, type: integer, about: 1-1000}
+      after_id: {in: body}
+    price: {per: call}
+  search-people:
+    title: People matching filter predicates
+    request: POST /searches/people
+    params:
+      field_ids: {in: body, type: array, required: true}
+      query: {in: body, type: array, required: true}
+      limit: {in: body, type: integer}
+      after_id: {in: body}
+    price: {per: call}
+  autocomplete:
+    title: Entities (companies, people, categories, places) from a partial name
+    request: GET /autocompletes
+    docs: https://data.crunchbase.com/docs/autocomplete
+    params:
+      query: {required: true}
+      collection_ids: {about: "e.g. organizations, people, categories, locations"}
+      limit: {type: integer, about: up to 25}
+    price: {per: call}

@@ -1,0 +1,330 @@
+id: akta
+title: Akta
+about: Company intelligence — enrichment, headcount trends, job posts, social posts, product and employee reviews,
+  website traffic and news.
+site: https://akta.pro
+docs: https://docs.akta.pro
+pricing: https://akta.pro/pricing
+api: https://api.akta.pro/api
+key:
+  env: AKTA_API_KEY
+  header: x-api-key
+operations:
+  get-news:
+    title: News
+    about: Fetch enriched news articles for a company or industry. Each article includes AI-generated summary, full
+      text, sentiment, event tags, industry classifications, and resolved company mentions. Results…
+    request: GET /v1/news
+    params:
+      company:
+        about: Website (e.g. 'https://canva.com') or company UUID returned by the Company Search API.
+      primary_company:
+        about: Filter to return only articles where the specified company is the primary company featured. Cannot
+          be used with the company parameter.
+      industry:
+        about: Comma separated list of industry codes to filter articles by. Use industry search endpoint to fetch
+          the list of industry codes for a given industry topic.
+      query:
+        about: Topic name to search articles. Allows open-ended topic name. Eg. Crude oil price developments
+      title:
+        about: Searches articles based on the title entered.
+      start_date:
+        about: Start of the date range, formatted as YYYY-MM-DD. Non-enterprise plans are limited to a 6-month lookback.
+      end_date:
+        about: End of the date range, formatted as YYYY-MM-DD. Default = today.
+      limit:
+        type: integer
+        about: Maximum number of news articles to return. Default = 10, Max = 100.
+      offset:
+        type: integer
+        about: Number of results to skip before returning records. Use with limit for pagination.
+      group_articles:
+        type: boolean
+        about: Accepts boolean. True will group similar articles from the same event.
+      news_score_list:
+        choices:
+        - High
+        - Medium
+        - Low
+        - all
+        about: 'Filter by news score tier. Accepted values: High, Medium, Low, all. Default = all'
+      countries:
+        about: Filters articles based on the country of the event. Comma separated list of ISO country codes.
+      blacklisted:
+        about: Comma separated list of publisher domains to exclude.
+      type_list:
+        about: Filter by news type. Download full list from https://playground.akta.pro/news-tags.csv. Default =
+          all.
+      sentiment_list:
+        about: 'Comma-separated list of sentiments to filter by. Accepted values: positive, negative, neutral, all.
+          Default = all. Example: sentiment_list=positive,negative'
+      entity_person_list:
+        about: Comma separated list of people names.
+      entity_location_list:
+        about: Comma separated list of locations.
+      entity_product_list:
+        about: Comma separated list of product names.
+      entity_event_list:
+        about: Comma separated list of event names.
+      naics_code_list:
+        about: Comma separated list of NAICS codes.
+      sic_code_list:
+        about: Comma separated list of SIC codes.
+      iptc_code_list:
+        about: Comma separated list of IPTC codes.
+      iab_code_list:
+        about: Comma separated list of IAB codes.
+    price:
+      per: call
+      note: credits_consumed is on each response
+  company-search:
+    title: Company Search
+    about: Resolve a company name, website domain, or UUID into a structured company record. This is a free endpoint
+      — it does not consume API credits.
+    request: GET /v1/company/search
+    params:
+      query:
+        required: true
+        about: 'A company name, website. The backend automatically resolves the input type. Examples: https://canva.com,
+          canva'
+    price:
+      per: call
+      note: credits_consumed is on each response
+    jobs:
+      find_companies:
+        needs:
+        - - query
+        send:
+          query: query
+        result: data
+        fields:
+          name: name
+          website: website
+          industry: product_category
+  company-enrichment:
+    title: Company Enrichment
+    about: Retrieve structured company data — firmographics, funding, headcount, web traffic, business model, and
+      financials. Specify which sections you need; only requested sections are returned.
+    request: GET /v1/company/enrichment
+    params:
+      company:
+        required: true
+        about: Company website (e.g. 'https://canva.com') or a company UUID (e.g. '00031n-tesla'). The UUID can
+          be obtained from the Company Search API.
+      sections:
+        about: Comma-separated list of sections to return. Copy-paste example:…
+    price:
+      per: call
+      note: credits_consumed is on each response
+  get-product-reviews:
+    title: Product Reviews
+    about: Fetches a company's product catalog and detailed reviews per product including ratings, star distribution,
+      pros, cons, pricing and individual review content. Results are returned in the API response.
+    request: GET /v1/company/product-reviews
+    params:
+      company:
+        required: true
+        about: Company website (e.g. 'canva.com') or a company UUID. The UUID can be obtained from the Company Search
+          API.
+      products:
+        type: array
+        about: List of product_id values to fetch reviews for. Pass the parameter multiple times to request more
+          than one product. If omitted, the response returns the product list only.
+      limit:
+        type: integer
+        about: Maximum number of reviews to return per product. Only applies when products is provided.
+      offset:
+        type: integer
+        about: Number of reviews to skip before returning records. Use with limit for pagination.
+    price:
+      per: call
+      note: credits_consumed is on each response
+  get-employee-reviews:
+    title: Employee Reviews
+    about: Fetch a company's employee review data including overall ratings, dimension-level ratings (culture, work-life
+      balance, senior management and more) and individual employee reviews. Results are…
+    request: GET /v1/company/employee-reviews
+    params:
+      company:
+        required: true
+        about: Company website (e.g. 'canva.com') or a company UUID. The UUID can be obtained from the Company Search
+          API.
+      limit:
+        type: integer
+        about: Maximum number of reviews to return.
+      offset:
+        type: integer
+        about: Number of reviews to skip before returning records. Use with limit for pagination.
+    price:
+      per: call
+      note: credits_consumed is on each response
+  industry-search:
+    title: Industry Search
+    about: Resolves an industry from a free-text query and returns matching industry codes ranked by similarity.
+      This is a free endpoint — it does not consume API credits.
+    request: GET /v1/industry/search
+    params:
+      query:
+        required: true
+        about: 'Free-text industry name or topic to search for. Example: ''warehouse automation'''
+      level:
+        about: 'Restrict results to one or more levels of the industry taxonomy hierarchy. Accepts a single level
+          or a comma-separated list of multiple levels. Available values: l1, l2, l3, l4, all. Default is l4.'
+    price:
+      per: call
+      note: credits_consumed is on each response
+  get-headcount-trends:
+    title: Headcount Trends
+    about: Fetches a company's LinkedIn-sourced headcount data, including total employee count, historical growth
+      trends, and a functional breakdown of the workforce.
+    request: GET /v1/company/headcount-trends
+    params:
+      company:
+        required: true
+        about: Company website (e.g. 'canva.com') or a company UUID. The UUID can be obtained from the Company Search
+          API.
+    price:
+      per: call
+      note: credits_consumed is on each response
+  get-job-posts:
+    title: Job Posts
+    about: Fetches live LinkedIn and Indeed job listings for a company, including title, location, description,
+      compensation, experience level, and extracted key skills.
+    request: GET /v1/company/jobs
+    params:
+      company:
+        required: true
+        about: Company website (e.g. 'canva.com') or a company UUID. The UUID can be obtained from the Company Search
+          API.
+      limit:
+        type: integer
+        about: Maximum number of job listings to return.
+      offset:
+        type: integer
+        about: Number of listings to skip before returning records.
+    price:
+      per: call
+      note: credits_consumed is on each response
+  get-social-posts:
+    title: Social Posts
+    about: Fetches social media posts published by a company, including content type, text, publish date, paid/repost
+      flags, an AI classification, and detailed engagement metrics.
+    request: GET /v1/company/posts
+    params:
+      company:
+        required: true
+        about: Company website (e.g. 'canva.com') or a company UUID. The UUID can be obtained from the Company Search
+          API.
+      limit:
+        type: integer
+        about: Maximum number of posts to return.
+      offset:
+        type: integer
+        about: Number of posts to skip before returning records.
+    price:
+      per: call
+      note: credits_consumed is on each response
+  get-website-traffic:
+    title: Website Traffic
+    about: Fetches a company's website traffic signals, including engagement metrics, historical monthly visit estimates,
+      and a breakdown of traffic by acquisition source.
+    request: GET /v1/company/website-traffic
+    params:
+      company:
+        required: true
+        about: Company website (e.g. 'canva.com') or a company UUID. The UUID can be obtained from the Company Search
+          API.
+    price:
+      per: call
+      note: credits_consumed is on each response
+  create-company-addition-request:
+    title: Company Addition
+    about: Submits a company that is not yet in akta.pro's database to be added, returning a request ID to track,
+      or the existing company if it is already present. This is a free endpoint — it does not consume…
+    request: POST /v1/company/addition-requests
+    params:
+      company_name:
+        in: body
+        required: true
+        about: 'Name of the company to add. Example: solios'
+      website:
+        in: body
+        required: true
+        about: 'Primary website URL of the company. Used to disambiguate and resolve the company. Example: https://www.soleosenergy.com/'
+    price:
+      per: call
+      note: credits_consumed is on each response
+  get-request-status:
+    title: Request Status
+    about: Returns the current status of an asynchronous request, such as a company addition request, by its request
+      ID. This is a free endpoint — it does not consume API credits.
+    request: GET /v1/status/{request_id}
+    params:
+      request_id:
+        in: path
+        required: true
+        about: 'The unique identifier of the request to check, returned when the original request was submitted.
+          Example: 2db01b38-5c81-4b3f-b76d-8b36aeed603b'
+    price:
+      per: call
+      note: credits_consumed is on each response
+  list-generate-companies:
+    title: generateCompanyList
+    about: Build targeted company lists using structured filters or natural language queries, with optional data
+      enrichment.
+    request: POST /v1/list/generate/companies/
+    params:
+      query:
+        in: body
+        about: Natural language search query (e.g. 'SaaS companies in the US with Series A funding'). Cannot be
+          used with filters.
+      filters:
+        in: body
+        type: object
+        about: Structured filter conditions. Use the Filter Builder API to generate valid filters. Cannot be used
+          with query. See filter options at /api-reference/listgen-api.
+      sections:
+        in: body
+        type: array
+        about: 'Data enrichment sections to include. Values: firmographic, business_model, company_assessment, trust_signal,
+          company_hierarchy, digital_presence, financial_estimate, location, management_profile,…'
+      sort_by:
+        in: body
+        choices:
+        - relevance
+        - revenue_estimate
+        - valuation_estimate
+        - employee_range
+        - total_funding
+        - founded_year
+        about: 'Field to sort results by. Default: relevance'
+      sort_order:
+        in: body
+        choices:
+        - asc
+        - desc
+        about: 'Sort direction. Default: desc'
+      limit:
+        in: body
+        type: integer
+        about: 'Maximum companies to return. Default: 50, Max: 500'
+      offset:
+        in: body
+        type: integer
+        about: 'Number of results to skip for pagination. Default: 0'
+    price:
+      per: call
+      note: credits_consumed is on each response
+  translate-query:
+    title: translateQuery
+    about: Converts natural language queries into structured filter conditions for the List Generation API.
+    request: POST /v1/list/filter-builder/
+    params:
+      query:
+        in: body
+        required: true
+        about: Natural language description of target companies (e.g. 'series a companies in mumbai working in climate
+          tech').
+    price:
+      per: call
+      note: credits_consumed is on each response

@@ -1,0 +1,25 @@
+id: wikidata
+title: Wikidata
+about: The open knowledge graph behind Wikipedia, for notable people, organizations and their identifiers.
+site: https://www.wikidata.org
+docs: https://www.wikidata.org/wiki/Wikidata:Data_access
+api: https://www.wikidata.org
+key: {}
+operations:
+  search-entities:
+    title: People and organizations by name
+    request: GET /w/api.php
+    params:
+      action: {default: wbsearchentities}
+      search: {required: true}
+      language: {default: en}
+      type: {default: item}
+      limit: {type: integer}
+      format: {default: json}
+    price: {usd: 0, per: call}
+  get-entity:
+    title: Everything Wikidata holds on one entity, by Q-id
+    request: GET /wiki/Special:EntityData/{id}.json
+    params:
+      id: {in: path, required: true, about: e.g. Q42}
+    price: {usd: 0, per: call}

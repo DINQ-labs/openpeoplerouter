@@ -1,0 +1,144 @@
+id: rocketreach
+title: RocketReach
+about: Emails and phones for 700M+ professionals, people and company search and company lookup.
+site: https://rocketreach.co
+docs: https://docs.rocketreach.co/reference/rocketreach-api
+pricing: https://rocketreach.co/pricing
+api: https://api.rocketreach.co/api/v2
+key:
+  env: ROCKETREACH_API_KEY
+  header: Api-Key
+operations:
+  person-lookup:
+    title: One person's emails and phones by name and employer, LinkedIn URL or email
+    about: status other than complete means the lookup is still running; ask person-lookup-status with the id.
+    request: GET /person/lookup
+    docs: https://docs.rocketreach.co/reference/people-lookup-api
+    params:
+      name: {about: full name, with current_employer}
+      current_employer: {}
+      title: {}
+      linkedin_url: {}
+      email: {}
+      id: {type: integer}
+      lookup_type: {choices: [standard, premium, bulk, phone, enrich]}
+      return_cached_emails: {type: boolean}
+    price: {credits: 1, per: success, note: one export credit per lookup}
+    jobs:
+      find_contact:
+        needs: [[linkedin_url], [full_name, company]]
+        send: {linkedin_url: linkedin_url, full_name: name, company: current_employer}
+        poll: {operation: person-lookup-status, send: {ids: id}, when: "status != 'complete'", until: "[0].status == 'complete'",
+               every: 3, within: 90}
+        result: "@[0] || @"
+        fields:
+          email: "emails[?type == 'professional'] | [0].email || emails[0].email"
+          email_status: "emails[?type == 'professional'] | [0].smtp_valid"
+          phone: phones[0].number
+          name: name
+          title: current_title
+          company_domain: current_employer_domain
+      enrich_person:
+        needs: [[linkedin_url], [email], [full_name, company]]
+        send: {linkedin_url: linkedin_url, email: email, full_name: name, company: current_employer}
+        fixed: {lookup_type: enrich}
+        result: '@'
+        fields:
+          name: name
+          title: current_title
+          company: current_employer
+          company_domain: current_employer_domain
+          location: location
+          country: country
+          linkedin_url: linkedin_url
+  person-lookup-status:
+    title: Status and results of earlier lookups
+    request: GET /person/checkStatus
+    docs: https://docs.rocketreach.co/reference/rocketreach-check-person-lookup-status-people-lookup-api
+    params:
+      ids: {type: array, required: true, about: lookup ids}
+    price: {usd: 0, per: call}
+  person-search:
+    title: People by name, title, employer, place, domain, skills or keywords (no contacts)
+    about: Every query value is a list; quote a value for an exact match, prefix with - to exclude.
+    request: POST /person/search
+    docs: https://docs.rocketreach.co/reference/people-search-api
+    params:
+      query: {in: body, type: object, required: true, about: "{name, current_title, employer, company_domain, geo, keyword, skills, ...}"}
+      start: {in: body, type: integer}
+      page_size: {in: body, type: integer, about: 1-100}
+      order_by: {in: body, choices: [relevance, popularity, score]}
+    price: {usd: 0, per: call, note: search does not spend export credits; lookups do}
+    jobs:
+      find_people:
+        needs: [[title], [company_domain], [company], [keywords]]
+        send:
+          title: {to: query.current_title, as: [$]}
+          company_domain: {to: query.company_domain, as: [$]}
+          company: {to: query.employer, as: [$]}
+          location: {to: query.geo, as: [$]}
+          keywords: {to: query.skills, as: [$]}
+        limit: page_size
+        result: '@'
+        fields:
+          name: name
+          title: current_title
+          company: current_employer
+          company_domain: current_employer_domain
+          location: location
+          country: country_code
+          linkedin_url: linkedin_url
+  company-lookup:
+    title: One company by domain, LinkedIn URL, name or ticker
+    request: GET /company/lookup/
+    docs: https://docs.rocketreach.co/reference/company-lookup-api
+    params:
+      domain: {}
+      linkedin_url: {}
+      name: {}
+      ticker: {}
+      id: {type: integer}
+    price: {credits: 1, per: success, note: needs company export credits}
+    jobs:
+      enrich_company:
+        needs: [[domain], [linkedin_url], [name]]
+        send: {domain: domain, linkedin_url: linkedin_url, name: name}
+        result: '@'
+        fields:
+          name: name
+          domain: domain
+          description: description
+          industry: industry
+          employees: num_employees
+          founded: year_founded
+          location: address.city
+          country: address.country_code
+          linkedin_url: links.linkedin
+          technologies: techstack
+          revenue: revenue
+  company-search:
+    title: Companies by name, domain, industry, size, place or technology
+    request: POST /searchCompany
+    docs: https://docs.rocketreach.co/reference/company-search-api
+    params:
+      query: {in: body, type: object, required: true, about: "array-of-string fields: name, domain, industry, keyword, geo, employees, techstack, revenue, total_funding, ..."}
+      start: {in: body, type: integer}
+      page_size: {in: body, type: integer}
+    price: {usd: 0, per: call}
+    jobs:
+      find_companies:
+        needs: [[query], [industry], [technology], [location]]
+        send:
+          query: {to: query.keyword, as: [$]}
+          industry: {to: query.industry, as: [$]}
+          technology: {to: query.techstack, as: [$]}
+          location: {to: query.geo, as: [$]}
+          employees: {to: query.employees, as: [$]}
+        limit: page_size
+        result: '@'
+        fields: {name: name, domain: email_domain, industry: industry_str, location: city, country: country_code}
+  account:
+    title: Your plan, credits and rate limits
+    request: GET /account/
+    docs: https://docs.rocketreach.co/reference/rocketreach-api-account
+    price: {usd: 0, per: call}

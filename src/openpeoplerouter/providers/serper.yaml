@@ -1,0 +1,76 @@
+id: serper
+title: Serper
+about: Fast Google results — web, news, places, images, scholar — and page scraping.
+site: https://serper.dev
+docs: https://serper.dev/playground
+pricing: https://serper.dev/#pricing
+api: https://google.serper.dev
+key:
+  env: SERPER_API_KEY
+  header: X-API-KEY
+operations:
+  search:
+    title: Google web results
+    about: Use site:linkedin.com/in "title" "company" to find profiles.
+    request: POST /search
+    params:
+      q: {in: body, required: true}
+      gl: {in: body, about: country code, e.g. us}
+      hl: {in: body, about: language, e.g. en}
+      location: {in: body}
+      num: {in: body, type: integer, about: 10-100}
+      page: {in: body, type: integer}
+      tbs: {in: body, about: "time filter, e.g. qdr:m"}
+    price: {credits: 1, per: call}
+    jobs:
+      find_people:
+        audience: [professionals]
+        needs: [[title], [query]]
+        send:
+          query: q
+          title: {to: q, as: "\"$\""}
+          company: {to: q, as: "\"$\""}
+          location: {to: q, as: "\"$\""}
+        fixed: {q: site:linkedin.com/in}
+        limit: num
+        result: organic
+        fields: {name: "split(title, ' - ')[0]", headline: title, linkedin_url: link, url: link}
+  news:
+    title: Google News results
+    request: POST /news
+    params:
+      q: {in: body, required: true}
+      gl: {in: body}
+      num: {in: body, type: integer}
+      tbs: {in: body}
+    price: {credits: 1, per: call}
+  places:
+    title: Google Maps places
+    request: POST /places
+    params:
+      q: {in: body, required: true}
+      gl: {in: body}
+      location: {in: body}
+    price: {credits: 1, per: call}
+  scholar:
+    title: Google Scholar results
+    request: POST /scholar
+    params:
+      q: {in: body, required: true}
+      num: {in: body, type: integer}
+    price: {credits: 1, per: call}
+  images:
+    title: Google Images results
+    request: POST /images
+    params:
+      q: {in: body, required: true}
+      num: {in: body, type: integer}
+    price: {credits: 1, per: call}
+  webpage:
+    title: The text of a web page
+    request: POST /
+    api: https://scrape.serper.dev
+    params:
+      url: {in: body, required: true}
+      includeMarkdown: {in: body, type: boolean}
+    price: {credits: 2, per: call}

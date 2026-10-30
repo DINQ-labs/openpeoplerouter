@@ -1,0 +1,895 @@
+id: sixtyfour
+title: Sixtyfour
+about: Research agents that find emails and phones, enrich LinkedIn profiles and answer open questions about people
+  and companies.
+site: https://www.sixtyfour.ai
+docs: https://docs.sixtyfour.ai
+pricing: https://docs.sixtyfour.ai/guides/credits-and-pricing
+api: https://api.sixtyfour.ai
+key:
+  env: SIXTYFOUR_API_KEY
+  header: x-api-key
+operations:
+  check-balance:
+    title: Check Balance
+    about: Returns the current credit balance for the organization associated with the API key.
+    request: GET /check-balance
+    price:
+      usd: 0
+      per: call
+  company-intelligence-async:
+    title: Company Intelligence (Async)
+    about: Find and enrich a single company; returns a job ID to poll.
+    request: POST /company-intelligence-async
+    params:
+      struct:
+        in: body
+        type: object
+        required: true
+        about: Mapping of output field name to natural-language description of what to extract. A field that asks
+          for an image (a headshot, a logo, a screenshot of a page) is returned as an image URL on…
+      find_people:
+        in: body
+        type: boolean
+        about: If true, also discover key people at the company.
+      people_focus_prompt:
+        in: body
+        about: Natural-language description of which people to surface when find_people=true.
+      lead_struct:
+        in: body
+        type: object
+        about: Output schema for each discovered person when find_people=true.
+      research_plan:
+        in: body
+        about: Optional natural-language plan that guides the research agent.
+      tier:
+        in: body
+        about: Quality and cost tier for the research agent.
+      full_org_chart:
+        in: body
+        type: boolean
+        about: If true, return the full org chart instead of a focused list.
+      webhook_url:
+        in: body
+        about: HTTPS URL that receives the result payload when the async job completes.
+      field_confidence:
+        in: body
+        type: boolean
+        about: If true, return each requested field's confidence (0-100), justification and source URLs, nested
+          like the request.
+      target_company:
+        in: body
+        type: object
+        required: true
+        about: Company identifiers (e.g. company_name, domain, linkedin).
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  company-intelligence:
+    title: Company Intelligence (Sync)
+    about: Find and enrich a single company.
+    request: POST /company-intelligence
+    params:
+      struct:
+        in: body
+        type: object
+        required: true
+        about: Mapping of output field name to natural-language description of what to extract. A field that asks
+          for an image (a headshot, a logo, a screenshot of a page) is returned as an image URL on…
+      find_people:
+        in: body
+        type: boolean
+        about: If true, also discover key people at the company.
+      people_focus_prompt:
+        in: body
+        about: Natural-language description of which people to surface when find_people=true.
+      lead_struct:
+        in: body
+        type: object
+        about: Output schema for each discovered person when find_people=true.
+      research_plan:
+        in: body
+        about: Optional natural-language plan that guides the research agent.
+      tier:
+        in: body
+        about: Quality and cost tier for the research agent.
+      full_org_chart:
+        in: body
+        type: boolean
+        about: If true, return the full org chart instead of a focused list.
+      webhook_url:
+        in: body
+        about: HTTPS URL that receives the result payload when the async job completes.
+      field_confidence:
+        in: body
+        type: boolean
+        about: If true, return each requested field's confidence (0-100), justification and source URLs, nested
+          like the request.
+      target_company:
+        in: body
+        type: object
+        required: true
+        about: Company identifiers (e.g. company_name, domain, linkedin).
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  enrich-linkedin:
+    title: Enrich LinkedIn Profile
+    about: Fetch a LinkedIn profile and extract structured fields in a single LLM call.
+    request: POST /enrich-linkedin
+    params:
+      linkedin_url:
+        in: body
+        required: true
+        about: Full LinkedIn profile or company URL to enrich.
+      struct:
+        in: body
+        type: object
+        about: Mapping of output field name to natural-language description of what to extract. A field that asks
+          for an image (a headshot, a logo, a screenshot of a page) is returned as an image URL on…
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  find-email-async:
+    title: Find Email (Async)
+    about: Find a single person's email; returns a job ID to poll.
+    request: POST /find-email-async
+    params:
+      lead:
+        in: body
+        type: object
+        required: true
+        about: Single lead to process. Provide any combination of name, email, company, linkedin, etc.
+      verify_emails:
+        in: body
+        type: boolean
+        about: SMTP-verify each discovered email before returning it.
+      mode:
+        in: body
+        choices:
+        - PROFESSIONAL
+        - PERSONAL
+        about: 'Email type to discover: ''PROFESSIONAL'' (work) or ''PERSONAL''.'
+      webhook_url:
+        in: body
+        about: HTTPS URL that receives the result payload when the async job completes.
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  find-email:
+    title: Find Email (Sync)
+    about: Find a single person's email address.
+    request: POST /find-email
+    params:
+      lead:
+        in: body
+        type: object
+        required: true
+        about: Single lead to process. Provide any combination of name, email, company, linkedin, etc.
+      verify_emails:
+        in: body
+        type: boolean
+        about: SMTP-verify each discovered email before returning it.
+      mode:
+        in: body
+        choices:
+        - PROFESSIONAL
+        - PERSONAL
+        about: 'Email type to discover: ''PROFESSIONAL'' (work) or ''PERSONAL''.'
+      webhook_url:
+        in: body
+        about: HTTPS URL that receives the result payload when the async job completes.
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+    jobs:
+      find_contact:
+        needs:
+        - - linkedin_url
+        - - full_name
+          - company
+        - - full_name
+          - company_domain
+        send:
+          linkedin_url: lead.linkedin
+          full_name: lead.name
+          company: lead.company
+          company_domain: lead.domain
+        result: '[@][?email] | [0]'
+        fields:
+          email: email[0][0]
+          email_status: email[0][1]
+          name: name
+  find-phone-async:
+    title: Find Phone (Async)
+    about: Find a single person's phone number; returns a job ID to poll.
+    request: POST /find-phone-async
+    params:
+      lead:
+        in: body
+        type: object
+        required: true
+        about: Single lead to process. Provide any combination of name, email, company, linkedin, etc.
+      webhook_url:
+        in: body
+        about: HTTPS URL that receives the result payload when the async job completes.
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  find-phone:
+    title: Find Phone (Sync)
+    about: Find a single person's phone number.
+    request: POST /find-phone
+    params:
+      lead:
+        in: body
+        type: object
+        required: true
+        about: Single lead to process. Provide any combination of name, email, company, linkedin, etc.
+      webhook_url:
+        in: body
+        about: HTTPS URL that receives the result payload when the async job completes.
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+    jobs:
+      find_contact:
+        needs:
+        - - linkedin_url
+        - - full_name
+          - company
+        send:
+          linkedin_url: lead.linkedin
+          full_name: lead.name
+          company: lead.company
+        result: '[@][?phone] | [0]'
+        fields:
+          phone: phone
+          name: name
+  job-status:
+    title: Job Status
+    about: Poll an async job and retrieve results when complete. Authorized snapshots are cached for up to 10 seconds.
+      API-key and OAuth machine callers share an organization polling budget of 300/minute with…
+    request: GET /job-status/{job_id}
+    params:
+      job_id:
+        in: path
+        required: true
+      cost_units:
+        choices:
+        - cents
+        - credits
+        about: Compatibility option. Both legacy cost fields and credit fields are returned for either value.
+    price:
+      usd: 0
+      per: call
+  people-intelligence-async:
+    title: People Intelligence (Async)
+    about: Find and enrich a single person; returns a job ID to poll.
+    request: POST /people-intelligence-async
+    params:
+      struct:
+        in: body
+        type: object
+        about: Mapping of output field name to natural-language description of what to extract. A field that asks
+          for an image (a headshot, a logo, a screenshot of a page) is returned as an image URL on…
+      research_plan:
+        in: body
+        about: Optional natural-language plan that guides the research agent.
+      tier:
+        in: body
+        about: Quality and cost tier for the research agent.
+      webhook_url:
+        in: body
+        about: HTTPS URL that receives the result payload when the async job completes.
+      field_confidence:
+        in: body
+        type: boolean
+        about: If true, return each requested field's confidence (0-100), justification and source URLs, nested
+          like the request.
+      lead_info:
+        in: body
+        type: object
+        required: true
+        about: Single lead to process. Provide any combination of name, email, company, linkedin, etc.
+      graph:
+        in: body
+        type: boolean
+        about: 'Only with tier "scout": set true to run Scout as an Atlas run. The run is saved as an Atlas investigation
+          you can open in the Sixtyfour app, export, and continue later with investigation_id; the…'
+      include_workspace:
+        in: body
+        type: boolean
+        about: 'For Atlas runs (xhigh, or scout with graph), include workspace files alongside structured output
+          (default: true). Set false to omit them. Job status reads them from the investigation, so it shows the…'
+      investigation_id:
+        in: body
+        about: For Atlas runs (xhigh, or scout with graph), continue an existing investigation instead of creating
+          one. The run reuses that investigation's graph and workspace, so a follow-up builds on the earlier…
+      investigation_name:
+        in: body
+        about: For Atlas runs, the title of a newly created investigation. Ignored when resuming via investigation_id;
+          when unset the title is derived from lead_info.
+      private:
+        in: body
+        type: boolean
+        about: 'Make the run visible only to you, not your team: its result, status and usage log. With an API key,
+          the run is private to the person who created the key. Your team must allow private runs. Supported…'
+      relentless:
+        in: body
+        type: boolean
+        about: 'For Atlas runs with struct: research until the budget runs out. By default a run may stop once every
+          requested field is answered, and is then charged for the research it used (at least one unit).'
+      max_credits:
+        in: body
+        type: integer
+        about: 'For Atlas runs, how much research to buy, in credits: one unit of the tier price by default, up
+          to 10 units. A unit is 250 credits on xhigh and 50 on scout with graph. Research scales with the…'
+      max_minutes:
+        in: body
+        type: integer
+        about: 'For Atlas runs, the longest the run may research, in minutes of working time: time spent waiting
+          to retry after a temporary failure does not count. When it is reached the run writes up what it found…'
+      dispatch_id:
+        in: body
+        about: 'Async endpoints only: a client-generated idempotency key for the dispatch. Reusing the same key
+          for the same organization returns the existing job instead of starting and billing a duplicate.'
+      exclusive_run:
+        in: body
+        type: boolean
+        about: 'Atlas runs on an existing investigation only: refuse with 409 while that investigation already has
+          a run starting or running, instead of starting and billing a second one.'
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  people-intelligence:
+    title: People Intelligence (Sync)
+    about: Find and enrich a single person.
+    request: POST /people-intelligence
+    params:
+      struct:
+        in: body
+        type: object
+        about: Mapping of output field name to natural-language description of what to extract. A field that asks
+          for an image (a headshot, a logo, a screenshot of a page) is returned as an image URL on…
+      research_plan:
+        in: body
+        about: Optional natural-language plan that guides the research agent.
+      tier:
+        in: body
+        about: Quality and cost tier for the research agent.
+      webhook_url:
+        in: body
+        about: HTTPS URL that receives the result payload when the async job completes.
+      field_confidence:
+        in: body
+        type: boolean
+        about: If true, return each requested field's confidence (0-100), justification and source URLs, nested
+          like the request.
+      lead_info:
+        in: body
+        type: object
+        required: true
+        about: Single lead to process. Provide any combination of name, email, company, linkedin, etc.
+      graph:
+        in: body
+        type: boolean
+        about: 'Only with tier "scout": set true to run Scout as an Atlas run. The run is saved as an Atlas investigation
+          you can open in the Sixtyfour app, export, and continue later with investigation_id; the…'
+      include_workspace:
+        in: body
+        type: boolean
+        about: 'For Atlas runs (xhigh, or scout with graph), include workspace files alongside structured output
+          (default: true). Set false to omit them. Job status reads them from the investigation, so it shows the…'
+      investigation_id:
+        in: body
+        about: For Atlas runs (xhigh, or scout with graph), continue an existing investigation instead of creating
+          one. The run reuses that investigation's graph and workspace, so a follow-up builds on the earlier…
+      investigation_name:
+        in: body
+        about: For Atlas runs, the title of a newly created investigation. Ignored when resuming via investigation_id;
+          when unset the title is derived from lead_info.
+      private:
+        in: body
+        type: boolean
+        about: 'Make the run visible only to you, not your team: its result, status and usage log. With an API key,
+          the run is private to the person who created the key. Your team must allow private runs. Supported…'
+      relentless:
+        in: body
+        type: boolean
+        about: 'For Atlas runs with struct: research until the budget runs out. By default a run may stop once every
+          requested field is answered, and is then charged for the research it used (at least one unit).'
+      max_credits:
+        in: body
+        type: integer
+        about: 'For Atlas runs, how much research to buy, in credits: one unit of the tier price by default, up
+          to 10 units. A unit is 250 credits on xhigh and 50 on scout with graph. Research scales with the…'
+      max_minutes:
+        in: body
+        type: integer
+        about: 'For Atlas runs, the longest the run may research, in minutes of working time: time spent waiting
+          to retry after a temporary failure does not count. When it is reached the run writes up what it found…'
+      dispatch_id:
+        in: body
+        about: 'Async endpoints only: a client-generated idempotency key for the dispatch. Reusing the same key
+          for the same organization returns the existing job instead of starting and billing a duplicate.'
+      exclusive_run:
+        in: body
+        type: boolean
+        about: 'Atlas runs on an existing investigation only: refuse with 409 while that investigation already has
+          a run starting or running, instead of starting and billing a second one.'
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  qa-agent-async:
+    title: QA Agent (Async)
+    about: Run a research agent that answers a question about a person or company; returns a job ID to poll.
+    request: POST /qa-agent-async
+    params:
+      data:
+        in: body
+        type: object
+        required: true
+        about: Lead or record to evaluate against the qualification criteria.
+      qualification_criteria:
+        in: body
+        type: array
+        required: true
+        about: List of criteria the agent will score the data against.
+      references:
+        in: body
+        type: array
+        about: Optional reference URLs the agent may use as evidence.
+      struct:
+        in: body
+        type: object
+        about: Mapping of extra output fields and their descriptions.
+      max_tool_calls:
+        in: body
+        type: integer
+        about: Maximum tool calls the agent may make per evaluation.
+      webhook_url:
+        in: body
+        about: HTTPS URL that receives the result payload when the async job completes.
+      dispatch_id:
+        in: body
+        about: 'Async endpoints only: a client-generated idempotency key for the dispatch. Reusing the same key
+          for the same organization returns the existing job instead of starting and billing a duplicate.'
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  qa-agent:
+    title: QA Agent (Sync)
+    about: Run a research agent that answers a question about a person or company.
+    request: POST /qa-agent
+    params:
+      data:
+        in: body
+        type: object
+        required: true
+        about: Lead or record to evaluate against the qualification criteria.
+      qualification_criteria:
+        in: body
+        type: array
+        required: true
+        about: List of criteria the agent will score the data against.
+      references:
+        in: body
+        type: array
+        about: Optional reference URLs the agent may use as evidence.
+      struct:
+        in: body
+        type: object
+        about: Mapping of extra output fields and their descriptions.
+      max_tool_calls:
+        in: body
+        type: integer
+        about: Maximum tool calls the agent may make per evaluation.
+      webhook_url:
+        in: body
+        about: HTTPS URL that receives the result payload when the async job completes.
+      dispatch_id:
+        in: body
+        about: 'Async endpoints only: a client-generated idempotency key for the dispatch. Reusing the same key
+          for the same organization returns the existing job instead of starting and billing a duplicate.'
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  reverse-email-async:
+    title: Reverse Email Lookup (Async)
+    about: Resolve a person from their email address; returns a job ID to poll.
+    request: POST /reverse-email-async
+    params:
+      lead:
+        in: body
+        type: object
+        required: true
+        about: Single lead with at least an email field to reverse-lookup.
+      webhook_url:
+        in: body
+        about: HTTPS URL that receives the result payload when the async job completes.
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  reverse-email:
+    title: Reverse Email Lookup (Sync)
+    about: Resolve a person from their email address.
+    request: POST /reverse-email
+    params:
+      lead:
+        in: body
+        type: object
+        required: true
+        about: Single lead with at least an email field to reverse-lookup.
+      webhook_url:
+        in: body
+        about: HTTPS URL that receives the result payload when the async job completes.
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  reverse-phone-async:
+    title: Reverse Phone Lookup (Async)
+    about: Resolve a person from their phone number; returns a job ID to poll.
+    request: POST /reverse-phone-async
+    params:
+      lead:
+        in: body
+        type: object
+        required: true
+        about: Single lead with at least a phone field to reverse-lookup.
+      webhook_url:
+        in: body
+        about: HTTPS URL that receives the result payload when the async job completes.
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  reverse-phone:
+    title: Reverse Phone Lookup (Sync)
+    about: Resolve a person from their phone number.
+    request: POST /reverse-phone
+    params:
+      lead:
+        in: body
+        type: object
+        required: true
+        about: Single lead with at least a phone field to reverse-lookup.
+      webhook_url:
+        in: body
+        about: HTTPS URL that receives the result payload when the async job completes.
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  verify-email:
+    title: Verify Email
+    about: Check whether one email address can receive mail. Responds in under a second for most addresses and within
+      about two seconds at most; UNKNOWN results are not charged.
+    request: POST /verify-email
+    params:
+      email:
+        in: body
+        required: true
+        about: The email address to check.
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+    jobs:
+      verify_email:
+        needs:
+        - - email
+        send:
+          email: email
+        result: '@'
+        fields:
+          email: email
+          status: status
+          score: score
+          deliverable: status == 'OK'
+  search-download:
+    title: Download Search Results
+    about: Generate a 15-minute signed download URL for a search result.
+    request: GET /search/download
+    params:
+      resource_handle_id:
+        required: true
+        about: Resource handle ID for the search result
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  search-filter-field-values:
+    title: Filter Field Values
+    about: Get the top values by count for a single filter-search field.
+    request: POST /search/filter-field-values
+    params:
+      mode:
+        in: body
+        choices:
+        - people
+        - company
+        about: 'Search mode: ''people'' or ''company''.'
+      field:
+        in: body
+        required: true
+        about: Canonical field path to aggregate values for.
+      top_k:
+        in: body
+        type: integer
+        about: Maximum number of top values to return.
+      filters:
+        in: body
+        type: object
+        about: Raw OpenSearch DSL filters that scope the aggregation.
+      simple_filters:
+        in: body
+        type: object
+        about: MongoDB-style filters that scope the aggregation.
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  search-filter-capabilities:
+    title: Filter Search Capabilities
+    about: Get the fields, operators, and limits supported by filter search.
+    request: GET /search/filter-capabilities
+    params:
+      mode:
+        about: 'Search mode: ''company'' or ''people''.'
+      refresh:
+        type: boolean
+        about: Force a mapping refresh instead of using cached capabilities.
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  search-lookalike:
+    title: Lookalike Search Status
+    about: Poll lookalike progress and return generated filters on completion.
+    request: GET /search/lookalike/{task_id}
+    params:
+      task_id:
+        in: path
+        required: true
+      include_filters:
+        type: boolean
+      include_analysis:
+        type: boolean
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  search-export:
+    title: Search Export
+    about: Export search results as a CSV file. Poll /search/status/{task_id} for a presigned download URL when
+      complete.
+    request: POST /search/export
+    params:
+      search_id:
+        in: body
+        about: Search history ID returned by a previous search. Replays only the query shape; pass exclusions again
+          on this request if they should apply.
+      parsed_query:
+        in: body
+        type: object
+        about: Structured filter set returned by a previous search.
+      mode:
+        in: body
+        choices:
+        - people
+        - company
+        about: Search mode; inferred from DB when not set.
+      max_results:
+        in: body
+        type: integer
+        about: Maximum number of results to return across pages.
+      exclude_public_ids:
+        in: body
+        type: array
+        about: People-mode inline identifiers to exclude from results, applied as a post-filter. Accepts LinkedIn
+          public IDs or profile URLs. For company searches, use exclude_entity_ids. Max 1000.
+      exclude_entity_ids:
+        in: body
+        type: array
+        about: 'Inline identifiers to exclude from results, applied as a post-filter. People mode: LinkedIn public
+          IDs or profile URLs. Company mode: numeric LinkedIn company IDs, company URLs/slugs, or exact…'
+      exclude_list_ids:
+        in: body
+        type: array
+        about: Saved exclusion-list IDs to apply as a post-filter. Each list's entity type must match the search
+          mode (person lists for people searches, company lists for company searches). Max 5 (10 for…
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  search-limits:
+    title: Search Limits
+    request: GET /search/limits
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  search-query:
+    title: Search Query
+    about: 'Run a search query. Provide exactly one query source: query, simple_filters, filters, parsed_query,
+      or search_id. For pagination, pass cursor alone.'
+    request: POST /search/query
+    params:
+      simple_filters:
+        in: body
+        type: object
+        about: MongoDB-style filters; the API translates them to DSL.
+      filters:
+        in: body
+        type: object
+        about: Raw OpenSearch DSL filters.
+      parsed_query:
+        in: body
+        type: object
+        about: Structured filter set returned by a previous search.
+      search_id:
+        in: body
+        about: Search history ID returned by a previous search. Replays only the query shape; pass exclusions again
+          on this request if they should apply.
+      query:
+        in: body
+        about: Natural-language query. Mutually exclusive with simple_filters / filters / parsed_query / search_id.
+          Supported for people and company search.
+      query_label:
+        in: body
+        about: Display label stored with a structured search. It does not affect the query or results. Oversized
+          labels are truncated.
+      persist_history:
+        in: body
+        type: boolean
+        about: Set false to skip the canonical search-history write for this search (e.g. a page load that replays
+          a search another surface already recorded). Replays via search_id never write history regardless.
+      from_offset:
+        in: body
+        type: integer
+        about: Company-mode page offset for page-numbered navigation (mirrors OpenSearch from). Offset pages return
+          no cursor and are not persisted to history; page one (offset 0 or omitted) behaves exactly as…
+      cursor:
+        in: body
+        about: Opaque pagination cursor returned by a previous response.
+      mode:
+        in: body
+        choices:
+        - people
+        - company
+        about: Search mode; inferred from DB when using search_id.
+      page_size:
+        in: body
+        type: integer
+        about: Maximum number of results per page (1-100). Pages may contain fewer rows while more results remain
+          (e.g. with exclusion filtering); rely on has_more/next_cursor, never on page fullness.
+      max_results:
+        in: body
+        type: integer
+        about: 'Maximum number of results to return across pages. Omit to get the default for your credential: 1000
+          for API keys, the platform ceiling for signed-in sessions. Values above your ceiling are rejected.'
+      output_shape:
+        in: body
+        choices:
+        - raw
+        - workflow
+        about: Return raw OpenSearch rows or canonical workflow LEAD/COMPANY rows. The selected shape is retained
+          by cursor continuations.
+      selected_company_names:
+        in: body
+        type: array
+        about: Platform-only exact company selections. The backend resolves names to company IDs instead of trusting
+          client-supplied OpenSearch IDs. Excess hints are ignored; parsed-query name matching still…
+      selected_company_ids:
+        in: body
+        type: object
+        about: Platform-only name -> company ID map from autocomplete. Each pair is verified against the company
+          index before use; unverified pairs fall back to name resolution. Disambiguates companies sharing a…
+      exclude_public_ids:
+        in: body
+        type: array
+        about: People-mode inline identifiers to exclude from results, applied as a post-filter. Accepts LinkedIn
+          public IDs or profile URLs. For company searches, use exclude_entity_ids. Max 1000 for API requests,…
+      exclude_entity_ids:
+        in: body
+        type: array
+        about: 'Inline identifiers to exclude from results, applied as a post-filter. People mode: LinkedIn public
+          IDs or profile URLs. Company mode: numeric LinkedIn company IDs, company URLs/slugs, or exact…'
+      exclude_list_ids:
+        in: body
+        type: array
+        about: Saved exclusion-list IDs to apply as a post-filter. Each list's entity type must match the search
+          mode (person lists for people searches, company lists for company searches). Max 5 (10 for…
+      expand_structured_location:
+        in: body
+        type: boolean
+        about: 'Expand a parsed_query location by radius. Off by default: only the query (NL) branch expanded before,
+          so existing callers keep their result sets. location_expansion_enabled still gates the NL branch.'
+      location_expansion_enabled:
+        in: body
+        type: boolean
+        about: Expand the location filter to nearby areas via PostGIS radius on the query (NL) branch. For parsed_query,
+          use expand_structured_location.
+      location_expansion_radius_miles:
+        in: body
+        type: integer
+        about: Radius (miles) for PostGIS location expansion. Ignored when expansion is disabled.
+      lineage:
+        in: body
+        type: object
+        about: Platform-only. The saved search this one was derived from. Stored with the new search so the agent
+          can see the chain behind a live view; ignored on cursor and search_id replays.
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  search-status:
+    title: Search Status
+    about: Query the status of any async search task (deep search or export).
+    request: GET /search/status/{task_id}
+    params:
+      task_id:
+        in: path
+        required: true
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  search-start-deep-search:
+    title: Start Deep Search (Async)
+    about: Start a deep, agentic search from a natural language query. Returns a task ID to poll.
+    request: POST /search/start-deep-search
+    params:
+      query:
+        in: body
+        required: true
+        about: Natural-language search query.
+      mode:
+        in: body
+        choices:
+        - people
+        - company
+        about: 'Search mode: ''people'' or ''company''.'
+      max_results:
+        in: body
+        type: integer
+        about: Maximum number of results to return across pages.
+      search_id:
+        in: body
+        about: Optional client-supplied search ID for idempotent retries.
+      output_mode:
+        in: body
+        choices:
+        - csv
+        - query_only
+        about: 'Output mode: ''csv'' to export, ''query_only'' to return parsed query only.'
+      exclude_public_ids:
+        in: body
+        type: array
+        about: People-mode inline identifiers to exclude from results, applied as a post-filter. Accepts LinkedIn
+          public IDs or profile URLs. For company searches, use exclude_entity_ids. Max 1000.
+      exclude_entity_ids:
+        in: body
+        type: array
+        about: 'Inline identifiers to exclude from results, applied as a post-filter. People mode: LinkedIn public
+          IDs or profile URLs. Company mode: numeric LinkedIn company IDs, company URLs/slugs, or exact…'
+      exclude_list_ids:
+        in: body
+        type: array
+        about: Saved exclusion-list IDs to apply as a post-filter. Each list's entity type must match the search
+          mode (person lists for people searches, company lists for company searches). Max 5 (10 for…
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response
+  post-search-lookalike:
+    title: Start Lookalike Search (Async)
+    about: Resolve seeds and start the async lookalike workflow.
+    request: POST /search/lookalike
+    params:
+      csv_resource_handle_id:
+        in: body
+        about: Resource handle returned by POST /storage/csv/upload.
+      linkedin_urls:
+        in: body
+        type: array
+        about: LinkedIn profile URLs to seed from (max 1,000).
+      guidance:
+        in: body
+        about: Optional natural-language guidance for cohort analysis.
+      analysis_sample_size:
+        in: body
+        type: integer
+        about: How many representative resolved profiles to analyze.
+    price:
+      per: call
+      note: credits charged are in cost_credits on each response

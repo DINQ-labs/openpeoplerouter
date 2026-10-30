@@ -1,0 +1,139 @@
+id: prospeo
+title: Prospeo
+about: Verified work emails and mobiles for a person, B2B people and company search, and company enrichment.
+site: https://prospeo.io
+docs: https://prospeo.io/api-docs
+pricing: https://prospeo.io/pricing
+api: https://api.prospeo.io
+key:
+  env: PROSPEO_API_KEY
+  header: X-KEY
+operations:
+  enrich-person:
+    title: One person with a verified email, and a mobile on request
+    request: POST /enrich-person
+    docs: https://prospeo.io/api-docs/enrich-person
+    params:
+      data: {in: body, type: object, required: true, about: "first_name + last_name or full_name with company_website (best), company_name or company_linkedin_url; or linkedin_url; or email; or person_id"}
+      only_verified_email: {in: body, type: boolean}
+      enrich_mobile: {in: body, type: boolean, about: reveal the mobile, 10 credits}
+      only_verified_mobile: {in: body, type: boolean}
+    no_match: "error_code == 'NO_MATCH'"
+    price: {credits: 1, per: success, note: 10 when a mobile is revealed; free on no match and within 90 days}
+    jobs:
+      enrich_person:
+        needs: [[linkedin_url], [email], [full_name, company_domain], [full_name, company]]
+        send: {linkedin_url: data.linkedin_url, email: data.email, full_name: data.full_name,
+               company_domain: data.company_website, company: data.company_name}
+        result: '@'
+        fields:
+          name: person.full_name
+          first_name: person.first_name
+          last_name: person.last_name
+          title: person.current_job_title
+          headline: person.headline
+          company: company.name
+          company_domain: company.domain
+          location: join(', ', [person.location.city, person.location.country][?@])
+          country: person.location.country_code
+          linkedin_url: person.linkedin_url
+          email: person.email.email
+          skills: person.skills
+          experience: person.job_history
+      find_contact:
+        needs: [[linkedin_url], [full_name, company_domain], [full_name, company]]
+        send: {linkedin_url: data.linkedin_url, full_name: data.full_name, company_domain: data.company_website,
+               company: data.company_name}
+        fixed: {only_verified_email: true}
+        result: person
+        fields: {email: email.email, email_status: email.status, name: full_name, title: current_job_title}
+  bulk-enrich-person:
+    title: Up to 50 people at once
+    request: POST /bulk-enrich-person
+    docs: https://prospeo.io/api-docs/bulk-enrich-person
+    params:
+      data: {in: body, type: array, required: true, about: "[{identifier, first_name, last_name, company_website, linkedin_url, ...}]"}
+      only_verified_email: {in: body, type: boolean}
+      enrich_mobile: {in: body, type: boolean}
+    price: {credits: 1, per: success}
+  search-person:
+    title: B2B people by title, seniority, company and more (contacts hidden)
+    about: Pass a result's person_id to enrich-person to reveal email and mobile. Location filters take exact values from search-suggestions.
+    request: POST /search-person
+    docs: https://prospeo.io/api-docs/search-person
+    params:
+      filters: {in: body, type: object, required: true}
+      page: {in: body, type: integer}
+    no_match: "error_code == 'NO_RESULTS'"
+    price: {credits: 1, per: call, note: per page of up to 25 that returns anyone}
+    jobs:
+      find_people:
+        needs: [[title], [company_domain], [company]]
+        send:
+          title: {to: filters.person_job_title, as: {include: [$]}}
+          company_domain: {to: filters.company.websites, as: {include: [$]}}
+          company: {to: filters.company.names, as: {include: [$]}}
+        result: results
+        fields:
+          name: person.full_name
+          first_name: person.first_name
+          last_name: person.last_name
+          title: person.current_job_title
+          headline: person.headline
+          company: company.name
+          company_domain: company.domain
+          location: join(', ', [person.location.city, person.location.country][?@])
+          country: person.location.country_code
+          linkedin_url: person.linkedin_url
+  enrich-company:
+    title: One company from its website, LinkedIn page or name
+    request: POST /enrich-company
+    docs: https://prospeo.io/api-docs/enrich-company
+    params:
+      data: {in: body, type: object, required: true, about: "{company_website, company_linkedin_url, company_name, company_id}"}
+    no_match: "error_code == 'NO_MATCH'"
+    price: {credits: 1, per: success}
+    jobs:
+      enrich_company:
+        needs: [[domain], [linkedin_url], [name]]
+        send: {domain: data.company_website, linkedin_url: data.company_linkedin_url, name: data.company_name}
+        result: company
+        fields:
+          name: name
+          domain: domain
+          website: website
+          description: description
+          industry: industry
+          employees: employee_count
+          founded: founded
+          location: location.raw_address
+          country: location.country_code
+          linkedin_url: linkedin_url
+          logo: logo_url
+          technologies: technology.technology_names
+          funding: funding.total_funding
+  search-company:
+    title: Companies by industry, headcount, location, technology or funding
+    request: POST /search-company
+    docs: https://prospeo.io/api-docs/search-company
+    params:
+      filters: {in: body, type: object, required: true}
+      page: {in: body, type: integer}
+    price: {credits: 1, per: call}
+  search-suggestions:
+    title: Valid values for location, job title and other filters
+    about: Send exactly one of the *_search fields, at least two characters.
+    request: POST /search-suggestions
+    docs: https://prospeo.io/api-docs/search-suggestions
+    params:
+      location_search: {in: body}
+      job_title_search: {in: body}
+      technology_search: {in: body}
+      industry_search: {in: body}
+      naics_search: {in: body}
+      sic_search: {in: body}
+    price: {usd: 0, per: call}
+  account-information:
+    title: Plan, credits left and renewal date
+    request: GET /account-information
+    price: {usd: 0, per: call}

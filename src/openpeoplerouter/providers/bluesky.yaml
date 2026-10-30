@@ -1,0 +1,53 @@
+id: bluesky
+title: Bluesky
+about: Public Bluesky profiles and account search through the open AppView.
+site: https://bsky.app
+docs: https://docs.bsky.app/docs/category/http-reference
+api: https://public.api.bsky.app/xrpc
+key: {}
+operations:
+  get-profile:
+    title: One account's profile and counts
+    request: GET /app.bsky.actor.getProfile
+    params:
+      actor: {required: true, about: handle or DID}
+    price: {usd: 0, per: call}
+    jobs:
+      read_profile:
+        platform: bluesky
+        needs: [[handle]]
+        send: {handle: actor}
+        result: '@'
+        fields: {name: displayName, handle: handle, bio: description, followers: followersCount, following: followsCount,
+                 posts: postsCount, verified: "verification.verifiedStatus == 'valid'", image: avatar}
+  search-actors:
+    title: Accounts by words in their name or bio
+    request: GET /app.bsky.actor.searchActors
+    params:
+      q: {required: true}
+      limit: {type: integer, about: up to 100}
+      cursor: {}
+    price: {usd: 0, per: call}
+    jobs:
+      find_people:
+        audience: [creators]
+        needs: [[query]]
+        send: {query: q}
+        limit: limit
+        result: actors
+        fields: {name: displayName || handle, headline: description, url: "join('', ['https://bsky.app/profile/', handle])", image: avatar}
+  author-feed:
+    title: An account's recent posts
+    request: GET /app.bsky.feed.getAuthorFeed
+    params:
+      actor: {required: true}
+      limit: {type: integer}
+    price: {usd: 0, per: call}
+  get-follows:
+    title: Who an account follows
+    request: GET /app.bsky.graph.getFollows
+    params:
+      actor: {required: true}
+      limit: {type: integer}
+      cursor: {}
+    price: {usd: 0, per: call}

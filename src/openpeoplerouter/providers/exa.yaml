@@ -1,0 +1,329 @@
+id: exa
+title: Exa
+about: Web search built for AI, with dedicated people and company categories that return LinkedIn profiles and company
+  pages.
+site: https://exa.ai
+docs: https://docs.exa.ai
+pricing: https://exa.ai/pricing
+api: https://api.exa.ai
+key:
+  env: EXA_API_KEY
+  header: x-api-key
+operations:
+  search:
+    title: Search
+    about: 'Neural or keyword web search. category: people finds LinkedIn profiles; category: company finds company
+      pages.'
+    request: POST /search
+    params:
+      query:
+        in: body
+        required: true
+        about: The query string for the search.
+      additionalQueries:
+        in: body
+        type: array
+        about: Additional query variations for deep search. Only works with type="deep" or type="deep-reasoning".
+          When provided, these queries are used alongside the main query for comprehensive results.
+      type:
+        in: body
+        choices:
+        - neural
+        - fast
+        - auto
+        - deep
+        - deep-reasoning
+        - instant
+        about: The type of search. Neural uses an embeddings-based model, auto (default) intelligently combines
+          neural and other search methods, fast uses streamlined versions of the search models, deep is light…
+      outputSchema:
+        in: body
+        type: object
+        about: JSON schema for deep search structured output mode. When provided, the output.content field is returned
+          as structured JSON matching this schema.
+      category:
+        in: body
+        choices:
+        - company
+        - research paper
+        - news
+        - pdf
+        - github
+        - personal site
+        - people
+        - financial report
+        about: 'A data category to focus on. The people and company categories have improved quality for finding
+          LinkedIn profiles and company pages. Note: The company and people categories only support a limited…'
+      userLocation:
+        in: body
+        about: The two-letter ISO country code of the user, e.g. US.
+      numResults:
+        in: body
+        type: integer
+        about: Number of results to return (up to thousands of results available for custom plans)
+      includeDomains:
+        in: body
+        type: array
+        about: List of domains to include in the search. If specified, results will only come from these domains.
+      excludeDomains:
+        in: body
+        type: array
+        about: List of domains to exclude from search results. If specified, no results will be returned from these
+          domains.
+      startCrawlDate:
+        in: body
+        about: Crawl date refers to the date that Exa discovered a link. Results will include links that were crawled
+          after this date. Must be specified in ISO 8601 format.
+      endCrawlDate:
+        in: body
+        about: Crawl date refers to the date that Exa discovered a link. Results will include links that were crawled
+          before this date. Must be specified in ISO 8601 format.
+      startPublishedDate:
+        in: body
+        about: Only links with a published date after this will be returned. Must be specified in ISO 8601 format.
+      endPublishedDate:
+        in: body
+        about: Only links with a published date before this will be returned. Must be specified in ISO 8601 format.
+      includeText:
+        in: body
+        type: array
+        about: List of strings that must be present in webpage text of results. Currently, only 1 string is supported,
+          of up to 5 words.
+      excludeText:
+        in: body
+        type: array
+        about: List of strings that must not be present in webpage text of results. Currently, only 1 string is
+          supported, of up to 5 words. Checks from the first 1000 words of the webpage text.
+      context:
+        in: body
+        type: boolean
+      moderation:
+        in: body
+        type: boolean
+        about: Enable content moderation to filter unsafe content from search results.
+      contents:
+        in: body
+        type: object
+    price:
+      usd: 0.005
+      per: call
+      note: 1-25 results; contents and more results cost extra
+    jobs:
+      find_people:
+        audience: any
+        needs:
+        - - query
+        - - title
+        send:
+          query: query
+          title:
+            to: query
+            as: $
+          company:
+            to: query
+            as: at $
+          location:
+            to: query
+            as: in $
+        fixed:
+          category: people
+        limit: numResults
+        result: results
+        fields:
+          name: split(title, ' - ')[0] || title
+          headline: title
+          linkedin_url: contains(url, 'linkedin.com') && url || null
+          url: url
+          image: image
+      find_companies:
+        needs:
+        - - query
+        send:
+          query: query
+          location:
+            to: query
+            as: in $
+          industry:
+            to: query
+            as: $
+        fixed:
+          category: company
+        limit: numResults
+        result: results
+        fields:
+          name: title
+          website: url
+          logo: favicon
+  find-similar:
+    title: Find similar links
+    about: Find similar links to the link provided. Optionally get contents.
+    request: POST /findSimilar
+    params:
+      url:
+        in: body
+        required: true
+        about: The url for which you would like to find similar links.
+      excludeSourceDomain:
+        in: body
+        type: boolean
+        about: If true, excludes links from the same domain as the provided URL from the results.
+      numResults:
+        in: body
+        type: integer
+        about: Number of results to return (up to thousands of results available for custom plans)
+      includeDomains:
+        in: body
+        type: array
+        about: List of domains to include in the search. If specified, results will only come from these domains.
+      excludeDomains:
+        in: body
+        type: array
+        about: List of domains to exclude from search results. If specified, no results will be returned from these
+          domains.
+      startCrawlDate:
+        in: body
+        about: Crawl date refers to the date that Exa discovered a link. Results will include links that were crawled
+          after this date. Must be specified in ISO 8601 format.
+      endCrawlDate:
+        in: body
+        about: Crawl date refers to the date that Exa discovered a link. Results will include links that were crawled
+          before this date. Must be specified in ISO 8601 format.
+      startPublishedDate:
+        in: body
+        about: Only links with a published date after this will be returned. Must be specified in ISO 8601 format.
+      endPublishedDate:
+        in: body
+        about: Only links with a published date before this will be returned. Must be specified in ISO 8601 format.
+      includeText:
+        in: body
+        type: array
+        about: List of strings that must be present in webpage text of results. Currently, only 1 string is supported,
+          of up to 5 words.
+      excludeText:
+        in: body
+        type: array
+        about: List of strings that must not be present in webpage text of results. Currently, only 1 string is
+          supported, of up to 5 words. Checks from the first 1000 words of the webpage text.
+      context:
+        in: body
+        type: boolean
+      moderation:
+        in: body
+        type: boolean
+        about: Enable content moderation to filter unsafe content from search results.
+      contents:
+        in: body
+        type: object
+  get-contents:
+    title: Get Contents
+    request: POST /contents
+    params:
+      urls:
+        in: body
+        type: array
+        required: true
+        about: Array of URLs to crawl (backwards compatible with 'ids' parameter).
+      ids:
+        in: body
+        type: array
+        about: Deprecated - use 'urls' instead. Array of document IDs obtained from searches.
+      text:
+        in: body
+        type: boolean
+      highlights:
+        in: body
+        type: boolean
+        about: Text snippets the LLM identifies as most relevant from each page.
+      summary:
+        in: body
+        type: object
+        about: Summary of the webpage
+      livecrawl:
+        in: body
+        choices:
+        - never
+        - fallback
+        - preferred
+        - always
+        about: 'Deprecated: Use maxAgeHours instead for more precise control over content freshness. Options for
+          livecrawling pages. ''never'': Disable livecrawling (default for neural search). ''fallback'': Livecrawl…'
+      livecrawlTimeout:
+        in: body
+        type: integer
+        about: The timeout for livecrawling in milliseconds.
+      maxAgeHours:
+        in: body
+        type: integer
+        about: 'Maximum age of cached content in hours. Controls when livecrawling is triggered based on content
+          freshness. - Positive value (e.g. 24): Use cached content if it''s less than this many hours old,…'
+      subpages:
+        in: body
+        type: integer
+        about: The number of subpages to crawl. The actual number crawled may be limited by system constraints.
+      subpageTarget:
+        in: body
+        type: array
+        about: Keyword to find specific subpages of search results. Can be a single string or an array of strings,
+          comma delimited.
+      extras:
+        in: body
+        type: object
+        about: Extra parameters to pass.
+      context:
+        in: body
+        type: boolean
+  answer:
+    title: Generate an answer from search results
+    about: Performs a search based on the query and generates either a direct answer or a detailed summary with
+      citations, depending on the query type.
+    request: POST /answer
+    params:
+      query:
+        in: body
+        required: true
+        about: The question or query to answer.
+      stream:
+        in: body
+        type: boolean
+        about: If true, the response is returned as a server-sent events (SSS) stream.
+      text:
+        in: body
+        type: boolean
+        about: If true, the response includes full text content in the search results
+      outputSchema:
+        in: body
+        type: object
+        about: A JSON Schema Draft 7 specification for the desired answer structure. When provided, the answer will
+          be returned as a structured object matching the schema instead of a plain string.
+  research-tasks:
+    title: List research tasks
+    request: GET /research/v0/tasks
+    params:
+      cursor:
+        about: The cursor to paginate through the results
+      limit:
+        type: number
+        about: The number of results to return
+  post-research-tasks:
+    title: Create a research task with instructions and an output schema
+    request: POST /research/v0/tasks
+    params:
+      instructions:
+        in: body
+        required: true
+        about: Instructions for what the research task should accomplish
+      model:
+        in: body
+        choices:
+        - exa-research
+        - exa-research-pro
+      output:
+        in: body
+        type: object
+  research-task:
+    title: Get a research task by id
+    request: GET /research/v0/tasks/{id}
+    params:
+      id:
+        in: path
+        required: true

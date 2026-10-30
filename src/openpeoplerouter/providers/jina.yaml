@@ -1,0 +1,28 @@
+id: jina
+title: Jina AI
+about: Any URL as clean text for reading, and web search that returns page contents.
+site: https://jina.ai
+docs: https://jina.ai/reader/
+pricing: https://jina.ai/reader/#pricing
+api: https://r.jina.ai
+key:
+  env: JINA_API_KEY
+  bearer: true
+  optional: true
+operations:
+  read:
+    title: A web page as clean markdown
+    about: Put the whole target URL in url, e.g. https://example.com/team.
+    request: GET /{url}
+    params:
+      url: {in: path, required: true}
+    price: {per: call, note: billed in tokens; free without a key at a low rate}
+  search:
+    title: Web search with the text of each result
+    request: GET /
+    api: https://s.jina.ai
+    params:
+      q: {required: true}
+      gl: {}
+      num: {type: integer}
+    price: {per: call, note: needs a key; billed in tokens}

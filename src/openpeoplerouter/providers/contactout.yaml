@@ -1,0 +1,207 @@
+id: contactout
+title: ContactOut
+about: Emails and phones for LinkedIn profiles, people and company search, decision makers and reverse email lookup.
+site: https://contactout.com
+docs: https://api.contactout.com/
+pricing: https://contactout.com/pricing
+api: https://api.contactout.com
+key:
+  env: CONTACTOUT_API_TOKEN
+  header: token
+operations:
+  linkedin-enrich:
+    title: Full profile with emails and phones from a LinkedIn URL
+    request: GET /v1/linkedin/enrich
+    params:
+      profile: {required: true, about: a regular LinkedIn profile URL}
+      profile_only: {type: boolean, about: skip contact details}
+    price: {credits: 1, per: success, note: one email credit and one phone credit when found}
+    jobs:
+      enrich_person:
+        needs: [[linkedin_url]]
+        send: {linkedin_url: profile}
+        result: profile
+        fields:
+          name: full_name
+          headline: headline
+          title: experience[0].title
+          company: company.name
+          company_domain: company.domain
+          location: location
+          country: country
+          linkedin_url: url
+          email: work_email[0] || email[0]
+          phone: phone[0]
+          image: profile_picture_url
+          skills: skills
+          experience: experience
+          education: education
+  people-enrich:
+    title: One person from LinkedIn URL, email, phone, or name with company
+    request: POST /v1/people/enrich
+    params:
+      linkedin_url: {in: body}
+      email: {in: body}
+      phone: {in: body}
+      full_name: {in: body}
+      first_name: {in: body}
+      last_name: {in: body}
+      company: {in: body, type: array, about: up to 10 names}
+      company_domain: {in: body, type: array, about: up to 10 domains}
+      education: {in: body, type: array}
+      location: {in: body}
+      job_title: {in: body}
+      include: {in: body, type: array, about: "work_email, personal_email, phone"}
+    price: {credits: 1, per: success, note: plus one email and one phone credit when found}
+    jobs:
+      enrich_person:
+        needs: [[email], [phone], [full_name, company], [full_name, company_domain]]
+        send: {email: email, phone: phone, full_name: full_name, company: company, company_domain: company_domain}
+        result: profile
+        fields:
+          name: fullName || full_name
+          headline: headline
+          company: company.name
+          company_domain: company.domain
+          location: location
+          country: country
+          linkedin_url: linkedinUrl || url
+          email: workEmail || work_email[0] || email[0]
+          phone: phone[0] || phone
+          image: profilePictureUrl || profile_picture_url
+          skills: skills
+          experience: experience
+          education: education
+  email-enrich:
+    title: A profile from an email address
+    request: GET /v1/email/enrich
+    params:
+      email: {required: true}
+      include: {about: work_email adds a verified work email}
+    not_found: 404
+    price: {credits: 1, per: success}
+  contact-info:
+    title: Emails, and phones on request, for a LinkedIn profile
+    request: GET /v1/people/linkedin
+    params:
+      profile: {required: true}
+      include_phone: {type: boolean}
+      email_type: {choices: [personal, work, "personal,work", none]}
+    price: {credits: 1, per: success, note: per email or phone found}
+    jobs:
+      find_contact:
+        needs: [[linkedin_url]]
+        send: {linkedin_url: profile}
+        fixed: {include_phone: true, email_type: work}
+        result: profile
+        fields:
+          email: work_email[0] || email[0]
+          phone: phone[0]
+  contact-info-batch:
+    title: Emails for up to 100 LinkedIn profiles
+    request: POST /v1/people/linkedin/batch
+    params:
+      profiles: {in: body, type: array, required: true}
+      include_phone: {in: body, type: boolean}
+      email_type: {in: body}
+    price: {credits: 1, per: success, note: per profile with an email}
+  domain-enrich:
+    title: Company profiles for up to 30 domains
+    request: POST /v1/domain/enrich
+    params:
+      domains: {in: body, type: array, required: true}
+    price: {credits: 1, per: success, note: per company found}
+    jobs:
+      enrich_company:
+        needs: [[domain]]
+        send: {domain: domains}
+        result: values(companies)[0]
+        fields: {name: name, domain: domain, website: website, description: description, industry: industry,
+                 employees: size, founded: founded_at, location: headquarter, country: country, logo: logo_url,
+                 technologies: technologies, revenue: revenue, funding: funding.total_funding_usd,
+                 linkedin_url: "li_vanity && join('', ['https://www.linkedin.com/company/', li_vanity])"}
+  people-search:
+    title: People by title, company, skills, location and more
+    about: Boolean AND/OR/NOT inside job_title, skills, company, education and keyword.
+    request: POST /v1/people/search
+    params:
+      name: {in: body}
+      job_title: {in: body, type: array}
+      seniority: {in: body, type: array}
+      skills: {in: body, type: array}
+      location: {in: body, type: array}
+      company: {in: body, type: array}
+      domain: {in: body, type: array}
+      industry: {in: body, type: array}
+      keyword: {in: body}
+      company_size: {in: body, type: array}
+      current_company_only: {in: body, type: boolean}
+      reveal_info: {in: body, type: boolean, about: also return contact details, for contact credits}
+      page: {in: body, type: integer}
+      page_size: {in: body, type: integer, about: 1-25}
+    price: {credits: 1, per: result}
+    jobs:
+      find_people:
+        needs: [[title], [company], [company_domain], [keywords], [query]]
+        send: {title: job_title, company: company, company_domain: domain, keywords: skills, query: keyword, location: location,
+               seniority: seniority}
+        limit: page_size
+        result: values(profiles)
+        fields:
+          name: full_name
+          title: title
+          headline: headline
+          company: company.name
+          company_domain: company.domain
+          location: location
+          country: country
+          linkedin_url: "li_vanity && join('', ['https://www.linkedin.com/in/', li_vanity])"
+          image: profile_picture_url
+  people-count:
+    title: How many people match a search (paid plans, free)
+    request: POST /v1/people/count
+    params:
+      job_title: {in: body, type: array}
+      company: {in: body, type: array}
+      location: {in: body, type: array}
+      skills: {in: body, type: array}
+    price: {usd: 0, per: call}
+  decision-makers:
+    title: Decision makers at a company
+    request: GET /v1/people/decision-makers
+    params:
+      linkedin_url: {about: company LinkedIn URL}
+      domain: {}
+      name: {}
+      page: {type: integer}
+      reveal_info: {type: boolean}
+    price: {credits: 1, per: result}
+  company-search:
+    title: Companies by name, domain, size, place, industry, technology, revenue or founding year
+    request: POST /v1/company/search
+    params:
+      name: {in: body, type: array}
+      domain: {in: body, type: array}
+      size: {in: body, type: array}
+      location: {in: body, type: array}
+      industry: {in: body, type: array}
+      technologies: {in: body, type: array}
+      min_revenue: {in: body, type: integer}
+      max_revenue: {in: body, type: integer}
+      year_founded_from: {in: body, type: integer}
+      page: {in: body, type: integer}
+    price: {credits: 1, per: result}
+    jobs:
+      find_companies:
+        needs: [[industry], [location], [technology], [query]]
+        send: {industry: industry, location: location, technology: technologies, query: name}
+        result: companies
+        fields: {name: name, domain: domain, website: website, description: overview, industry: industry, employees: size,
+                 founded: founded_at, location: headquarter, country: country, linkedin_url: url, logo: logo_url}
+  email-to-linkedin:
+    title: The LinkedIn profile behind an email
+    request: GET /v1/people/person
+    params:
+      email: {required: true}
+    not_found: 404
+    price: {credits: 1, per: success}

@@ -1,0 +1,600 @@
+id: influencersclub
+title: Influencers.club
+about: Creator discovery across Instagram, TikTok, YouTube, X, Twitch and more, with enrichment by handle or email,
+  contact details and audience data.
+site: https://influencers.club
+docs: https://docs.influencers.club
+pricing: https://influencers.club/pricing
+api: https://api-dashboard.influencers.club/public/v1
+key:
+  env: INFLUENCERSCLUB_API_KEY
+  bearer: true
+operations:
+  creators-content-posts:
+    title: Creator Posts
+    about: Fetch recent posts for a creator on a given platform. What you get - Returns a list of recent posts with
+      metadata including post ID, URL, caption, media URLs, timestamps, and engagement metrics…
+    request: POST /creators/content/posts/
+    params:
+      count:
+        in: body
+        type: integer
+        about: Number of posts to fetch per page. Clamped to platform-specific limits.
+      pagination_token:
+        in: body
+        about: Cursor for fetching the next page of results.
+      platform:
+        in: body
+        required: true
+        about: 'Social media platform. Allowed: instagram, tiktok, youtube.'
+      handle:
+        in: body
+        required: true
+        about: Creator identifier — username, profile URL, or YouTube channel ID (UC...).
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  creators-content-details:
+    title: Post Details
+    about: Retrieve detailed information about specific creator content. What you get - Supports Instagram, TikTok,
+      and YouTube platforms. - Returns platform-specific content metadata and engagement data in a…
+    request: POST /creators/content/details/
+    params:
+      platform:
+        in: body
+        required: true
+        about: 'Social media platform. Allowed: instagram, tiktok, youtube.'
+      content_type:
+        in: body
+        required: true
+        about: Type of content to fetch. Platform-specific.
+      post_id:
+        in: body
+        required: true
+        about: ID of the post, e.g., '3702042988674165349_1541770582'.
+      pagination_token:
+        in: body
+        about: Pagination token, optional.
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  creators-socials:
+    title: Connected Socials
+    about: Discover all verified social accounts connected to a creator, given a seed platform and handle. What
+      you get - Returns an array of verified connected social accounts across platforms, including…
+    request: POST /creators/socials/
+    params:
+      platform:
+        in: body
+        required: true
+        choices:
+        - instagram
+        - youtube
+        - tiktok
+        - onlyfans
+        - twitter
+        - twitch
+      handle:
+        in: body
+        required: true
+        about: Creator identifier — username, profile URL, or YouTube channel ID (UC...).
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  enrich-handle-full:
+    title: Enrich by handle full
+    about: Perform comprehensive enrichment of a creator profile using their social media handle. What you get -
+      Returns complete profile data including cross-platform presence, engagement analytics, follower…
+    request: POST /creators/enrich/handle/full/
+    params:
+      handle:
+        in: body
+        required: true
+        about: Creator identifier — username, profile URL, or YouTube channel ID (UC...).
+      platform:
+        in: body
+        required: true
+        choices:
+        - instagram
+        - youtube
+        - tiktok
+        - onlyfans
+        - twitter
+        - snapchat
+        - discord
+        - pinterest
+        - facebook
+        - linkedin
+        - twitch
+        about: Platform to enrich from (e.g., instagram, youtube).
+      email_required:
+        in: body
+        choices:
+        - must_have
+        - preferred
+        about: 'Whether a validated email is required: ''must_have'' rejects the match if no valid email is found
+          (no credits charged), ''preferred'' returns the match regardless. Defaults to ''preferred''.'
+      include_lookalikes:
+        in: body
+        type: boolean
+        about: Whether to include lookalike creator recommendations in the response.
+      include_audience_data:
+        in: body
+        type: boolean
+        about: Whether to include audience demographic data in the response.
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  enrich-handle-profile:
+    title: Enrich by handle profile
+    about: Enrich a creator profile with identity, contact, and vetting data using their social media handle. What
+      you get - Returns the identity/contact/vetting subset of the Enrich by handle full response:…
+    request: POST /creators/enrich/handle/profile/
+    params:
+      handle:
+        in: body
+        required: true
+        about: Creator identifier — username, profile URL, or YouTube channel ID (UC...).
+      platform:
+        in: body
+        required: true
+        choices:
+        - instagram
+        - youtube
+        - tiktok
+        - onlyfans
+        - twitter
+        - snapchat
+        - discord
+        - pinterest
+        - facebook
+        - linkedin
+        - twitch
+        about: Platform to enrich from (e.g., instagram, youtube).
+      email_required:
+        in: body
+        choices:
+        - must_have
+        - preferred
+        about: 'Whether a validated email is required: ''must_have'' rejects the match if no valid email is found
+          (no credits charged), ''preferred'' returns the match regardless. Defaults to ''preferred''.'
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+    jobs:
+      read_profile:
+        platform: instagram
+        needs:
+        - - handle
+        send:
+          handle: handle
+        fixed:
+          platform: instagram
+        result: result
+        fields:
+          name: instagram.full_name
+          handle: instagram.username
+          bio: instagram.biography
+          followers: instagram.follower_count
+          following: instagram.following_count
+          location: location
+          website: links_in_bio[0]
+          image: instagram.profile_picture
+  enrich-handle-analytics:
+    title: Enrich by handle analytics
+    about: 'Enrich a creator profile with performance analytics using their social media handle. What you get -
+      Returns the performance-analytics subset of the Enrich by handle full response: engagement/growth…'
+    request: POST /creators/enrich/handle/analytics/
+    params:
+      handle:
+        in: body
+        required: true
+        about: Creator identifier — username, profile URL, or YouTube channel ID (UC...).
+      platform:
+        in: body
+        required: true
+        choices:
+        - instagram
+        - onlyfans
+        - tiktok
+        - twitch
+        - twitter
+        - youtube
+        about: Platform to enrich from — only platforms with analytics data are accepted.
+      include_lookalikes:
+        in: body
+        type: boolean
+        about: Whether to include lookalike creator recommendations in the response.
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  enrich-handle-raw:
+    title: Enrich by handle raw
+    about: Retrieve raw platform data for a creator profile using their social media handle. What you get - Returns
+      unprocessed platform-specific data directly from the source, including basic profile…
+    request: POST /creators/enrich/handle/raw/
+    params:
+      handle:
+        in: body
+        required: true
+        about: Creator identifier — username, profile URL, or YouTube channel ID (UC...).
+      platform:
+        in: body
+        required: true
+        choices:
+        - instagram
+        - youtube
+        - tiktok
+        - onlyfans
+        - twitter
+        - snapchat
+        - discord
+        - pinterest
+        - facebook
+        - linkedin
+        - twitch
+        about: Platform to enrich from (e.g., instagram, youtube).
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  creators-enrich-email:
+    title: Enrich by email
+    about: Perform basic enrichment of creator profiles using an email address. What you get - Returns the creator's
+      single strongest platform — the one with the highest follower count — with essential profile…
+    request: POST /creators/enrich/email/
+    params:
+      email:
+        in: body
+        required: true
+        about: The creator's email address.
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+    jobs:
+      enrich_person:
+        needs:
+        - - email
+        send:
+          email: email
+        result: result
+        fields:
+          name: fullname
+          image: picture
+          linkedin_url: contains(url, 'linkedin') && url || null
+  discovery:
+    title: Discovery API
+    about: Search and discover creators across multiple platforms using advanced filtering and search. What you
+      get - Paginated list of creator profiles with profile info, follower counts, engagement rates, and…
+    request: POST /discovery/
+    params:
+      return_filter_values:
+        type: boolean
+        about: Include a matched_filters object on each returned creator.
+      platform:
+        in: body
+        choices:
+        - instagram
+      nlp_search:
+        in: body
+        about: Natural-language brief describing who you're looking for (e.g. "fitness creators in New York with
+          over 100k followers"). It's mapped to discovery filters by AI to fill in fields you didn't set — your…
+      paging:
+        in: body
+        type: object
+      sort:
+        in: body
+        type: object
+      filters:
+        in: body
+        type: object
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+    jobs:
+      find_people:
+        audience:
+        - creators
+        needs:
+        - - query
+        - - keywords
+        send:
+          query: nlp_search
+          keywords: filters.keywords_in_bio
+          location: filters.location[]
+        fixed:
+          platform: instagram
+        limit: paging.limit
+        result: accounts
+        fields:
+          name: profile.full_name
+          image: profile.picture
+          url: join('', ['https://www.instagram.com/', profile.username])
+  discovery-classifier-languages:
+    title: Languages
+    about: Retrieve a list of supported languages with their abbreviations for filtering creators by profile language
+      or content language. Useful for discovering creators who create content in specific…
+    request: GET /discovery/classifier/languages/
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  discovery-classifier-locations:
+    title: Platform Locations
+    about: Retrieve a list of location identifiers available for a specific platform. What you get - Returns location
+      strings that can be used to filter creators by geographic location in discovery searches. -…
+    request: GET /discovery/classifier/locations/{platform}/
+    params:
+      search:
+        about: Search string to filter results
+      offset:
+        type: integer
+        about: Cursor offset for pagination
+      limit:
+        type: integer
+        about: Number of results to return per page (1-100)
+      platform:
+        in: path
+        required: true
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  discovery-classifier-brands:
+    title: Brands
+    about: Returns brands that can be used in the brands filter on the Discovery API, to find creators who have
+      worked with a brand or mentioned it in their content. Each entry has the brand's username, display…
+    request: GET /discovery/classifier/brands/
+    params:
+      search:
+        about: The brand's username. Must match exactly unless you set exact=false.
+      offset:
+        type: integer
+        about: Where to start in the results. Add your limit for the next page.
+      limit:
+        type: integer
+        about: How many brands to return per page.
+      exact:
+        type: boolean
+        about: When true (the default), search must match a brand's username exactly. Set to false to match part
+          of the brand's normalised cleaned name instead, which is not the same as its display name.
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  discovery-classifier-yt-topics:
+    title: Youtube Topics
+    about: Retrieve a hierarchical list of YouTube topic categories and their subtopics. What you get - Returns
+      YouTube topic categories and their subtopics. When using YouTube Discovery, pass sub_topic_details…
+    request: GET /discovery/classifier/yt-topics/
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  discovery-classifier-games:
+    title: Twitch Games
+    about: Retrieve a list of video games available on Twitch that can be used for filtering creators. Returns game
+      identifiers and metadata to help discover Twitch streamers who play specific games or have…
+    request: GET /discovery/classifier/games/
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  discovery-classifier-audience-brand-categories:
+    title: Audience Brand Categories
+    about: Returns a list of audience brand categories (e.g., Sports, Fashion, Technology) from Instagram creator
+      audience data. Use these values in the audience.brand_categories filter on the Discovery API to…
+    request: GET /discovery/classifier/audience-brand-categories/
+    params:
+      search:
+        about: Search string to filter results
+      offset:
+        type: integer
+        about: Cursor offset for pagination
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  discovery-classifier-audience-brand-names:
+    title: Audience Brand Names
+    about: Returns a list of audience brand names (e.g., Nike, Apple, Starbucks) from Instagram creator audience
+      data. Use these values in the audience.brands filter on the Discovery API to search for Instagram…
+    request: GET /discovery/classifier/audience-brand-names/
+    params:
+      search:
+        about: Search string to filter results
+      offset:
+        type: integer
+        about: Cursor offset for pagination
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  discovery-classifier-audience-interests:
+    title: Audience Interests
+    about: Returns a list of audience interest values from Instagram creator audience data. Use these values in
+      the audience.interests filter on the Discovery API to search for Instagram creators (10k+…
+    request: GET /discovery/classifier/audience-interests/
+    params:
+      search:
+        about: Search string to filter results
+      offset:
+        type: integer
+        about: Cursor offset for pagination
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  discovery-classifier-audience-locations:
+    title: Audience Locations
+    about: Returns a list of audience location values (countries, states, cities) from Instagram creator audience
+      data. Use these values in the audience.location filter on the Discovery API to search for…
+    request: GET /discovery/classifier/audience-locations/
+    params:
+      search:
+        about: Search string to filter results
+      offset:
+        type: integer
+        about: Cursor offset for pagination
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  discovery-creators-similar:
+    title: Similar Creators
+    about: Discover creators similar to a reference creator based on various similarity criteria. What you get -
+      Returns a paginated list of creator profiles that match the reference creator's characteristics,…
+    request: POST /discovery/creators/similar/
+    params:
+      platform:
+        in: body
+        choices:
+        - instagram
+      filter_key:
+        in: body
+        choices:
+        - url
+        - username
+        - id
+      filter_value:
+        in: body
+        about: Email, platform url or profile handle
+      paging:
+        in: body
+        type: object
+      filters:
+        in: body
+        type: object
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  creators-audience-overlap:
+    title: Audience Overlap
+    about: Compare audience overlap between 2-10 creators on a given platform. What you get - Returns per-creator
+      audience overlap and unique audience percentages, plus report-level totals (total followers and…
+    request: POST /creators/audience/overlap/
+    params:
+      platform:
+        in: body
+        required: true
+      creators:
+        in: body
+        type: array
+        required: true
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  enrichment-batch:
+    title: Create Batch Enrichment
+    about: 'Create a batch enrichment job by uploading a CSV. How it works 1. Upload a .csv file (one column: handle
+      or email) 2. Choose the enrichment mode (handle: raw/full, email: basic) 3. Use the returned…'
+    request: POST /enrichment/batch/
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  enrichment-batch-status:
+    title: Get Batch Enrichment Status
+    about: Check the current processing status of a batch enrichment job. What you get - Current state (e.g., queued/running/completed/failed)
+      - Progress indicators (processed vs remaining), when available…
+    request: GET /enrichment/batch/{batch_id}/status/
+    params:
+      batch_id:
+        in: path
+        required: true
+        about: Unique batch identifier returned when creating the enrichment batch
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  enrichment-batch-results:
+    title: Download Batch Enrichment Results (Direct)
+    about: Download the final enriched dataset after processing is complete. Requirements - Batch must be in finished
+      status - Results file must have been generated Output formats - CSV (default) — omit format…
+    request: GET /enrichment/batch/{batch_id}/
+    params:
+      batch_id:
+        in: path
+        required: true
+        about: Unique batch identifier returned when creating the enrichment batch
+      format:
+        choices:
+        - csv
+        - json
+        about: Output format. Omit or pass csv (default) to receive a CSV file. Pass json to receive a JSON array
+          of objects with input_value, status, and enrichment_data fields.
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  credits:
+    title: Check account credits and usage details
+    about: Use your API key to check your remaining credits and total credits used. Response fields - credits_available
+      — remaining credits - credits_used — total credits consumed Credits - 0 credits
+    request: GET /accounts/credits/
+    price:
+      usd: 0
+      per: call
+  discovery-classifier-niche:
+    title: Niche
+    about: Retrieve a list of creator niche labels (e.g. "Fitness & Exercise", "Beauty & Grooming"). Use these values
+      in the niche filter on the Discovery API to find creators tagged with a given niche.…
+    request: GET /discovery/classifier/niche/
+    params:
+      search:
+        about: Case-insensitive substring match on the label name.
+      offset:
+        type: integer
+        about: Pagination cursor, fixed page size of 50. Omit this and search to get the full list instead.
+      platform:
+        about: instagram, tiktok or youtube. Defaults to instagram.
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  discovery-classifier-sub-niche:
+    title: Sub-Niche
+    about: Retrieve a list of creator sub-niche labels, one level below niche (e.g. "Skincare" under "Beauty & Grooming").
+      Use these values in the sub_niche filter on the Discovery API to find creators tagged…
+    request: GET /discovery/classifier/sub-niche/
+    params:
+      search:
+        about: Case-insensitive substring match on the label name.
+      offset:
+        type: integer
+        about: Pagination cursor, fixed page size of 50. Omit this and search to get the full list instead.
+      platform:
+        about: instagram, tiktok or youtube. Defaults to instagram.
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  social-listening-events:
+    title: List events
+    about: Return a paginated list of the client's events, optionally filtered by subscription, event type, or creator.
+      Monitoring is billed per creator, per day — API calls are included in that price. See…
+    request: GET /social/listening/events/
+    params:
+      page:
+        type: integer
+        about: Page number (1-based) for the paginated result.
+      subscription_id:
+        type: integer
+        about: Return only events belonging to this subscription.
+      event_type:
+        about: Filter events by type (e.g. 'new_post', 'bio_change').
+      creator:
+        about: Filter events by creator handle (exact match).
+      page_size:
+        type: integer
+        about: Number of results to return per page. Defaults to 10.
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  social-listening-event:
+    title: Get event
+    about: Return a single event with its full payload and delivery history. Monitoring is billed per creator, per
+      day — API calls are included in that price. See Usage, pricing & limits.
+    request: GET /social/listening/events/{event_id}/
+    params:
+      event_id:
+        in: path
+        type: integer
+        required: true
+        about: Unique identifier for the resource
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing
+  social-listening-usage:
+    title: Get usage
+    about: Return current social-listening limits and active subscription counts for the client's scope. Monitoring
+      is billed per creator, per day — API calls are included in that price. See Usage, pricing &…
+    request: GET /social/listening/usage/
+    price:
+      per: call
+      note: credits per creator returned or enriched; see pricing

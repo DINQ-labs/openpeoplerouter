@@ -1,0 +1,145 @@
+id: bouncer
+title: Bouncer
+about: Email verification with toxicity scoring, synchronous or in batches.
+site: https://www.usebouncer.com
+docs: https://docs.usebouncer.com
+pricing: https://www.usebouncer.com/pricing
+api: https://api.usebouncer.com
+key:
+  env: BOUNCER_API_KEY
+  header: x-api-key
+operations:
+  verify-batch-sync:
+    title: Process with email verification queue
+    about: Synchronous Batch Email Verification API verifies one or multiple emails in a batch, offline manner.
+    request: POST /v1.1/email/verify/batch/sync
+    params:
+      Content-Type:
+        in: header
+    price:
+      credits: 1
+      per: call
+  create-batch:
+    title: Create batch request
+    about: Verifies one or multiple emails in a batch, offline manner.
+    request: POST /v1.1/email/verify/batch
+    params:
+      callback: {}
+    price:
+      credits: 1
+      per: call
+  get-batch:
+    title: Check status
+    about: Retrieve status of your request based on request id.
+    request: GET /v1.1/email/verify/batch/{batchId}
+    params:
+      batchId:
+        in: path
+        required: true
+        about: batchId from create response
+      with-stats:
+        type: boolean
+        about: collect additional processing statistics
+    price:
+      credits: 1
+      per: call
+  finish-batch:
+    title: Finish
+    about: This endpoint will trigger internal job which will finish processing and return credits for remaining
+      not verified emails. Results can be downloaded once status endpoint will return status…
+    request: POST /v1.1/email/verify/batch/{batchId}/finish
+    params:
+      batchId:
+        in: path
+        required: true
+    price:
+      credits: 1
+      per: call
+  get-batch-results:
+    title: Get results
+    about: Download batch result as JSON. You can filter out what to download by status, eg. download only deliverable
+      emails.
+    request: GET /v1.1/email/verify/batch/{batchId}/download
+    params:
+      download:
+        about: 'download emails by status, possible values: all, deliverable, risky, undeliverable, unknown'
+      batchId:
+        in: path
+        required: true
+    price:
+      credits: 1
+      per: call
+  get-credits:
+    title: Check available credits
+    about: Retrieve available credits.
+    request: GET /v1.1/credits
+    price:
+      usd: 0
+      per: call
+  verify-domain:
+    title: Verify domain
+    about: Verifies single domain.
+    request: GET /v1.1/domain
+    params:
+      domain:
+        required: true
+    price:
+      credits: 1
+      per: call
+  verify-single-email:
+    title: Verify email
+    about: Verifies single email in real-time synchronous manner.
+    request: GET /v1.1/email/verify
+    params:
+      email:
+        required: true
+        about: (Required) email
+      timeout:
+        type: integer
+        about: 'timeout for verification (default: 10)'
+    price:
+      credits: 1
+      per: call
+    jobs:
+      verify_email:
+        needs:
+        - - email
+        send:
+          email: email
+        result: '@'
+        fields:
+          email: email
+          status: status
+          deliverable: status == 'deliverable'
+          score: score
+          catch_all: domain.acceptAll
+          disposable: domain.disposable
+  create-toxicity-list-job:
+    title: Create toxicity list job
+    request: POST /v1/toxicity/list
+    params:
+      Content-Type:
+        in: header
+    price:
+      credits: 1
+      per: call
+  get-toxicity-list-job:
+    title: Check toxicity list job status
+    request: GET /v1/toxicity/list/{id}
+    params:
+      id:
+        in: path
+        required: true
+    price:
+      credits: 1
+      per: call
+  get-toxicity-list-results:
+    title: Download toxicity list results
+    request: GET /v1/toxicity/list/{id}/data
+    params:
+      id:
+        in: path
+        required: true
+    price:
+      credits: 1
+      per: call

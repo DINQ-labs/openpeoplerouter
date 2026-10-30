@@ -1,0 +1,426 @@
+id: parallel
+title: Parallel
+about: Web search, extraction, research tasks, and FindAll runs that turn a description into a list of matching
+  companies or people.
+site: https://parallel.ai
+docs: https://docs.parallel.ai
+pricing: https://parallel.ai/pricing
+api: https://api.parallel.ai
+key:
+  env: PARALLEL_API_KEY
+  header: x-api-key
+operations:
+  search:
+    title: Search
+    about: Searches the web.
+    request: POST /v1/search
+    params:
+      objective:
+        in: body
+        about: Natural-language description of the underlying question or goal driving the search. Used together
+          with search_queries to focus results on the most relevant content. Should be self-contained with…
+      search_queries:
+        in: body
+        type: array
+        required: true
+        about: Concise keyword search queries, 3-6 words each. At least one query is required, provide 2-3 for best
+          results. Used together with objective to focus results on the most relevant content.
+      mode:
+        in: body
+        about: 'Search mode preset: supported values are turbo, fast, basic, and advanced. Turbo mode is optimized
+          for the fastest responses. Use Fast mode for high quality search within a 1-second latency budget.…'
+      max_chars_total:
+        in: body
+        type: integer
+        about: Upper bound on total characters across excerpts from all results.
+      session_id:
+        in: body
+        about: Session identifier to track calls across separate search and extract calls, to be used as part of
+          a larger task. Specifying it may give better contextual results for subsequent API calls.
+      client_model:
+        in: body
+        about: The model generating this request and consuming the results. Enables optimizations and tailors default
+          settings for the model's capabilities.
+      advanced_settings:
+        in: body
+        type: object
+        about: Advanced configuration for source policy, fetch policy, and excerpt settings. May impact result quality
+          and latency unless used carefully. When omitted, excerpts are enabled by default.
+    price:
+      per: call
+      note: priced per request and processor; see the pricing page
+  extract:
+    title: Extract
+    about: Extracts relevant content from specific web URLs.
+    request: POST /v1/extract
+    params:
+      urls:
+        in: body
+        type: array
+        required: true
+        about: URLs to extract content from. Up to 20 URLs.
+      objective:
+        in: body
+        about: As in SearchRequest, a natural-language description of the underlying question or goal driving the
+          request. Used together with search_queries to focus excerpts on the most relevant content.
+      search_queries:
+        in: body
+        type: array
+        about: Optional keyword search queries, as in SearchRequest. Used together with objective to focus excerpts
+          on the most relevant content.
+      max_chars_total:
+        in: body
+        type: integer
+        about: Upper bound on total characters across excerpts from all extracted results.
+      session_id:
+        in: body
+        about: Session identifier to track calls across separate search and extract calls, to be used as part of
+          a larger task. Specifying it may give better contextual results for subsequent API calls.
+      client_model:
+        in: body
+        about: The model generating this request and consuming the results. Enables optimizations and tailors default
+          settings for the model's capabilities.
+      advanced_settings:
+        in: body
+        type: object
+        about: Advanced configuration for fetch policy, excerpt settings, and full content settings. May impact
+          result quality and latency unless used carefully. When omitted, excerpts are enabled and full content…
+    price:
+      per: call
+      note: priced per request and processor; see the pricing page
+  tasks-runs:
+    title: Create Task Run
+    about: Initiates a task run. Returns immediately with a run object in status 'queued'. Beta features can be
+      enabled by setting the 'parallel-beta' header.
+    request: POST /v1/tasks/runs
+    params:
+      parallel-beta:
+        in: header
+      processor:
+        in: body
+        required: true
+        about: Processor to use for the task.
+      metadata:
+        in: body
+        type: object
+        about: User-provided metadata stored with the run. Keys and values must be strings with a maximum length
+          of 16 and 512 characters respectively.
+      memory_scope_key:
+        in: body
+        about: User-provided key identifying the memory scope to use. Omit to use personal memory, if available.
+      source_policy:
+        in: body
+        type: object
+        about: Optional source policy governing included and excluded domains and domain/path prefixes in web search
+          results.
+      advanced_settings:
+        in: body
+        type: object
+        about: Advanced search configuration for the task run.
+      task_spec:
+        in: body
+        type: object
+        about: Task specification. If unspecified, defaults to auto output schema.
+      input:
+        in: body
+        type: object
+        required: true
+        about: Input to the task, either text or a JSON object.
+      previous_interaction_id:
+        in: body
+        about: Interaction ID to use as context for this request.
+      mcp_servers:
+        in: body
+        type: array
+        about: Optional list of MCP servers to use for the run.
+      enable_events:
+        in: body
+        type: boolean
+        about: Controls tracking of task run execution progress. When set to true, progress events are recorded
+          and can be accessed via the Task Run events endpoint. When false, no progress events are tracked. Note…
+      webhook:
+        in: body
+        type: object
+        about: Callback URL (webhook endpoint) that will receive an HTTP POST when the run completes. This feature
+          is not available via the Python SDK.
+    price:
+      per: call
+      note: priced per request and processor; see the pricing page
+  get-tasks-runs:
+    title: Retrieve Task Run
+    about: Retrieves run status by run_id. The run result is available from the /result endpoint.
+    request: GET /v1/tasks/runs/{run_id}
+    params:
+      run_id:
+        in: path
+        required: true
+    price:
+      per: call
+      note: priced per request and processor; see the pricing page
+  tasks-runs-input:
+    title: Retrieve Task Run Input
+    about: Retrieves the input of a run by run_id.
+    request: GET /v1/tasks/runs/{run_id}/input
+    params:
+      run_id:
+        in: path
+        required: true
+    price:
+      per: call
+      note: priced per request and processor; see the pricing page
+  tasks-runs-result:
+    title: Retrieve Task Run Result
+    about: Retrieves a run result by run_id, blocking until the run is completed.
+    request: GET /v1/tasks/runs/{run_id}/result
+    params:
+      run_id:
+        in: path
+        required: true
+      timeout:
+        type: integer
+      parallel-beta:
+        in: header
+    price:
+      per: call
+      note: priced per request and processor; see the pricing page
+  findall-entity-search:
+    title: Fast Entity Search
+    about: People or companies matching a plain-language description, ranked. Fast and best-effort; match_limit
+      is 5-1000.
+    request: POST /v1beta/findall/entity-search
+    params:
+      entity_type:
+        in: body
+        required: true
+        choices:
+        - people
+        - companies
+        about: Type of entity to search for.
+      objective:
+        in: body
+        required: true
+        about: Natural language description of target entities.
+      match_limit:
+        in: body
+        type: integer
+        about: Maximum number of entities to return. Must be between 5 and 1000 (inclusive). May return fewer results.
+          Defaults to 100.
+    price:
+      per: call
+      note: priced per request and processor; see the pricing page
+    jobs:
+      find_people:
+        audience: any
+        needs:
+        - - query
+        - - title
+        send:
+          query: objective
+          title:
+            to: objective
+            as: $
+          company:
+            to: objective
+            as: at $
+          location:
+            to: objective
+            as: in $
+          keywords:
+            to: objective
+            as: working on $
+        fixed:
+          entity_type: people
+        limit: match_limit
+        result: entities
+        fields:
+          name: name
+          headline: description
+          url: url
+          linkedin_url: contains(url, 'linkedin.com') && url || null
+      find_companies:
+        needs:
+        - - query
+        - - industry
+        send:
+          query: objective
+          industry:
+            to: objective
+            as: $ companies
+          location:
+            to: objective
+            as: in $
+          technology:
+            to: objective
+            as: using $
+        fixed:
+          entity_type: companies
+        limit: match_limit
+        result: entities
+        fields:
+          name: name
+          description: description
+          website: url
+  findall-ingest:
+    title: Ingest FindAll Run
+    about: Transforms a natural language search objective into a structured FindAll spec. The generated specification
+      serves as a suggested starting point and can be further customized by the user.
+    request: POST /v1beta/findall/ingest
+    params:
+      parallel-beta:
+        in: header
+      objective:
+        in: body
+        required: true
+        about: Natural language objective to create a FindAll run spec.
+    price:
+      per: call
+      note: priced per request and processor; see the pricing page
+  findall-runs:
+    title: Create FindAll Run
+    about: Starts a FindAll run. This endpoint immediately returns a FindAll run object with status set to 'queued'.
+      You can get the run result snapshot using the GET /v1beta/findall/runs/{findall_id}/result…
+    request: POST /v1beta/findall/runs
+    params:
+      parallel-beta:
+        in: header
+      objective:
+        in: body
+        required: true
+        about: Natural language objective of the FindAll run.
+      entity_type:
+        in: body
+        required: true
+        about: Type of the entity for the FindAll run.
+      match_conditions:
+        in: body
+        type: array
+        required: true
+        about: List of match conditions for the FindAll run.
+      generator:
+        in: body
+        required: true
+        choices:
+        - base
+        - core
+        - pro
+        - preview
+        about: Generator for the FindAll run. One of base, core, pro, preview.
+      match_limit:
+        in: body
+        type: integer
+        required: true
+        about: Maximum number of matches to find for this FindAll run. Must be between 5 and 1000 (inclusive). May
+          return fewer results.
+      exclude_list:
+        in: body
+        type: array
+        about: List of entity names/IDs to exclude from results. At most 10,000 entries are allowed.
+      metadata:
+        in: body
+        type: object
+        about: Metadata for the FindAll run.
+      webhook:
+        in: body
+        type: object
+        about: Webhook for the FindAll run.
+      memory_scope_key:
+        in: body
+        about: User-provided key identifying the memory scope to use. Omit to use personal memory, if available.
+    price:
+      per: call
+      note: priced per request and processor; see the pricing page
+  get-findall-runs:
+    title: Retrieve FindAll Run Status
+    about: Retrieve a FindAll run.
+    request: GET /v1beta/findall/runs/{findall_id}
+    params:
+      findall_id:
+        in: path
+        required: true
+      parallel-beta:
+        in: header
+    price:
+      per: call
+      note: priced per request and processor; see the pricing page
+  findall-runs-cancel:
+    title: Cancel FindAll Run
+    about: Cancel a FindAll run.
+    request: POST /v1beta/findall/runs/{findall_id}/cancel
+    params:
+      findall_id:
+        in: path
+        required: true
+      parallel-beta:
+        in: header
+    price:
+      per: call
+      note: priced per request and processor; see the pricing page
+  findall-runs-enrich:
+    title: Add Enrichment to FindAll Run
+    about: Add an enrichment to a FindAll run.
+    request: POST /v1beta/findall/runs/{findall_id}/enrich
+    params:
+      findall_id:
+        in: path
+        required: true
+      parallel-beta:
+        in: header
+      processor:
+        in: body
+        about: Processor to use for the task.
+      output_schema:
+        in: body
+        type: object
+        required: true
+        about: JSON schema for a task input or output.
+      mcp_servers:
+        in: body
+        type: array
+        about: List of MCP servers to use for the task.
+    price:
+      per: call
+      note: priced per request and processor; see the pricing page
+  findall-runs-extend:
+    title: Extend FindAll Run
+    about: Extend a FindAll run by adding additional matches to the current match limit.
+    request: POST /v1beta/findall/runs/{findall_id}/extend
+    params:
+      findall_id:
+        in: path
+        required: true
+      parallel-beta:
+        in: header
+      additional_match_limit:
+        in: body
+        type: integer
+        required: true
+        about: Additional number of matches to find for this FindAll run. This value will be added to the current
+          match limit to determine the new total match limit. Must be greater than 0.
+    price:
+      per: call
+      note: priced per request and processor; see the pricing page
+  findall-runs-result:
+    title: FindAll Run Result
+    about: Retrieve the FindAll run result at the time of the request.
+    request: GET /v1beta/findall/runs/{findall_id}/result
+    params:
+      findall_id:
+        in: path
+        required: true
+      parallel-beta:
+        in: header
+    price:
+      per: call
+      note: priced per request and processor; see the pricing page
+  findall-runs-schema:
+    title: Get FindAll Run Schema
+    request: GET /v1beta/findall/runs/{findall_id}/schema
+    params:
+      findall_id:
+        in: path
+        required: true
+      parallel-beta:
+        in: header
+    price:
+      per: call
+      note: priced per request and processor; see the pricing page

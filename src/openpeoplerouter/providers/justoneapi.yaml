@@ -1,0 +1,4228 @@
+id: justoneapi
+title: Just One API
+about: Public data from Xiaohongshu, Douyin, Weibo, Bilibili, Zhihu, Kuaishou, WeChat, TikTok, Instagram, YouTube,
+  LinkedIn and more.
+site: https://justoneapi.com
+docs: https://docs.justoneapi.com
+pricing: https://justoneapi.com/pricing
+api: https://api.justoneapi.com
+key:
+  env: JUSTONEAPI_TOKEN
+  query: token
+operations:
+  get-api-search:
+    title: Cross-Platform Search
+    about: Searches recent content across news, Weibo, WeChat, Zhihu, Douyin, Xiaohongshu, Bilibili, and Kuaishou
+      with source and time filters. Use it to monitor a topic across multiple platforms.
+    request: GET /api/search/v1
+    params:
+      keyword:
+        about: 'Search query string. Supports these five syntax forms: - AND (&&): A && B matches content containing
+          both A and B. - OR (||): A || B matches content containing A or B. - Exclusion (-): -A matches…'
+      source:
+        choices:
+        - ALL
+        - NEWS
+        - WEIBO
+        - WEIXIN
+        - ZHIHU
+        - DOUYIN
+        - XIAOHONGSHU
+        - BILIBILI
+        - KUAISHOU
+        about: 'Target social media platform for search filtering. Available Values: - ALL: All platforms - NEWS:
+          News - WEIBO: Sina Weibo - WEIXIN: Weixin (WeChat) - ZHIHU: Zhihu - DOUYIN: Douyin (TikTok China) -…'
+      start:
+        about: Start time of the search period (yyyy-MM-dd HH:mm:ss). Required for initial request.
+      end:
+        about: End time of the search period (yyyy-MM-dd HH:mm:ss). Required for initial request.
+      nextCursor:
+        about: Pagination cursor provided by the 'nextCursor' field in the previous response.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-xiaohongshu-ask-dots:
+    title: Ask Dots AI
+    about: Queries Xiaohongshu (RedNote) Ask Dots AI with a keyword question. Use it to retrieve an AI answer for
+      topic research and question exploration.
+    request: GET /api/xiaohongshu/ask-dots
+    params:
+      keyword:
+        required: true
+        about: Question or keyword to submit to Ask Dots AI.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-xiaohongshu-hot-search:
+    title: Hot Search
+    about: Searches Xiaohongshu (RedNote) hot-content entries with optional keyword, content-category path, pagination,
+      ranking metric, and time-range controls. Use it to support trend discovery, topic…
+    request: GET /api/xiaohongshu/hot-search/v1
+    params:
+      searchWord:
+        about: Search keyword.
+      pageNum:
+        type: integer
+        about: Page number for pagination.
+      orderBy:
+        choices:
+        - premium_imp_num
+        - premium_good_read_rate
+        - premium_read_num
+        - premium_engage_num
+        - premium_engage_rate
+        - premium_like_num
+        - premium_fav_num
+        - premium_cmt_num
+        about: 'Sort metric for the result set. Available Values: - premium_imp_num: Exposure - premium_good_read_rate:
+          Read rate - premium_read_num: Read count - premium_engage_num: Engagement count -…'
+      nd:
+        choices:
+        - DAY_3
+        - DAY_7
+        - DAY_14
+        - DAY_30
+        about: 'Time range in days. Available Values: - DAY_3: Last 3 days - DAY_7: Last 7 days - DAY_14: Last 14
+          days - DAY_30: Last 30 days'
+      noteContentCategory:
+        about: 'Content category filter. Pass one complete Pugongying category path joined with # separators. You
+          may pass a parent path or append one listed child with another #. Only one path is accepted.…'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  xiaohongshu-get-creator-hot-inspiration-feed:
+    title: Hot Inspiration Feed
+    about: Retrieves the Xiaohongshu (RedNote) creator center hot inspiration feed with cursor pagination. Use it
+      to discover inspiration for content planning and explore further pages of creative ideas.
+    request: GET /api/xiaohongshu/get-creator-hot-inspiration-feed/v1
+    params:
+      cursor:
+        about: Leave empty for the first request. For the next page, pass the cursor value returned by the previous
+          response.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-xiaohongshu-search-note:
+    title: Keyword Note Search
+    about: Searches Xiaohongshu (RedNote) notes by keyword with page-based pagination, sorting and note-type filters.
+      The V2 noteTime filter may return notes outside the selected time range. This endpoint does…
+    request: GET /api/xiaohongshu/search-note/v2
+    params:
+      keyword:
+        required: true
+        about: Search keyword.
+      page:
+        type: integer
+        about: Page number for pagination. Start at 1, then increment page while keeping the keyword and filters
+          unchanged.
+      sort:
+        choices:
+        - general
+        - popularity_descending
+        - time_descending
+        - comment_descending
+        - collect_descending
+        about: 'Sort order for the result set. Available Values: - general: General - popularity_descending: Popularity
+          Descending - time_descending: Time Descending - comment_descending: Comment Descending -…'
+      noteType:
+        choices:
+        - _0
+        - _1
+        - _2
+        about: 'Note type filter. Available Values: - _0: General - _1: Video - _2: Normal'
+      noteTime:
+        choices:
+        - ONE_DAY
+        - ONE_WEEK
+        - HALF_YEAR
+        about: 'Note publish time filter. Results may include notes published outside the selected time range. Available
+          Values: - ONE_DAY: Within one day - ONE_WEEK: Within a week - HALF_YEAR: Within half a year'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-xiaohongshu-search-note-2:
+    title: Note Search
+    about: Searches Xiaohongshu (RedNote) notes through the mobile-app search flow with pagination, sorting, note-type,
+      and time filters. Use it to support iterative topic research and filtered content…
+    request: GET /api/xiaohongshu/search-note/v4
+    params:
+      keyword:
+        required: true
+        about: Search keyword.
+      page:
+        type: integer
+        about: Page number for pagination.
+      sortType:
+        choices:
+        - general
+        - popularity_descending
+        - time_descending
+        - comment_descending
+        - collect_descending
+        about: 'Sort order for the result set. Available Values: - general: General - popularity_descending: Popularity
+          Descending - time_descending: Time Descending - comment_descending: Comment Descending -…'
+      noteType:
+        choices:
+        - ALL
+        - VIDEO_NOTE
+        - NORMAL_NOTE
+        about: 'Note type filter. Available Values: - ALL: No Limit - VIDEO_NOTE: Video Note - NORMAL_NOTE: Normal
+          Note'
+      timeFilter:
+        choices:
+        - ALL
+        - ONE_DAY
+        - ONE_WEEK
+        - HALF_YEAR
+        about: 'Publish time filter. Available Values: - ALL: No Limit - ONE_DAY: Within one day - ONE_WEEK: Within
+          one week - HALF_YEAR: Within half a year'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-xiaohongshu-search-user:
+    title: User Search
+    about: Searches Xiaohongshu (RedNote) users by keyword with page-based pagination. Use it to support creator
+      discovery, account research, and finding profiles related to a topic, name, or brand term.
+    request: GET /api/xiaohongshu/search-user/v2
+    params:
+      keyword:
+        required: true
+        about: Search keyword.
+      page:
+        type: integer
+        about: Page number for pagination.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  xiaohongshu-get-user-note-list:
+    title: User Notes
+    about: Reads a user's published public Xiaohongshu (RedNote) notes by user ID or supported profile URL, with
+      lastCursor pagination. This endpoint does not create, upload or publish notes.
+    request: GET /api/xiaohongshu/get-user-note-list/v4
+    params:
+      userId:
+        required: true
+        about: A Xiaohongshu user ID or a profile URL containing /user/profile/.
+      lastCursor:
+        about: Omit on the first request. For the next page, pass the last note's cursor value from the previous
+          response.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  xiaohongshu-get-user-faved-note-list:
+    title: User Favorited Notes
+    about: Retrieves a Xiaohongshu (RedNote) user's favorited notes by user ID with cursor pagination. Use it to
+      review a user's saved content and research content interests.
+    request: GET /api/xiaohongshu/get-user-faved-note-list/v1
+    params:
+      userId:
+        required: true
+        about: Unique user identifier on Xiaohongshu.
+      lastCursor:
+        about: For the next page, pass the cursor from the previous response. Omit or pass an empty value for the
+          first page.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-xiaohongshu-get-note-detail:
+    title: Note Details
+    about: Retrieves Xiaohongshu (RedNote) details for a note identified by a note ID or supported explore URL.
+      Use it to perform direct note lookup and content review from stored identifiers or shared explore…
+    request: GET /api/xiaohongshu/get-note-detail/v1
+    params:
+      noteId:
+        required: true
+        about: A Xiaohongshu note ID or an explore URL containing /explore/.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-xiaohongshu-get-note-detail-2:
+    title: Note Details
+    about: Retrieves Xiaohongshu (RedNote) video-note details by note ID. Use it to look up and process a known
+      video note.
+    request: GET /api/xiaohongshu/get-note-detail/v6
+    params:
+      noteId:
+        required: true
+        about: Unique note identifier on Xiaohongshu.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-xiaohongshu-get-note-comment:
+    title: Note Comments
+    about: Retrieves comments for a Xiaohongshu (RedNote) note with cursor pagination and normal, latest, or like-count
+      sorting. Use it to support feedback review, discussion analysis, and comment moderation…
+    request: GET /api/xiaohongshu/get-note-comment/v2
+    params:
+      noteId:
+        required: true
+        about: A Xiaohongshu note ID or an explore URL containing /explore/.
+      lastCursor:
+        about: Pagination cursor from the previous page (use the cursor value returned by the last response).
+      sort:
+        choices:
+        - normal
+        - latest
+        - like_count
+        about: 'Sort strategy for the result set. Available Values: - normal: Normal - latest: Latest - like_count:
+          Like Count'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-xiaohongshu-get-note-sub-comment:
+    title: Comment Replies
+    about: Retrieves replies to a specific Xiaohongshu (RedNote) note comment with cursor pagination. Use it to
+      inspect threaded discussions and continue through reply pages for feedback review or moderation.
+    request: GET /api/xiaohongshu/get-note-sub-comment/v2
+    params:
+      noteId:
+        required: true
+        about: Unique note identifier on Xiaohongshu.
+      commentId:
+        required: true
+        about: Unique comment identifier on Xiaohongshu.
+      lastCursor:
+        about: Pagination cursor from the previous page (use the cursor value returned by the last response).
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-xiaohongshu-get-user:
+    title: User Profile
+    about: Retrieves a Xiaohongshu (RedNote) user profile from a user ID or supported profile URL. Use it to support
+      creator discovery, account research, and reviewing a known profile before related content…
+    request: GET /api/xiaohongshu/get-user/v3
+    params:
+      userId:
+        required: true
+        about: A Xiaohongshu user ID or a profile URL containing /user/profile/.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-xiaohongshu-search-recommend:
+    title: Keyword Suggestions
+    about: Returns Xiaohongshu (RedNote) search keyword suggestions for a submitted seed term. Use it to expand
+      query sets, refine content-research searches, and plan SEO or programmatic SEO keyword coverage.
+    request: GET /api/xiaohongshu/search-recommend/v1
+    params:
+      keyword:
+        required: true
+        about: Search keyword.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  xiaohongshu-get-topic-note-list:
+    title: Topic Note List
+    about: Retrieves Xiaohongshu (RedNote) notes associated with a topic ID, with hot or latest sorting and cursor
+      pagination. Use it to support topic content discovery, trend review, and continuing through…
+    request: GET /api/xiaohongshu/get-topic-note-list/v1
+    params:
+      topicId:
+        required: true
+        about: Unique topic identifier on Xiaohongshu.
+      sort:
+        choices:
+        - time
+        - hot
+        about: 'Sort order for the result set. Available Values: - time: Latest - hot: Hot'
+      cursor:
+        about: Pagination cursor from the previous page.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-xiaohongshu-share-url-transfer:
+    title: Share Link Resolution
+    about: Resolve a supported Xiaohongshu (RedNote) short share link and return its public redirect URL. Use it
+      to expand shared links before subsequent Xiaohongshu content lookup or processing.
+    request: GET /api/xiaohongshu/share-url-transfer/v1
+    params:
+      shareUrl:
+        required: true
+        about: A Xiaohongshu (RedNote) short share URL beginning with http://xhslink.com/ or https://xhslink.com/.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-xiaohongshu-ec-search-products:
+    title: Product Search
+    about: Searches Xiaohongshu E-commerce (RedNote) products by keyword with page and search-ID pagination; pages
+      after the first require the search ID returned by the initial search. Use it to discover…
+    request: GET /api/xiaohongshu-ec/search-products/v1
+    params:
+      keyword:
+        required: true
+        about: Search keyword.
+      page:
+        about: Page number, starting from 1.
+      searchId:
+        about: Search ID returned by the first-page response; required when page is greater than 1.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  solar-cooperator-blogger:
+    title: Creator Search
+    about: Search Xiaohongshu Pugongying creators with campaign filters and sorting by followers, daily-note median
+      reads or interactions, or quoted price. Use it to build a creator shortlist.
+    request: GET /api/xiaohongshu-pgy/api/solar/cooperator/blogger/v2/v1
+    params:
+      searchType:
+        choices:
+        - NICKNAME
+        - NOTE
+        about: 'Search criteria type. Available Values: - NICKNAME: Search by nickname - NOTE: Search by note content'
+      keyword:
+        about: Search keyword.
+      page:
+        type: integer
+        about: Page number.
+      sort:
+        choices:
+        - DEFAULT
+        - FANS
+        - READ_MEDIAN
+        - ENGAGEMENT_MEDIAN
+        - PRICE_ASC
+        - PRICE_DESC
+        about: 'Creator search sorting. Values: FANS sorts by follower count descending; DEFAULT uses Pugongying
+          intelligent ranking; READ_MEDIAN sorts by daily-note median reads descending; ENGAGEMENT_MEDIAN sorts…'
+      fansNumberLower:
+        type: integer
+        about: Minimum number of fans.
+      fansNumberUpper:
+        type: integer
+        about: Maximum number of fans.
+      fansAge:
+        choices:
+        - ALL
+        - LT_18
+        - AGE_18_24
+        - AGE_25_34
+        - AGE_35_44
+        - GT_44
+        about: 'Target fans age group. Available Values: - ALL: All ages - LT_18: Under 18 - AGE_18_24: 18 to 24
+          - AGE_25_34: 25 to 34 - AGE_35_44: 35 to 44 - GT_44: Above 44'
+      fansGender:
+        choices:
+        - ALL
+        - MALE_HIGH
+        - FE_MALE_HIGH
+        about: 'Target fans gender. Available Values: - ALL: All genders - MALE_HIGH: Mainly Male - FE_MALE_HIGH:
+          Mainly Female'
+      fansChildAgeInfo:
+        about: 'Mother-and-baby audience stage filter. Pass Pugongying labels or numeric codes separated by English
+          or Chinese commas. Available values:'
+      gender:
+        choices:
+        - ALL
+        - MALE
+        - FEMALE
+        about: 'KOL''s gender. Available Values: - ALL: All genders - MALE: Male - FEMALE: Female'
+      location:
+        about: Creator profile location filter. Pass Pugongying location labels separated by English or Chinese
+          commas. Country, China province or region, city-level paths, and district Available country province…
+      contentTag:
+        about: 'Content category filter. Pass first-level or second-level category labels from Pugongying, separated
+          by commas. Available values:'
+      contentSceneLabel:
+        about: 'Content scene label filter. Pass full Pugongying note category scene label paths separated by English
+          or Chinese commas. Available values:'
+      personalTags:
+        about: 'Blogger persona tag filter. Pass one or more Pugongying persona labels separated by English or Chinese
+          commas. Available values: - HR Example:'
+      marketTarget:
+        about: 'Marketing target filter. Pass one Pugongying marketing target value. Available values: - estimateAllCpm:
+          Exposure - exposure performance - cost - mAccumImpNum: Exposure - exposure performance - scale…'
+      audienceGroup:
+        about: Audience target filter. Pass Pugongying audience group IDs (dmpGroupId) separated by English or Chinese
+          commas. These IDs are dynamic and account-specific, so there is no fixed global value list. Use…
+      top20CrowdsLabel:
+        about: Top-20 audience filter. Pass top-level or child audience labels separated by commas; child labels
+          are converted to Pugongying request values.
+      industrySpecificCrowdsMotorDom:
+        about: Industry-specific portrait filter. Pass Pugongying portrait value IDs or label values separated by
+          commas.
+      featureTags:
+        about: Good-at content tag filter. Pass label values separated by commas.
+      contentThemeLabel:
+        about: Content theme filter. Pass Pugongying value IDs or label values separated by commas; labels are converted
+          to value IDs.
+      excludeLowActive:
+        type: boolean
+        about: Whether to exclude low-activity bloggers.
+      fansNumUp:
+        type: boolean
+        about: Whether to exclude bloggers whose fan count is dropping.
+      noteType:
+        choices:
+        - ALL
+        - PHOTO_TEXT
+        - VIDEO
+        about: 'Note type filter. Values: ALL=all note types, PHOTO_TEXT=mainly photo-text notes, VIDEO=mainly video
+          notes. Available Values: - ALL: All note types - PHOTO_TEXT: Mainly photo-text notes - VIDEO:…'
+      industry:
+        about: 'Pugongying industry preset for industry assistant style creator recommendations. Available Values:
+          - BEAUTY_PERSONAL_CARE_BEAUTY: Beauty and personal care - beauty - BEAUTY_PERSONAL_CARE_SKINCARE:…'
+      accumCommonImpMedinNum30d:
+        about: Daily note exposure median range. Pass two comma-separated numeric bounds; use -1 or null for an
+          open upper bound.
+      readMidNor30:
+        about: Daily note read median range. Pass two comma-separated numeric bounds; use -1 or null for an open
+          upper bound.
+      interMidNor30:
+        about: Daily note interaction median range. Pass two comma-separated numeric bounds; use -1 or null for
+          an open upper bound.
+      thousandLikePercent30:
+        about: Thousand-like note ratio range. Pass fractional ratios such as 0.4,null or percentage values such
+          as 40,null.
+      notePrice:
+        about: Photo-text cooperation quote range. Pass two comma-separated numeric bounds; use -1 or null for an
+          open upper bound.
+      videoPrice:
+        about: Video cooperation quote range. Pass two comma-separated numeric bounds; use -1 or null for an open
+          upper bound.
+      inviteReply48hNumRatio:
+        about: 48-hour invite reply ratio range. Pass fractional ratios such as 0.9,0.95 or percentage values such
+          as 90,95.
+      progressOrderCnt:
+        about: Current cooperation order count range. Pass two comma-separated numeric bounds.
+      tradeType:
+        about: Recent cooperation industry filter from Pugongying.
+      tradeReportBrandIds:
+        about: Recent cooperation brand IDs, separated by English or Chinese commas.
+      excludeTradeReportBrandIds:
+        type: boolean
+        about: Whether to exclude creators who cooperated with the selected recent cooperation brands.
+      accumCoopImpMedinNum30d:
+        about: Cooperation note exposure median range. Pass two comma-separated numeric bounds.
+      readMidCoop30:
+        about: Cooperation note read median range. Pass two comma-separated numeric bounds.
+      interMidCoop30:
+        about: Cooperation note interaction median range. Pass two comma-separated numeric bounds.
+      mCpuvNum30d:
+        about: Cooperation note outer-store median range. Pass two comma-separated numeric bounds.
+      estimatePictureCpm:
+        about: Estimated photo-text CPM range. Pass two comma-separated numeric bounds.
+      estimateVideoCpm:
+        about: Estimated video CPM range. Pass two comma-separated numeric bounds.
+      estimatePicReadPrice:
+        about: Estimated photo-text read unit price range. Pass two comma-separated numeric bounds.
+      estimateVideoReadPrice:
+        about: Estimated video read unit price range. Pass two comma-separated numeric bounds.
+      estimatePictureEngageCost:
+        about: Estimated photo-text engagement unit price range. Pass two comma-separated numeric bounds.
+      estimateVideoEngageCost:
+        about: Estimated video engagement unit price range. Pass two comma-separated numeric bounds.
+      estimateCpuv30d:
+        about: Estimated outer-store visit unit price range. Pass two comma-separated numeric bounds.
+      kliveCnt30d:
+        about: Live count in the last 30 days range. Pass two comma-separated numeric bounds.
+      avgLiveViewerNum:
+        about: Average live viewer count range. Pass two comma-separated numeric bounds.
+      avgAgmv90d:
+        about: Average live sales amount range. Pass two comma-separated numeric bounds.
+      similarUserId:
+        about: Similar creator user ID. similarUserId and similarWord must be provided together.
+      similarWord:
+        about: Similar creator keyword shown by Pugongying. similarUserId and similarWord must be provided together.
+      fansLocation:
+        about: 'Follower audience location filter. Pass Pugongying follower-region labels separated by English or
+          Chinese commas. Country, China province, and city-level paths are supported; district Examples:'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  user-blogger-userid:
+    title: Creator Profile
+    about: Retrieve a Xiaohongshu Pugongying creator profile and cooperation quote information for a known user
+      ID. Use it to review a creator before campaign outreach or pricing comparison.
+    request: GET /api/xiaohongshu-pgy/api/solar/cooperator/user/blogger/userId/v1
+    params:
+      userId:
+        required: true
+        about: Blogger's user ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  kol-datav3-datasummary:
+    title: Data Summary
+    about: Retrieve the Xiaohongshu Pugongying data summary for a creator's daily or cooperation notes. Use it to
+      compare aggregate creator performance between business modes.
+    request: GET /api/xiaohongshu-pgy/api/solar/kol/dataV3/dataSummary/v1
+    params:
+      userId:
+        required: true
+        about: KOL's user ID.
+      business:
+        choices:
+        - DAILY_NOTE
+        - COOPERATE_NOTE
+        about: 'Business type. Available Values: - DAILY_NOTE: Daily notes - COOPERATE_NOTE: Cooperative notes'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  data-userid-fans-overall-new-history:
+    title: Follower Growth History
+    about: Retrieve Xiaohongshu Pugongying follower history for a creator over the selected 30- or 90-day period.
+      Use it to track total followers or new-follower growth over time.
+    request: GET /api/xiaohongshu-pgy/api/solar/kol/data/userId/fans_overall_new_history/v1
+    params:
+      userId:
+        required: true
+        about: KOL's user ID.
+      dateType:
+        choices:
+        - DAY_30
+        - DAY_90
+        about: 'Time range for data. Available Values: - DAY_30: Last 30 days - DAY_90: Last 90 days'
+      increaseType:
+        choices:
+        - FANS_TOTAL
+        - FANS_INCREASE
+        about: 'Type of growth data. Available Values: - FANS_TOTAL: Total fans - FANS_INCREASE: New fans increase'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  kol-datav3-fanssummary:
+    title: Follower Summary
+    about: Retrieve the Xiaohongshu Pugongying follower summary for a known creator. Use it to review the account's
+      aggregate audience status before deeper demographic or trend analysis.
+    request: GET /api/xiaohongshu-pgy/api/solar/kol/dataV3/fansSummary/v1
+    params:
+      userId:
+        required: true
+        about: KOL's user ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  solar-kol-get-similar-kol:
+    title: Similar Creators
+    about: Retrieve paginated Xiaohongshu Pugongying creators similar to a known creator. Use it to expand a campaign
+      shortlist from an existing reference account.
+    request: GET /api/xiaohongshu-pgy/api/solar/kol/get_similar_kol/v1
+    params:
+      userId:
+        required: true
+        about: KOL's user ID.
+      pageNum:
+        type: integer
+        about: Page number for results.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  kol-datav2-kolfeaturetags:
+    title: Creator Feature Tags
+    about: Retrieve Xiaohongshu Pugongying feature tags assigned to a known creator. Use it to understand the creator's
+      recognized formats, styles, or content strengths.
+    request: GET /api/xiaohongshu-pgy/api/solar/kol/dataV2/kolFeatureTags/v1
+    params:
+      userId:
+        required: true
+        about: KOL's user ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  kol-datav2-kolcontenttags:
+    title: Creator Content Tags
+    about: Retrieve Xiaohongshu Pugongying content category tags associated with a known creator. Use it to understand
+      the subjects and categories represented in the creator's published content.
+    request: GET /api/xiaohongshu-pgy/api/solar/kol/dataV2/kolContentTags/v1
+    params:
+      userId:
+        required: true
+        about: KOL's user ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  kol-datav3-notesrate:
+    title: Note Performance Metrics
+    about: Retrieve Xiaohongshu Pugongying aggregate note performance metrics for a creator with business, note-type,
+      date-range, and advertisement filters. Use it to compare content performance across selected…
+    request: GET /api/xiaohongshu-pgy/api/solar/kol/dataV3/notesRate/v1
+    params:
+      userId:
+        required: true
+        about: KOL's user ID.
+      business:
+        choices:
+        - DAILY_NOTE
+        - COOPERATE_NOTE
+        about: 'Business type. Available Values: - DAILY_NOTE: Daily notes - COOPERATE_NOTE: Cooperative notes'
+      noteType:
+        choices:
+        - PHOTO_TEXT_AND_VIDEO
+        - PHOTO_TEXT
+        - VIDEO
+        about: 'Type of note. Available Values: - PHOTO_TEXT_AND_VIDEO: Photo and Video - PHOTO_TEXT: Photo and
+          Text - VIDEO: Video only'
+      dateType:
+        choices:
+        - DAY_30
+        - DAY_90
+        about: 'Time range for data. Available Values: - DAY_30: Last 30 days - DAY_90: Last 90 days'
+      advertiseSwitch:
+        choices:
+        - ALL
+        - ORGANIC_ONLY
+        about: 'Advertisement filter. Available Values: - ALL: All notes - ORGANIC_ONLY: Organic notes only'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  data-userid-fans-profile:
+    title: Follower Distribution
+    about: Retrieves Xiaohongshu Pugongying follower profile data for a known creator. Use it to review a creator's
+      audience profile during campaign planning.
+    request: GET /api/xiaohongshu-pgy/api/solar/kol/data/userId/fans_profile/v1
+    params:
+      userId:
+        required: true
+        about: KOL's user ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  kol-datav2-costeffective:
+    title: Cost Effectiveness Analysis
+    about: Retrieve the Xiaohongshu Pugongying cost-effectiveness analysis for a known creator. Use it to assess
+      cooperation efficiency when comparing creators for a campaign.
+    request: GET /api/xiaohongshu-pgy/api/solar/kol/dataV2/costEffective/v1
+    params:
+      userId:
+        required: true
+        about: KOL's user ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  note-noteid-detail:
+    title: Note Details
+    about: Retrieves Xiaohongshu Pugongying details for a known note ID. Use it to review an individual note during
+      creator or campaign research.
+    request: GET /api/xiaohongshu-pgy/api/solar/note/noteId/detail/v1
+    params:
+      noteId:
+        required: true
+        about: Note's unique ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  kol-data-core-data:
+    title: Creator Core Metrics
+    about: Retrieves Xiaohongshu Pugongying core data for a creator with business, note-type, date-range, and advertisement
+      filters. Use it to compare creators within a selected analysis scope.
+    request: GET /api/xiaohongshu-pgy/api/pgy/kol/data/core_data/v1
+    params:
+      userId:
+        required: true
+        about: KOL's user ID.
+      business:
+        choices:
+        - DAILY_NOTE
+        - COOPERATE_NOTE
+        about: 'Business type. Available Values: - DAILY_NOTE: Daily notes - COOPERATE_NOTE: Cooperative notes'
+      noteType:
+        choices:
+        - PHOTO_TEXT_AND_VIDEO
+        - PHOTO_TEXT
+        - VIDEO
+        about: 'Type of note. Available Values: - PHOTO_TEXT_AND_VIDEO: Photo and Video - PHOTO_TEXT: Photo and
+          Text - VIDEO: Video only'
+      dateType:
+        choices:
+        - DAY_30
+        - DAY_90
+        about: 'Time range for data. Available Values: - DAY_30: Last 30 days - DAY_90: Last 90 days'
+      advertiseSwitch:
+        choices:
+        - ALL
+        - ORGANIC_ONLY
+        about: 'Advertisement filter. Available Values: - ALL: All notes - ORGANIC_ONLY: Organic notes only'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  pgy-content-square-search-note-v2:
+    title: Content Square Notes
+    about: Search Xiaohongshu Pugongying Content Square notes by keyword or browse all notes, with business-category,
+      ranking, time-window, and page controls. Use it to discover high-performing campaign content.
+    request: GET /api/xiaohongshu-pgy/api/pgy/content_square/search_note_v2/v1
+    params:
+      searchWord:
+        about: Keyword for note search. Empty string searches all notes.
+      pageNum:
+        type: integer
+        about: Page number for results.
+      bizType:
+        choices:
+        - XIAOHONGSHU_HOT
+        - PRODUCT_SEEDING
+        - ECOMMERCE_PROMOTION
+        - PUGONGYING_COOPERATION
+        - LEAD_COLLECTION
+        - ECOMMERCE_HOT
+        - SEEDING_DIRECT
+        - APP_PROMOTION
+        about: 'Business category. Available Values: - XIAOHONGSHU_HOT: Xiaohongshu hot - PRODUCT_SEEDING: Product
+          seeding - ECOMMERCE_PROMOTION: E-commerce promotion - PUGONGYING_COOPERATION: Pugongying cooperation…'
+      orderBy:
+        choices:
+        - premium_imp_num
+        - premium_good_read_rate
+        - premium_read_num
+        - premium_engage_num
+        - premium_engage_rate
+        - premium_like_num
+        - premium_fav_num
+        - premium_cmt_num
+        about: 'Ranking metric. Available Values: - premium_imp_num: Exposure - premium_good_read_rate: Read rate
+          - premium_read_num: Read count - premium_engage_num: Engagement count - premium_engage_rate:…'
+      nd:
+        choices:
+        - DAY_3
+        - DAY_7
+        - DAY_14
+        - DAY_30
+        about: 'Time range in days. Available Values: - DAY_3: Last 3 days - DAY_7: Last 7 days - DAY_14: Last 14
+          days - DAY_30: Last 30 days'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  kol-datav2-notesdetail:
+    title: Creator Note List
+    about: Retrieve a paginated Xiaohongshu Pugongying creator note list with advertisement, sort-order, note-type,
+      and third-platform filters. Use it to browse selected content from a known creator.
+    request: GET /api/xiaohongshu-pgy/api/solar/kol/dataV2/notesDetail/v1
+    params:
+      userId:
+        required: true
+        about: KOL's user ID.
+      advertiseSwitch:
+        choices:
+        - ALL
+        - ORGANIC_ONLY
+        about: 'Advertisement filter. Available Values: - ALL: All notes - ORGANIC_ONLY: Organic notes only'
+      orderType:
+        choices:
+        - LATEST
+        - MOST_READ
+        - MOST_INTERACT
+        about: 'Sorting order. Available Values: - LATEST: Latest - MOST_READ: Most read - MOST_INTERACT: Most interactions'
+      noteType:
+        choices:
+        - ALL
+        - COOPERATION
+        - PHOTO_TEXT
+        - VIDEO
+        about: 'Type of note. Available Values: - ALL: All types - COOPERATION: Cooperation notes - PHOTO_TEXT:
+          Photo and Text - VIDEO: Video only'
+      isThirdPlatform:
+        choices:
+        - 'NO'
+        - 'YES'
+        about: 'Whether from third-party platform. Available Values: - NO: No - YES: Yes'
+      pageNumber:
+        type: integer
+        about: Page number.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  xiaohongshu-pgy-get-kol-note-list:
+    title: Creator Note List Pro
+    about: Retrieve a paginated Xiaohongshu Pugongying creator note list with advertisement, sort-order, and note-type
+      controls. Use it to browse a creator's recent, most-read, or most-interacted notes.
+    request: GET /api/xiaohongshu-pgy/get-kol-note-list/v1
+    params:
+      kolId:
+        required: true
+        about: KOL ID.
+      page:
+        type: integer
+        about: Page number.
+      adSwitch:
+        required: true
+        choices:
+        - _1
+        - _0
+        about: 'Ad filter. Available Values: - _1: Full traffic (All notes) - _0: Natural traffic (Organic notes)'
+      orderType:
+        required: true
+        choices:
+        - _1
+        - _2
+        - _3
+        about: 'Sorting order. Available Values: - _1: Latest - _2: Most read - _3: Most interactions'
+      noteType:
+        choices:
+        - _1
+        - _2
+        - _3
+        - _4
+        about: 'Note type. Available Values: - _1: Photo and Text notes - _2: Video notes - _3: Cooperation notes
+          - _4: All types'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-douyin-search-video:
+    title: Video Search
+    about: Searches Douyin (TikTok China) videos by keyword with sort, publish-time, duration, and page filters;
+      later pages require the previous search ID. Use it to support content discovery and trend…
+    request: GET /api/douyin/search-video/v4
+    params:
+      keyword:
+        required: true
+        about: The search keyword.
+      sortType:
+        choices:
+        - _0
+        - _1
+        - _2
+        about: 'Sorting criteria for search results. Available Values: - _0: General - _1: More likes - _2: Newest'
+      publishTime:
+        choices:
+        - _0
+        - _1
+        - _7
+        - _180
+        about: 'Filter by video publish time range. Available Values: - _0: No Limit - _1: Last 24 Hours - _7: Last
+          7 Days - _180: Last 6 Months'
+      duration:
+        choices:
+        - _0
+        - _1
+        - _2
+        - _3
+        about: 'Filter by video duration. Available Values: - _0: No Limit - _1: Under 1 Minute - _2: 1-5 Minutes
+          - _3: Over 5 Minutes'
+      page:
+        type: integer
+        about: Page number (starting from 1).
+      searchId:
+        about: Search ID; required for pages > 1. Use data.business_config.next_page.search_id from the previous
+          response, and stop paging when data.business_config.has_more is 0.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-douyin-search-image:
+    title: Image Post Search
+    about: Searches Douyin (TikTok China) image posts by keyword with search-session pagination. Omit searchId for
+      the first page, then use the search ID from the previous response to continue. Use it for…
+    request: GET /api/douyin/search-image/v1
+    params:
+      keyword:
+        required: true
+        about: The search keyword.
+      searchId:
+        about: Search ID returned by the previous response. Leave it empty for the first page.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-douyin-hot-search:
+    title: Hot Search
+    about: Searches Douyin (TikTok China) content with optional keyword, category, video-type, ranking, pagination,
+      engagement, and creator-follower filters. Use it to support trend discovery and campaign…
+    request: GET /api/douyin/hot-search/v1
+    params:
+      keyword:
+        about: Optional search keyword.
+      contentType:
+        about: 'Top-level content type. Only one content type can be selected. Available Values: - ALL: All content
+          types. - FASHION: Fashion. - TECHNOLOGY: Technology. - SCIENCE: Science. - PHOTOGRAPHY: Photography…'
+      videoType:
+        choices:
+        - ALL
+        - XINGTU_VIDEO
+        - NATURAL_VIDEO
+        about: 'Video type filter. Available Values: - ALL: All video types. - XINGTU_VIDEO: Xingtu commercial videos.
+          - NATURAL_VIDEO: Natural videos.'
+      sortType:
+        choices:
+        - COMPREHENSIVE
+        - HIGH_INTERACTION
+        - HIGH_LIKE
+        - HIGH_COMMENT
+        - HIGH_SHARE
+        about: 'Sorting criteria for hot content results. Available Values: - COMPREHENSIVE: Comprehensive ranking.
+          - HIGH_INTERACTION: Highest interaction count. - HIGH_LIKE: Highest like count. - HIGH_COMMENT:…'
+      page:
+        type: integer
+        about: Page number (starting from 1). Page size is fixed at 10.
+      likeCountMin:
+        type: integer
+        about: Minimum raw like count.
+      likeCountMax:
+        type: integer
+        about: Maximum raw like count.
+      commentCountMin:
+        type: integer
+        about: Minimum raw comment count.
+      commentCountMax:
+        type: integer
+        about: Maximum raw comment count.
+      shareCountMin:
+        type: integer
+        about: Minimum raw share count.
+      shareCountMax:
+        type: integer
+        about: Maximum raw share count.
+      interactionCountMin:
+        type: integer
+        about: Minimum raw interaction count.
+      interactionCountMax:
+        type: integer
+        about: Maximum raw interaction count.
+      followerCountMin:
+        type: integer
+        about: Minimum raw creator follower count.
+      followerCountMax:
+        type: integer
+        about: Maximum raw creator follower count.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-douyin-search-user:
+    title: User Search
+    about: Searches Douyin (TikTok China) users by keyword with page-based pagination and optional account-type
+      filtering. Use it to discover creators, brands, or verified accounts for research.
+    request: GET /api/douyin/search-user/v2
+    params:
+      keyword:
+        required: true
+        about: The search keyword.
+      page:
+        type: integer
+        about: Page number (starting from 1).
+      userType:
+        choices:
+        - common_user
+        - enterprise_user
+        - personal_user
+        about: 'Filter by user type. Available Values: - common_user: Common User - enterprise_user: Enterprise
+          User - personal_user: Verified Individual User'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  douyin-get-user-video-list:
+    title: User Published Videos
+    about: Retrieves videos published by a Douyin (TikTok China) user, with cursor pagination and newest or most-popular
+      sorting. Use it to browse or monitor a creator's public video output.
+    request: GET /api/douyin/get-user-video-list/v1
+    params:
+      secUid:
+        required: true
+        about: The unique user ID (sec_user_id) on Douyin.
+      maxCursor:
+        about: Pagination cursor; use 0 for the first page, and the max_cursor from the previous response for subsequent
+          pages.
+      sortType:
+        choices:
+        - LATEST
+        - MOST_POPULAR
+        about: 'Sort order: LATEST for newest first (default), or MOST_POPULAR for most popular first. Available
+          Values: - LATEST: Newest first (default) - MOST_POPULAR: Most popular first'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-douyin-get-video-detail:
+    title: Video Details
+    about: Retrieves details for a Douyin (TikTok China) video by video ID. Use it to look up a known video before
+      content review, archiving, or related analysis.
+    request: GET /api/douyin/get-video-detail/v2
+    params:
+      videoId:
+        required: true
+        about: The unique video identifier (aweme_id or model_id).
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-douyin-get-video-comment:
+    title: Video Comments
+    about: Retrieves top-level comments for a Douyin (TikTok China) video by aweme ID with page-based pagination.
+      Use it to review audience feedback or analyze discussion around a known video.
+    request: GET /api/douyin/get-video-comment/v1
+    params:
+      awemeId:
+        required: true
+        about: The unique video identifier (aweme_id).
+      page:
+        type: integer
+        about: Page number (starting from 1).
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-douyin-get-video-sub-comment:
+    title: Comment Replies
+    about: Retrieves replies to a top-level Douyin (TikTok China) video comment with page-based pagination. Use
+      it to inspect threaded discussions and review feedback under a known comment.
+    request: GET /api/douyin/get-video-sub-comment/v1
+    params:
+      commentId:
+        required: true
+        about: The unique identifier of the top-level comment.
+      page:
+        type: integer
+        about: Page number (starting from 1).
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-douyin-get-user-detail:
+    title: User Profile
+    about: Retrieves a Douyin (TikTok China) user profile by secUid. Use it to review a known creator or account
+      before monitoring related content or conducting account research.
+    request: GET /api/douyin/get-user-detail/v3
+    params:
+      secUid:
+        required: true
+        about: The unique user ID (sec_uid) on Douyin.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-douyin-share-url-transfer:
+    title: Share Link Resolution
+    about: Resolve a supported Douyin (TikTok China) short share link that targets a video and return its public
+      redirect URL. Use it to expand video links before subsequent Douyin content lookup or processing.
+    request: GET /api/douyin/share-url-transfer/v1
+    params:
+      shareUrl:
+        required: true
+        about: A Douyin short share URL beginning with https://v.douyin.com/.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-gsearch-search-for-author-square:
+    title: Creator Search
+    about: Searches Douyin Creator Marketplace (Xingtu) creators by keyword and structured filters for audience,
+      pricing, content, performance, and campaign fit. Use it to build and compare campaign shortlists.
+    request: GET /api/douyin-xingtu/gw/api/gsearch/search_for_author_square/v1
+    params:
+      keyword:
+        about: Search keyword.
+      page:
+        type: integer
+        about: Page number for pagination.
+      sort:
+        choices:
+        - DEFAULT
+        - FANS
+        about: 'Creator search sorting. Values: FANS sorts by follower count descending, DEFAULT uses Xingtu score
+          ranking. Available Values: - DEFAULT: Platform default score ranking - FANS: Sort by follower count…'
+      searchType:
+        choices:
+        - NICKNAME
+        - CONTENT
+        about: 'Search criteria type. Available Values: - NICKNAME: By Nickname - CONTENT: By Content'
+      marketingTarget:
+        choices:
+        - BRAND_EXPOSURE
+        - CIRCLE_SEEDING
+        - ACTION_CONVERSION
+        about: 'Marketing goal. Available values: BRAND_EXPOSURE 1 2 3 Available Values: - BRAND_EXPOSURE: Brand
+          exposure - CIRCLE_SEEDING: Out-of-circle seeding - ACTION_CONVERSION: Action conversion'
+      industry:
+        about: 'Recommended industry filter. Pass enum name, numeric industry ID, or Chinese industry label. Available
+          values: - ALL 0 Available Values: - ALL: All - ELECTRONICS_AND_APPLIANCES: Electronics and…'
+      isSuperstar:
+        type: boolean
+        about: Whether to filter celebrity creators.
+      followerRange:
+        about: 'Raw follower count range in min-max format. Example: 1000-2000 means 1,000 to 2,000 followers; 5000000-10000000
+          means 5 million to 10 million followers.'
+      kolPriceType:
+        choices:
+        - PRODUCT_PLACEMENT_VIDEO
+        - CUSTOM_VIDEO
+        - CUSTOM_SHORT_DRAMA_EPISODE
+        - NATURAL_PLAY_CPM
+        - SHORT_LIVE_SEEDING_VIDEO
+        - SHORT_LIVE_WARMUP_VIDEO
+        - CELEBRITY_SHORT_LIVE_SEEDING
+        - CELEBRITY_SHORT_LIVE_WARMUP
+        - CELEBRITY_VIDEO
+        - COLLECTION_VIDEO
+        - DOUYIN_SHORT_VIDEO_CO_CREATION_MAIN_CREATOR
+        - DOUYIN_SHORT_VIDEO_CO_CREATION_PARTICIPANT
+        about: 'Creator quote type from the current Xingtu marketplace options. Available Values: - PRODUCT_PLACEMENT_VIDEO:
+          Product-placement video - CUSTOM_VIDEO: Custom video - CUSTOM_SHORT_DRAMA_EPISODE:…'
+      kolPriceRange:
+        about: Creator quote range in min-max format (e.g., 10000-50000). Requires kolPriceType; omit kolPriceRange
+          to use the full range for the selected quote type.
+      contentTag: {}
+      contentTheme: {}
+      personaTag: {}
+      gender:
+        choices:
+        - MALE
+        - FEMALE
+        about: 'Creator gender. Available values: MALE 1 2 Available Values: - MALE: Male - FEMALE: Female'
+      location: {}
+      tonalityTag: {}
+      connectedUserRange:
+        about: 'Connected user count range. Pass raw user counts in min-max format. Example: 1000000-3000000'
+      audienceImage: {}
+      fansImage: {}
+      expectedPlayRange:
+        about: Expected play count range. Use raw counts in min-max format. Page presets include 10000000 or above,
+          5000000-10000000, 3000000-5000000, 1000000-3000000, 100000-1000000, and 0-100000. For open-ended…
+      expectedCpmRange:
+        about: 'Expected CPM range in min-max format. Example values matching Xingtu packs: 0-10, 0-20, 0-30, 0-50,
+          0-100, 100-1000000.'
+      expectedCpeRange:
+        about: 'Expected CPE range in min-max format. Example values matching Xingtu packs: 0-1, 0-2, 0-3, 0-5,
+          0-10, 10-1000000.'
+      interactionRateRange:
+        about: 'Interaction rate range in decimal min-max format. Example values: 0.01-1 for 1% or above, 0.02-1
+          for 2% or above.'
+      completionRateRange:
+        about: 'Completion rate range in decimal min-max format. Example values: 0.1-1 for 10% or above, 0.2-1 for
+          20% or above.'
+      viralRateRange:
+        about: Viral content rate range in decimal min-max format. Page presets include 0-0.1, 0.1-0.25, 0.25-0.5,
+          0.5-0.99, and 0.99 or above. For open-ended presets, pass a high upper bound such as 0.99-1.…
+      progressTaskRange:
+        about: 'In-progress task count range. Place a colon between the day count and the min-max range; omit either
+          bound for an open range. Example: 30:8-'
+      isCuratedAuthor:
+        type: boolean
+        about: Whether to include only Xingtu curated creators under Topic Recommendations.
+      authorList:
+        about: 'Activity-curated creator list under Xingtu Topic Recommendations. Select at most one value. Pass
+          an enum name, numeric list ID, or Chinese label. Available values: SHORT_LIVE_ENTERTAINMENT_CREATORS…'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-author-get-author-base-info:
+    title: Creator Profile
+    about: Returns the Douyin Creator Marketplace (Xingtu) profile for a specified creator and content channel.
+      Use it to review creator information before shortlisting or campaign outreach.
+    request: GET /api/douyin-xingtu/gw/api/author/get_author_base_info/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      platform:
+        choices:
+        - SHORT_VIDEO
+        - LIVE_STREAMING
+        - PICTURE_TEXT
+        - SHORT_DRAMA
+        about: 'Platform type. Available Values: - SHORT_VIDEO: Short video - LIVE_STREAMING: Live streaming - PICTURE_TEXT:
+          Picture and text - SHORT_DRAMA: Short drama'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-data-sp-author-link-struct:
+    title: Creator Link Structure
+    about: Returns Douyin Creator Marketplace (Xingtu) creator-link structure data for a specified creator and content
+      channel. Use it to compare creator link structures during performance research.
+    request: GET /api/douyin-xingtu/gw/api/data_sp/author_link_struct/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      platform:
+        choices:
+        - SHORT_VIDEO
+        - LIVE_STREAMING
+        - PICTURE_TEXT
+        - SHORT_DRAMA
+        about: 'Platform type. Available Values: - SHORT_VIDEO: Short video - LIVE_STREAMING: Live streaming - PICTURE_TEXT:
+          Picture and text - SHORT_DRAMA: Short drama'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-data-sp-check-author-display:
+    title: Creator Visibility Status
+    about: Returns whether a specified creator can be displayed in Douyin Creator Marketplace (Xingtu) for the selected
+      content channel. Use it to check creator availability before building a campaign shortlist.
+    request: GET /api/douyin-xingtu/gw/api/data_sp/check_author_display/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      platform:
+        choices:
+        - SHORT_VIDEO
+        - LIVE_STREAMING
+        - PICTURE_TEXT
+        - SHORT_DRAMA
+        about: 'Platform type. Available Values: - SHORT_VIDEO: Short video - LIVE_STREAMING: Live streaming - PICTURE_TEXT:
+          Picture and text - SHORT_DRAMA: Short drama'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-author-get-author-platform-channel-info-v2:
+    title: Creator Channel Metrics
+    about: Returns Douyin Creator Marketplace (Xingtu) channel information for a specified creator and content format.
+      Use it to compare a creator's short-video, live, image-text, or short-drama presence.
+    request: GET /api/douyin-xingtu/gw/api/author/get_author_platform_channel_info_v2/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      platform:
+        choices:
+        - SHORT_VIDEO
+        - LIVE_STREAMING
+        - PICTURE_TEXT
+        - SHORT_DRAMA
+        about: 'Platform type. Available Values: - SHORT_VIDEO: Short video - LIVE_STREAMING: Live streaming - PICTURE_TEXT:
+          Picture and text - SHORT_DRAMA: Short drama'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-aggregator-get-author-order-experience:
+    title: Creator Order Experience
+    about: Returns Douyin Creator Marketplace (Xingtu) creator order-experience information for the last 30 or 90
+      days. Use it to review marketplace order history during creator evaluation.
+    request: GET /api/douyin-xingtu/gw/api/aggregator/get_author_order_experience/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      period:
+        choices:
+        - DAY_30
+        - DAY_90
+        about: 'Time period. Available Values: - DAY_30: Last 30 days - DAY_90: Last 90 days'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-data-sp-get-author-link-info:
+    title: Creator Link Metrics
+    about: Returns Douyin Creator Marketplace (Xingtu) creator-link metrics for a specified creator, content channel,
+      and industry category. Use it to review creator link information in an industry context.
+    request: GET /api/douyin-xingtu/gw/api/data_sp/get_author_link_info/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      platform:
+        choices:
+        - SHORT_VIDEO
+        - LIVE_STREAMING
+        - PICTURE_TEXT
+        - SHORT_DRAMA
+        about: 'Platform type. Available Values: - SHORT_VIDEO: Short video - LIVE_STREAMING: Live streaming - PICTURE_TEXT:
+          Picture and text - SHORT_DRAMA: Short drama'
+      industryTag:
+        about: 'Industry tag. Available Values: - ALL: All - ELECTRONICS_AND_APPLIANCES: Electronics and Appliances
+          - SHOPPING: Shopping - FOOD_AND_BEVERAGE: Food and Beverage - CLOTHING_AND_ACCESSORIES: Clothing…'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-data-sp-author-video-distribution:
+    title: Video Distribution
+    about: Returns Douyin Creator Marketplace (Xingtu) video-distribution data for a specified creator and content
+      channel. Use it to analyze how the creator's videos are distributed during campaign research.
+    request: GET /api/douyin-xingtu/gw/api/data_sp/author_video_distribution/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      platform:
+        choices:
+        - SHORT_VIDEO
+        - LIVE_STREAMING
+        - PICTURE_TEXT
+        - SHORT_DRAMA
+        about: 'Platform type. Available Values: - SHORT_VIDEO: Short video - LIVE_STREAMING: Live streaming - PICTURE_TEXT:
+          Picture and text - SHORT_DRAMA: Short drama'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-data-sp-author-audience-distribution:
+    title: Audience Distribution
+    about: Returns Douyin Creator Marketplace (Xingtu) audience-distribution data for a creator, content channel,
+      and selected relationship stage. Use it to assess audience fit for campaign targeting.
+    request: GET /api/douyin-xingtu/gw/api/data_sp/author_audience_distribution/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      platform:
+        choices:
+        - SHORT_VIDEO
+        - LIVE_STREAMING
+        - PICTURE_TEXT
+        - SHORT_DRAMA
+        about: 'Platform type. Available Values: - SHORT_VIDEO: Short video - LIVE_STREAMING: Live streaming - PICTURE_TEXT:
+          Picture and text - SHORT_DRAMA: Short drama'
+      linkType:
+        choices:
+        - CONNECTED
+        - AWARE
+        - INTERESTED
+        - LIKE
+        - FOLLOW
+        about: 'Link type filter. Available Values: - CONNECTED: Connected - AWARE: Aware - INTERESTED: Interested
+          - LIKE: Like - FOLLOW: Follow'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-author-get-author-marketing-info:
+    title: Marketing Metrics
+    about: Returns Douyin Creator Marketplace (Xingtu) marketing information for a specified creator and content
+      channel. Use it to compare creator commercial offerings during campaign planning.
+    request: GET /api/douyin-xingtu/gw/api/author/get_author_marketing_info/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      platform:
+        choices:
+        - SHORT_VIDEO
+        - LIVE_STREAMING
+        - PICTURE_TEXT
+        - SHORT_DRAMA
+        about: 'Platform type. Available Values: - SHORT_VIDEO: Short video - LIVE_STREAMING: Live streaming - PICTURE_TEXT:
+          Picture and text - SHORT_DRAMA: Short drama'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-data-sp-get-author-spread-info:
+    title: Spread Metrics
+    about: Returns Douyin Creator Marketplace (Xingtu) spread metrics for a creator, with channel, period, video-type,
+      assignment, and flow filters. Use it to compare creator spread performance during campaign…
+    request: GET /api/douyin-xingtu/gw/api/data_sp/get_author_spread_info/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      platform:
+        choices:
+        - SHORT_VIDEO
+        - LIVE_STREAMING
+        - PICTURE_TEXT
+        - SHORT_DRAMA
+        about: 'Platform type. Available Values: - SHORT_VIDEO: Short video - LIVE_STREAMING: Live streaming - PICTURE_TEXT:
+          Picture and text - SHORT_DRAMA: Short drama'
+      range:
+        choices:
+        - DAY_30
+        - DAY_90
+        about: 'Time range. Available Values: - DAY_30: Last 30 days - DAY_90: Last 90 days'
+      type:
+        choices:
+        - PERSONAL_VIDEO
+        - XINTU_VIDEO
+        about: 'Video type. Available Values: - PERSONAL_VIDEO: Personal video - XINTU_VIDEO: Xingtu video'
+      onlyAssign:
+        type: boolean
+        about: Whether to only include assigned videos.
+      flowType:
+        choices:
+        - EXCLUDE
+        - INCLUDE
+        about: 'Flow type filter. Available Values: - EXCLUDE: Exclude - INCLUDE: Include'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-data-sp-get-author-convert-ability:
+    title: Conversion Analysis
+    about: Returns Douyin Creator Marketplace (Xingtu) conversion analysis for a creator, content channel, and 30-
+      or 90-day period. Use it to compare creator conversion performance during commerce campaign…
+    request: GET /api/douyin-xingtu/gw/api/data_sp/get_author_convert_ability/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      platform:
+        choices:
+        - SHORT_VIDEO
+        - LIVE_STREAMING
+        - PICTURE_TEXT
+        - SHORT_DRAMA
+        about: 'Platform type. Available Values: - SHORT_VIDEO: Short video - LIVE_STREAMING: Live streaming - PICTURE_TEXT:
+          Picture and text - SHORT_DRAMA: Short drama'
+      range:
+        choices:
+        - DAY_30
+        - DAY_90
+        about: 'Time range. Available Values: - DAY_30: Last 30 days - DAY_90: Last 90 days'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-author-get-author-show-items-v2:
+    title: Showcase Items
+    about: Returns Douyin Creator Marketplace (Xingtu) showcase items for a creator, with content-channel, assignment,
+      and flow filters. Use it to review a creator's marketplace showcase during commerce…
+    request: GET /api/douyin-xingtu/gw/api/author/get_author_show_items_v2/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      platform:
+        choices:
+        - SHORT_VIDEO
+        - LIVE_STREAMING
+        - PICTURE_TEXT
+        - SHORT_DRAMA
+        about: 'Platform type. Available Values: - SHORT_VIDEO: Short video - LIVE_STREAMING: Live streaming - PICTURE_TEXT:
+          Picture and text - SHORT_DRAMA: Short drama'
+      onlyAssign:
+        type: boolean
+        about: Whether to only include assigned items.
+      flowType:
+        choices:
+        - EXCLUDE
+        - INCLUDE
+        about: 'Flow type filter. Available Values: - EXCLUDE: Exclude - INCLUDE: Include'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-data-sp-get-author-convert-videos-or-products:
+    title: Conversion Resources
+    about: Lists Douyin Creator Marketplace (Xingtu) conversion-related videos or products for a creator, with industry,
+      period, resource-type, and page filters. Use it to review commerce examples before…
+    request: GET /api/douyin-xingtu/gw/api/data_sp/get_author_convert_videos_or_products/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      platform:
+        choices:
+        - SHORT_VIDEO
+        - LIVE_STREAMING
+        - PICTURE_TEXT
+        - SHORT_DRAMA
+        about: 'Platform type. Available Values: - SHORT_VIDEO: Short video - LIVE_STREAMING: Live streaming - PICTURE_TEXT:
+          Picture and text - SHORT_DRAMA: Short drama'
+      industryId:
+        about: 'Industry category. Available Values: - ALL: All - ELECTRONICS_AND_APPLIANCES: Electronics and Appliances
+          - SHOPPING: Shopping - FOOD_AND_BEVERAGE: Food and Beverage - CLOTHING_AND_ACCESSORIES:…'
+      range:
+        choices:
+        - DAY_30
+        - DAY_90
+        about: 'Time range. Available Values: - DAY_30: Last 30 days - DAY_90: Last 90 days'
+      detailType:
+        choices:
+        - VIDEO
+        - PRODUCT
+        about: 'Resource type. Available Values: - VIDEO: Video - PRODUCT: Product'
+      page:
+        type: integer
+        about: Page number.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-data-sp-author-cp-info:
+    title: Cost Performance Analysis
+    about: Returns Douyin Creator Marketplace (Xingtu) cost-performance information for a specified creator and
+      content channel. Use it to compare creator efficiency during campaign budgeting.
+    request: GET /api/douyin-xingtu/gw/api/data_sp/author_cp_info/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      platform:
+        choices:
+        - SHORT_VIDEO
+        - LIVE_STREAMING
+        - PICTURE_TEXT
+        - SHORT_DRAMA
+        about: 'Platform type. Available Values: - SHORT_VIDEO: Short video - LIVE_STREAMING: Live streaming - PICTURE_TEXT:
+          Picture and text - SHORT_DRAMA: Short drama'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-data-sp-author-touch-distribution:
+    title: Audience Touchpoint Distribution
+    about: Returns Douyin Creator Marketplace (Xingtu) audience-touchpoint distribution data for a specified creator
+      and content channel. Use it to compare audience-contact patterns during campaign research.
+    request: GET /api/douyin-xingtu/gw/api/data_sp/author_touch_distribution/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      platform:
+        choices:
+        - SHORT_VIDEO
+        - LIVE_STREAMING
+        - PICTURE_TEXT
+        - SHORT_DRAMA
+        about: 'Platform type. Available Values: - SHORT_VIDEO: Short video - LIVE_STREAMING: Live streaming - PICTURE_TEXT:
+          Picture and text - SHORT_DRAMA: Short drama'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-data-sp-author-rec-videos-v2:
+    title: Recommended Videos
+    about: Returns Douyin Creator Marketplace (Xingtu) recommended videos for a specified creator and content channel.
+      Use it to inspect representative content during creator research.
+    request: GET /api/douyin-xingtu/gw/api/data_sp/author_rec_videos_v2/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      platform:
+        choices:
+        - SHORT_VIDEO
+        - LIVE_STREAMING
+        - PICTURE_TEXT
+        - SHORT_DRAMA
+        about: 'Platform type. Available Values: - SHORT_VIDEO: Short video - LIVE_STREAMING: Live streaming - PICTURE_TEXT:
+          Picture and text - SHORT_DRAMA: Short drama'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-data-sp-get-author-fans-distribution:
+    title: Follower Distribution
+    about: Returns Douyin Creator Marketplace (Xingtu) follower or loyal-follower distribution data for a specified
+      creator. Use it to compare audience-profile distributions during creator selection.
+    request: GET /api/douyin-xingtu/gw/api/data_sp/get_author_fans_distribution/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      authorType:
+        choices:
+        - FAN
+        - DIE_HARD_FAN
+        about: 'Author type filter. Available Values: - FAN: Fan - DIE_HARD_FAN: Die Hard Fan'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-data-sp-item-report-trend:
+    title: Item Report Trends
+    about: Returns Douyin Creator Marketplace (Xingtu) report trend data for a specified video item. Use it to review
+      how a video's reported performance changes over time.
+    request: GET /api/douyin-xingtu/gw/api/data_sp/item_report_trend/v1
+    params:
+      itemId:
+        required: true
+        about: Item's unique ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-data-sp-item-report-detail:
+    title: Video Details
+    about: Returns Douyin Creator Marketplace (Xingtu) report details for a specified video item. Use it to inspect
+      a video's marketplace report during content performance analysis.
+    request: GET /api/douyin-xingtu/gw/api/data_sp/item_report_detail/v1
+    params:
+      itemId:
+        required: true
+        about: Item's unique ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-data-sp-item-report-th-analysis:
+    title: Item Report Analysis
+    about: Returns Douyin Creator Marketplace (Xingtu) report analysis for a specified video item. Use it to evaluate
+      a video's reported performance during campaign review.
+    request: GET /api/douyin-xingtu/gw/api/data_sp/item_report_th_analysis/v1
+    params:
+      itemId:
+        required: true
+        about: Item's unique ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-data-get-author-hot-comment-tokens:
+    title: Comment Keyword Analysis
+    about: Returns Douyin Creator Marketplace (Xingtu) comment keyword analysis for a specified creator. Use it
+      to identify recurring audience discussion themes during creator research.
+    request: GET /api/douyin-xingtu/gw/api/data/get_author_hot_comment_tokens/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-data-sp-get-author-daily-fans:
+    title: Follower Growth Trend
+    about: Returns Douyin Creator Marketplace (Xingtu) daily follower trend data for a specified creator and date
+      range. Use it to review follower growth patterns during creator evaluation.
+    request: GET /api/douyin-xingtu/gw/api/data_sp/get_author_daily_fans/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      startDate:
+        required: true
+        about: Start Date (yyyy-MM-dd).
+      endDate:
+        required: true
+        about: End Date (yyyy-MM-dd).
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-gauthor-get-author-content-hot-keywords:
+    title: Content Keyword Analysis
+    about: Returns Douyin Creator Marketplace (Xingtu) content keyword analysis for a specified creator. Use it
+      to identify recurring content themes during creator positioning research.
+    request: GET /api/douyin-xingtu/gw/api/gauthor/get_author_content_hot_keywords/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-gauthor-author-get-business-card-info:
+    title: Creator Business Card
+    about: Returns the Douyin Creator Marketplace (Xingtu) business-card profile for a specified creator. Use it
+      to review creator identity and business context before campaign outreach.
+    request: GET /api/douyin-xingtu/gw/api/gauthor/author_get_business_card_info/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-aggregator-get-author-commerce-spread-info:
+    title: Creator Commerce Spread Info
+    about: Returns Douyin Creator Marketplace (Xingtu) commerce spread information for a specified creator. Use
+      it to compare creators during commerce campaign planning.
+    request: GET /api/douyin-xingtu/gw/api/aggregator/get_author_commerce_spread_info/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-aggregator-get-author-homepage-videos:
+    title: Creator Homepage Videos
+    about: Lists a Douyin Creator Marketplace (Xingtu) creator's homepage videos with keyword, video-type, assignment,
+      date, and page filters. Use it to review relevant content before campaign selection.
+    request: GET /api/douyin-xingtu/gw/api/aggregator/get_author_homepage_videos/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique Xingtu ID.
+      page:
+        type: integer
+        about: Page number, starting from 1.
+      keyword:
+        about: Keyword used to search creator homepage videos.
+      videoType:
+        choices:
+        - ALL
+        - PERSONAL
+        - XINGTU
+        about: 'Homepage video type filter. Available Values: - ALL: All videos - PERSONAL: Personal videos - XINGTU:
+          Xingtu videos'
+      onlyAssign:
+        type: boolean
+        about: Whether to include only assigned videos. Xingtu usually shows this option when videoType is XINGTU.
+      startDate:
+        about: Start publish date in yyyyMMdd format. The filter starts at 00:00:00 in Asia/Shanghai.
+      endDate:
+        about: End publish date in yyyyMMdd format. The filter ends at 23:59:59 in Asia/Shanghai.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-aggregator-get-author-tags:
+    title: Creator Tags
+    about: Returns Douyin Creator Marketplace (Xingtu) tags for a specified creator. Use it to classify creators
+      and compare their fit for campaign briefs.
+    request: GET /api/douyin-xingtu/gw/api/aggregator/get_author_tags/v1
+    params:
+      starAuthorId:
+        required: true
+        about: Creator's unique Xingtu ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-aggregator-get-author-side-base-info:
+    title: Creator Side Base Info
+    about: Returns the Douyin Creator Marketplace (Xingtu) side-card baseline information for a specified creator.
+      Use it to review a creator's marketplace overview during shortlisting.
+    request: GET /api/douyin-xingtu/gw/api/aggregator/get_author_side_base_info/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-aggregator-get-author-live-statistics:
+    title: Live Statistics
+    about: Returns Douyin Creator Marketplace (Xingtu) live-stream statistics for a creator, with live-room, period,
+      marketplace-order, and flow filters. Use it to compare live-streaming creators for campaign…
+    request: GET /api/douyin-xingtu/gw/api/aggregator/get_author_live_statistics/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      liveType:
+        choices:
+        - ALL
+        - GAME
+        - ECOMMERCE
+        - OTHER
+        about: 'Live room type filter. Available Values: - ALL: All live rooms - GAME: Game live rooms - ECOMMERCE:
+          E-commerce live rooms - OTHER: Other live rooms'
+      period:
+        choices:
+        - DAY_30
+        - DAY_90
+        about: 'Live data time period. Available Values: - DAY_30: Last 30 days - DAY_90: Last 90 days'
+      onlyStarOrder:
+        type: boolean
+        about: Whether to include only Xingtu marketplace orders.
+      flowType:
+        choices:
+        - EXCLUDE
+        - INCLUDE
+        about: 'Flow type filter. Available Values: - EXCLUDE: Exclude - INCLUDE: Include'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-aggregator-get-author-live-watch-distribution:
+    title: Live Watch Distribution
+    about: Returns Douyin Creator Marketplace (Xingtu) live audience or follower watch-distribution data for a creator
+      and selected live-room type. Use it to assess live audience fit for a campaign.
+    request: GET /api/douyin-xingtu/gw/api/aggregator/get_author_live_watch_distribution/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      liveCrowdType:
+        choices:
+        - AUDIENCE
+        - FANS
+        about: 'Live audience profile type. Available Values: - AUDIENCE: Viewer profile - FANS: Follower profile'
+      liveType:
+        choices:
+        - ALL
+        - GAME
+        - ECOMMERCE
+        - OTHER
+        about: 'Live room type filter. Available Values: - ALL: All live rooms - GAME: Game live rooms - ECOMMERCE:
+          E-commerce live rooms - OTHER: Other live rooms'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-aggregator-get-author-commerce-seed-base-info:
+    title: Commerce Seeding Base Info
+    about: Returns Douyin Creator Marketplace (Xingtu) commerce-seeding baseline information for a creator over
+      a selectable 30- or 90-day period. Use it to research creators for product-seeding campaigns.
+    request: GET /api/douyin-xingtu/gw/api/aggregator/get_author_commerce_seed_base_info/v1
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      range:
+        choices:
+        - DAY_30
+        - DAY_90
+        about: 'Time range. Available Values: - DAY_30: Last 30 days - DAY_90: Last 90 days'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  gw-aggregator-get-author-contract-base-info:
+    title: Creator Contract Base Info
+    about: Returns Douyin Creator Marketplace (Xingtu) contract-related baseline information for a creator over
+      a selectable 30- or 90-day period. Use it to review creator contract context during campaign…
+    request: GET /api/douyin-xingtu/gw/api/aggregator/get_author_contract_base_info
+    params:
+      oAuthorId:
+        required: true
+        about: Author's unique ID.
+      range:
+        choices:
+        - DAY_30
+        - DAY_90
+        about: 'Time range. Available Values: - DAY_30: Last 30 days - DAY_90: Last 90 days'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-kuaishou-search-video:
+    title: Video Search
+    about: Search public Kuaishou videos by keyword with cursor-based pagination. Use it to discover relevant videos
+      and continue through additional result pages.
+    request: GET /api/kuaishou/search-video/v1
+    params:
+      keyword:
+        required: true
+        about: The search keyword to find videos.
+      cursor:
+        about: Pagination cursor returned by the previous response. Omit or leave blank for the first page; maximum
+          256 characters.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-kuaishou-search-video-2:
+    title: Video Search
+    about: Search public Kuaishou videos by keyword with page-number pagination. Use it to discover relevant videos
+      and browse results by page.
+    request: GET /api/kuaishou/search-video/v2
+    params:
+      keyword:
+        required: true
+        about: The search keyword to find videos.
+      page:
+        type: integer
+        about: Page number for results, starting from 1.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-kuaishou-search-user:
+    title: User Search
+    about: Search public Kuaishou user accounts by keyword with page-number pagination. Use it to discover relevant
+      creators or accounts before requesting profile and published-video data.
+    request: GET /api/kuaishou/search-user/v2
+    params:
+      keyword:
+        required: true
+        about: The search keyword to find users.
+      page:
+        type: integer
+        about: Page number for results, starting from 1.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  kuaishou-get-user-video-list:
+    title: User Published Videos
+    about: Retrieve public videos published by a Kuaishou user, with optional cursor-based pagination. Use it to
+      review a creator's content history or select videos for detail and comment requests.
+    request: GET /api/kuaishou/get-user-video-list/v2
+    params:
+      userId:
+        required: true
+        about: The unique user ID on Kuaishou.
+      pcursor:
+        about: Pagination cursor for subsequent pages.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-kuaishou-get-video-detail:
+    title: Video Details
+    about: Retrieve public details for a Kuaishou video identified by its video ID. Use it to inspect a selected
+      video after search or user-published-video discovery.
+    request: GET /api/kuaishou/get-video-detail/v2
+    params:
+      videoId:
+        required: true
+        about: The unique video identifier returned by Kuaishou.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-kuaishou-get-video-comment:
+    title: Video Comments
+    about: Retrieve public comments for a Kuaishou video, with optional cursor-based pagination. Use it to review
+      audience discussion and continue through additional comment pages.
+    request: GET /api/kuaishou/get-video-comment/v1
+    params:
+      videoId:
+        required: true
+        about: The Kuaishou video identifier or numeric refer_photo_id returned by a related response.
+      pcursor:
+        about: Pagination cursor for subsequent pages.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-kuaishou-get-user-detail:
+    title: User Profile
+    about: Retrieve the public profile for a Kuaishou user identified by user ID. Use it to inspect an account found
+      through user or video results.
+    request: GET /api/kuaishou/get-user-detail/v1
+    params:
+      userId:
+        required: true
+        about: The unique user ID on Kuaishou.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-kuaishou-share-url-transfer:
+    title: Share Link Resolution
+    about: Resolve a supported Kuaishou short share link and return its public redirect URL. Use it to expand shared
+      links before subsequent Kuaishou content lookup or processing.
+    request: GET /api/kuaishou/share-url-transfer/v1
+    params:
+      shareUrl:
+        required: true
+        about: A Kuaishou short share URL beginning with https://v.kuaishou.com/.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  weixin-get-account-history-articles:
+    title: Account Historical Articles
+    about: Retrieves historical posts for a WeChat Official Account by username, with cursor pagination and article,
+      video, audio, or image content tabs. Use it to browse an account's publishing history.
+    request: POST /api/weixin/get-account-history-articles/v1
+    params:
+      username:
+        in: form
+        required: true
+        about: WeChat Official Account username with the gh_ prefix.
+      offset:
+        in: form
+        about: Base64 pagination cursor. Leave empty for the first page; pass next_offset from the previous response
+          for the next page. Send it in the URL-encoded form body.
+      itemShowType:
+        in: form
+        choices:
+        - ARTICLE
+        - VIDEO
+        - AUDIO
+        - IMAGE
+        about: 'Content tab. Defaults to ARTICLE. Available Values: - ARTICLE: Articles - VIDEO: Videos - AUDIO:
+          Audio - IMAGE: Images'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  post-weixin-get-account-history-articles:
+    title: Account Historical Articles
+    about: Retrieves historical articles for a WeChat Official Account identified by ghid or article URL, with an
+      offset cursor from the previous page. Use it to continue through an account's article archive…
+    request: POST /api/weixin/get-account-history-articles/v2
+    params:
+      ghid:
+        in: form
+        about: WeChat Official Account original identifier, using the gh_ prefix returned by WeChat. Use either
+          ghid or url.
+      url:
+        in: form
+        about: WeChat Official Account article URL used to identify the account and fetch historical articles. Use
+          either ghid or url.
+      offset:
+        in: form
+        about: PagingInfo.Offset cursor returned by the previous response. Leave it empty for the first page. For
+          this POST endpoint, send it in an application/x-www-form-urlencoded form body.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weixin-get-article-metrics:
+    title: Article Metrics
+    about: 'Retrieves basic interaction metrics for a WeChat Official Account article URL that ends with #rd or
+      #wechat_redirect. Use it to perform a lightweight popularity check for a known article.'
+    request: GET /api/weixin/get-article-metrics/v1
+    params:
+      articleUrl:
+        required: true
+        about: 'WeChat Official Account article URL used to fetch basic interaction metrics such as reads and likes.
+          It must end with #rd or #wechat_redirect.'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weixin-get-article-metrics-2:
+    title: Article Metrics
+    about: Retrieves extended interaction metrics for a WeChat Official Account article by URL. Use it to compare
+      article performance or support deeper engagement analysis for known content.
+    request: GET /api/weixin/get-article-metrics/v2
+    params:
+      articleUrl:
+        required: true
+        about: WeChat Official Account article URL used to fetch extended interaction and article performance metrics.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weixin-get-article-detail:
+    title: Article Details
+    about: Retrieves a WeChat Official Account article by URL with selectable plain-text or rich-text content mode.
+      Use it to collect a known article in the preferred representation for reading, extraction, or…
+    request: GET /api/weixin/get-article-detail/v1
+    params:
+      articleUrl:
+        required: true
+        about: WeChat Official Account article URL used to fetch article detail content and metadata.
+      mode:
+        choices:
+        - TEXT
+        - RICH_TEXT
+        about: 'Article body format. TEXT returns plain text, and RICH_TEXT returns rich text when supported. Available
+          Values: - TEXT: Plain text article detail - RICH_TEXT: Rich text article detail'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weixin-get-article-detail-2:
+    title: Article Details
+    about: Retrieves structured details for a WeChat Official Account article by URL. Use it to collect a known
+      article for parsing, indexing, or structured content archiving.
+    request: GET /api/weixin/get-article-detail/v2
+    params:
+      articleUrl:
+        required: true
+        about: WeChat Official Account article URL used to fetch structured article detail fields and an HTML content
+          fragment.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weixin-get-article-detail-3:
+    title: Article Details
+    about: Retrieves details for a WeChat Official Account article that may include video content, with selectable
+      plain-text or rich-text mode. Use it to process known articles containing video material.
+    request: GET /api/weixin/get-article-detail/v3
+    params:
+      articleUrl:
+        required: true
+        about: WeChat Official Account article URL used to fetch article details with video-related fields when
+          available.
+      mode:
+        choices:
+        - TEXT
+        - RICH_TEXT
+        about: 'Article body format. TEXT returns plain text, and RICH_TEXT returns rich text when supported. Available
+          Values: - TEXT: Plain text article detail - RICH_TEXT: Rich text article detail'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weixin-get-article-detail-4:
+    title: Article Details
+    about: Retrieves an HTML representation of a WeChat Official Account article by URL. Use it to preserve, render,
+      or archive a known article as a web document.
+    request: GET /api/weixin/get-article-detail/v4
+    params:
+      articleUrl:
+        required: true
+        about: WeChat Official Account article URL used to fetch a full HTML document for rendering or archiving.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weixin-get-article-detail-5:
+    title: Article Details
+    about: Retrieves lightweight information for a WeChat Official Account article by URL. Use it to perform a quick
+      article lookup before deeper content, metric, or comment retrieval.
+    request: GET /api/weixin/get-article-detail/v5
+    params:
+      articleUrl:
+        required: true
+        about: WeChat Official Account article URL used to fetch lightweight article metadata and status information.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  post-api-weixin-get-article-comment:
+    title: Article Comments
+    about: Retrieves top-level comments for a WeChat Official Account article by URL, with an optional buffer cursor
+      for pagination. Use it to review reader discussion or continue through comment pages for a…
+    request: POST /api/weixin/get-article-comment/v1
+    params:
+      articleUrl:
+        in: form
+        required: true
+        about: WeChat Official Account article URL used to fetch top-level article comments.
+      buffer:
+        in: form
+        about: Comment pagination buffer returned by the previous response. Leave it empty for the first page. For
+          this POST endpoint, send it in an application/x-www-form-urlencoded form body.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weixin-get-article-sub-comment:
+    title: Article Comment Replies
+    about: Retrieves replies under a top-level comment for a WeChat Official Account article, identified by article
+      URL and contentId. Use it to inspect threaded discussion beneath a known comment.
+    request: GET /api/weixin/get-article-sub-comment/v1
+    params:
+      articleUrl:
+        required: true
+        about: WeChat Official Account article URL used to fetch replies under a top-level comment.
+      contentId:
+        required: true
+        about: Top-level comment content id used to fetch nested comment replies.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  post-api-weixin-search-article:
+    title: Article Search
+    about: Searches WeChat Official Account articles by keyword with publish-time and sort filters plus page, offset,
+      and continuation-state pagination. Use it to discover recent or high-interest articles for…
+    request: POST /api/weixin/search-article/v1
+    params:
+      keyword:
+        in: form
+        required: true
+        about: Search keyword for WeChat Official Account articles.
+      publishTimeType:
+        in: form
+        choices:
+        - ALL
+        - ONE_DAY
+        - SEVEN_DAYS
+        - HALF_YEAR
+        about: 'Publish time filter for WeChat Official Account article web search. Available Values: - ALL: All
+          time - ONE_DAY: Last day - SEVEN_DAYS: Last seven days - HALF_YEAR: Last half year'
+      sortType:
+        in: form
+        choices:
+        - COMPREHENSIVE
+        - LATEST
+        - HOT
+        about: 'Sort order for WeChat Official Account article web search results. Available Values: - COMPREHENSIVE:
+          Comprehensive sort - LATEST: Latest first - HOT: Hot first'
+      currentPage:
+        in: form
+        type: integer
+        about: Current page number starting from 1 for WeChat web search pagination.
+      offset:
+        in: form
+        type: integer
+        about: Search result offset returned by the previous response. Use 0 for the first page.
+      cookies_buffer:
+        in: form
+        about: Opaque pagination state returned by the previous WeChat web search response. Leave it empty for the
+          first page. For this POST endpoint, send it in an application/x-www-form-urlencoded form body.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  post-api-weixin-search-article-2:
+    title: Article Search
+    about: Searches WeChat Official Account articles by keyword within a selected category such as followed accounts,
+      latest, recently read, or hot, with continuation pagination. Use it to focus article…
+    request: POST /api/weixin/search-article/v2
+    params:
+      keyword:
+        in: form
+        required: true
+        about: Search keyword for categorized WeChat Official Account article web search.
+      subSearchType:
+        in: form
+        choices:
+        - ALL
+        - FOLLOWED
+        - LATEST
+        - RECENT_READ
+        - HOT
+        about: 'Subcategory filter for categorized WeChat Official Account article web search. Available Values:
+          - ALL: All - FOLLOWED: Followed accounts - LATEST: Latest - RECENT_READ: Recently read - HOT: Hot'
+      currentPage:
+        in: form
+        type: integer
+        about: Current page number starting from 1 for WeChat web search pagination.
+      offset:
+        in: form
+        type: integer
+        about: Search result offset returned by the previous response. Use 0 for the first page.
+      cookies_buffer:
+        in: form
+        about: Opaque pagination state returned by the previous WeChat web search response. Leave it empty for the
+          first page. For this POST endpoint, send it in an application/x-www-form-urlencoded form body.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  post-api-weixin-search-miniprogram:
+    title: Mini Program Search
+    about: Searches WeChat Mini Programs by keyword with page, offset, and continuation-state pagination. Use it
+      to discover mini programs related to a brand, service, topic, or product.
+    request: POST /api/weixin/search-miniprogram/v1
+    params:
+      keyword:
+        in: form
+        required: true
+        about: Search keyword for WeChat mini program web search.
+      currentPage:
+        in: form
+        type: integer
+        about: Current page number starting from 1 for WeChat web search pagination.
+      offset:
+        in: form
+        type: integer
+        about: Search result offset returned by the previous response. Use 0 for the first page.
+      cookies_buffer:
+        in: form
+        about: Opaque pagination state returned by the previous WeChat web search response. Leave it empty for the
+          first page. For this POST endpoint, send it in an application/x-www-form-urlencoded form body.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weixin-search-wechat-index:
+    title: WeChat Index Search
+    about: Queries WeChat Index for a keyword. Use it to examine trend interest within WeChat before planning content,
+      campaigns, or further article research.
+    request: GET /api/weixin/search-wechat-index/v1
+    params:
+      keyword:
+        required: true
+        about: Keyword used to query WeChat Index trend signals.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weixin-search-suggestions:
+    title: Search Suggestions
+    about: Retrieves WeChat search suggestions for a keyword, optionally scoped by a supported business type. Use
+      it to expand or refine a query before a targeted WeChat search.
+    request: GET /api/weixin/search-suggestions/v1
+    params:
+      keyword:
+        required: true
+        about: Keyword used to fetch WeChat search suggestions.
+      businessType:
+        about: 'WeChat search business type used to scope suggestion results. Available Values: - ALL: All - ACCOUNT:
+          Official accounts - ARTICLE: Articles - CHANNEL: Channels - MOMENTS: Moments - LIVE: Live -…'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  post-api-weixin-search-account:
+    title: Account Search
+    about: Searches WeChat Official Accounts by keyword with page-number pagination and one result per page. Use
+      it to find an account by name or related term before profile or article lookup.
+    request: POST /api/weixin/search-account/v1
+    params:
+      keyword:
+        required: true
+        about: Search keyword for WeChat Official Account profiles.
+      page:
+        type: integer
+        about: Page number starting from 1 for WeChat Official Account profile search.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  post-api-weixin-search-account-2:
+    title: Account Search
+    about: Searches WeChat Official Accounts by keyword with page, offset, and continuation-state pagination. Use
+      it to browse broader account results for creator, brand, or publisher discovery.
+    request: POST /api/weixin/search-account/v2
+    params:
+      keyword:
+        in: form
+        required: true
+        about: Search keyword for WeChat Official Account web search.
+      currentPage:
+        in: form
+        type: integer
+        about: Current page number starting from 1 for WeChat web search pagination.
+      offset:
+        in: form
+        type: integer
+        about: Search result offset returned by the previous response. Use 0 for the first page.
+      cookies_buffer:
+        in: form
+        about: Opaque pagination state returned by the previous WeChat web search response. Leave it empty for the
+          first page. For this POST endpoint, send it in an application/x-www-form-urlencoded form body.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  weixin-get-account-original-count:
+    title: Account Original Article Count
+    about: Retrieves the original-article count for a WeChat Official Account identified by ghid or article URL.
+      Use it to compare original publishing activity across known accounts.
+    request: GET /api/weixin/get-account-original-count/v1
+    params:
+      ghid:
+        about: WeChat Official Account original identifier, using the gh_ prefix returned by WeChat. Use either
+          ghid or url.
+      url:
+        about: WeChat Official Account article URL used to identify the account. Use either ghid or url.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  weixin-get-account-principal-info:
+    title: Account Principal Info
+    about: Retrieves principal information for a WeChat Official Account identified by biz ID, article URL, or wxid.
+      Use it to review the ownership or operating entity behind a known account.
+    request: GET /api/weixin/get-account-principal-info/v1
+    params:
+      biz:
+        about: WeChat Official Account biz id. Use one of biz, url, or wxid.
+      url:
+        about: WeChat Official Account article URL used to identify the account. Use one of biz, url, or wxid.
+      wxid:
+        about: WeChat Official Account wxid used to identify the account. Use one of biz, url, or wxid.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weixin-get-account-basic-info:
+    title: Account Basic Info
+    about: Retrieves basic profile information for a WeChat Official Account by account name. Use it to identify
+      or enrich a known account before article, ownership, or publishing research.
+    request: GET /api/weixin/get-account-basic-info/v1
+    params:
+      name:
+        required: true
+        about: WeChat Official Account name used to fetch basic profile information.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weixin-convert-article-link:
+    title: Article Link Conversion
+    about: Expands a WeChat Official Account article link to its resolved long-form destination. Use it to normalize
+      a short or intermediate link before article lookup or collection.
+    request: GET /api/weixin/convert-article-link/v1
+    params:
+      link:
+        required: true
+        about: WeChat Official Account article short link or intermediate link to convert.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  post-api-weixin-channels-search-video:
+    title: Video Search
+    about: Searches WeChat Channels videos by keyword with publish-time, sort, page, offset, and continuation-state
+      controls. Use it to find recent or ordered video results and continue web-search pages.
+    request: POST /api/weixin-channels/search-video/v1
+    params:
+      keyword:
+        in: form
+        required: true
+        about: Search keyword for WeChat Channels video results.
+      publishTimeType:
+        in: form
+        choices:
+        - ALL
+        - ONE_DAY
+        - SEVEN_DAYS
+        - HALF_YEAR
+        about: 'Publish time filter for WeChat Channels video web search. Available Values: - ALL: All publish times
+          - ONE_DAY: Published in the last day - SEVEN_DAYS: Published in the last seven days - HALF_YEAR:…'
+      sortType:
+        in: form
+        choices:
+        - COMPREHENSIVE
+        - LATEST
+        - HOT
+        about: 'Sort order for WeChat Channels video search results. Available Values: - COMPREHENSIVE: Comprehensive
+          sort - LATEST: Latest first - HOT: Hot first'
+      currentPage:
+        in: form
+        type: integer
+        about: Current page number starting from 1 for WeChat Channels web search pagination.
+      offset:
+        in: form
+        type: integer
+        about: Search result offset returned by the previous WeChat Channels search response. Use 0 for the first
+          page.
+      cookies_buffer:
+        in: form
+        about: Opaque pagination state returned by the previous WeChat Channels web search response. Leave it empty
+          for the first page. For this POST endpoint, send it in an application/x-www-form-urlencoded form…
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  post-api-weixin-channels-search-video-2:
+    title: Video Search
+    about: Searches the WeChat Channels video category by keyword with page, offset, and continuation-state controls.
+      Use it to retrieve categorized video results and continue additional pages.
+    request: POST /api/weixin-channels/search-video/v2
+    params:
+      keyword:
+        in: form
+        required: true
+        about: Search keyword for categorized WeChat Channels video results.
+      currentPage:
+        in: form
+        type: integer
+        about: Current page number starting from 1 for WeChat Channels web search pagination.
+      offset:
+        in: form
+        type: integer
+        about: Search result offset returned by the previous WeChat Channels search response. Use 0 for the first
+          page.
+      cookies_buffer:
+        in: form
+        about: Opaque pagination state returned by the previous WeChat Channels web search response. Leave it empty
+          for the first page. For this POST endpoint, send it in an application/x-www-form-urlencoded form…
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  post-api-weixin-channels-search-account:
+    title: Account Search
+    about: Searches the WeChat Channels account category by keyword with page, offset, and continuation-state controls.
+      Use it to discover creator accounts through paginated web-search results.
+    request: POST /api/weixin-channels/search-account/v1
+    params:
+      keyword:
+        in: form
+        required: true
+        about: Search keyword for WeChat Channels account web search.
+      currentPage:
+        in: form
+        type: integer
+        about: Current page number starting from 1 for WeChat Channels web search pagination.
+      offset:
+        in: form
+        type: integer
+        about: Search result offset returned by the previous WeChat Channels account search response. Use 0 for
+          the first page.
+      cookies_buffer:
+        in: form
+        about: Opaque pagination state returned by the previous WeChat Channels account search response. Leave it
+          empty for the first page. For this POST endpoint, send it in an application/x-www-form-urlencoded…
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  post-api-weixin-channels-search-account-2:
+    title: Account Search
+    about: Searches WeChat Channels account-related records by keyword using the direct Channels lookup. Use it
+      to discover creator accounts and related channel objects without pagination input.
+    request: POST /api/weixin-channels/search-account/v2
+    params:
+      keyword:
+        required: true
+        about: Search keyword used to find WeChat Channels accounts and related video objects.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  post-api-weixin-channels-search-account-3:
+    title: Account Search
+    about: Looks up a specific WeChat Channels account identity by keyword. Use it to resolve a creator name or
+      account term to the identifier required by account-video queries.
+    request: POST /api/weixin-channels/search-account/v3
+    params:
+      keyword:
+        required: true
+        about: Search keyword used to resolve a WeChat Channels account id.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  weixin-channels-get-account-videos:
+    title: Account Videos
+    about: Retrieves a paginated WeChat Channels account feed by v2Name with continuation-buffer support. Use it
+      to browse videos and other feed entries published by a known creator account.
+    request: POST /api/weixin-channels/get-account-videos/v1
+    params:
+      v2Name:
+        in: form
+        required: true
+        about: WeChat Channels account unique id, usually ending with @finder.
+      last_buffer:
+        in: form
+        about: Pagination buffer returned by the previous WeChat Channels account videos response. Leave it empty
+          for the first page. For this POST endpoint, send it in an application/x-www-form-urlencoded form…
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  weixin-channels-get-bound-channel:
+    title: Get Bound Channel
+    about: Finds the WeChat Channels account bound to a WeChat Official Account using either its original ID or
+      an article URL. Use it to connect an official account with its Channels identity.
+    request: GET /api/weixin-channels/get-bound-channel/v1
+    params:
+      ghid:
+        about: WeChat Official Account original id used to find the bound WeChat Channels account. Use either ghid
+          or url.
+      url:
+        about: WeChat Official Account article URL used to find the bound WeChat Channels account. Use either ghid
+          or url.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  weixin-channels-get-video-basic-info:
+    title: Video Basic Info
+    about: Resolves a copied WeChat Channels video link, preview URL, or short feed ID to basic video information.
+      Use it to identify a shared Channels video before further lookups.
+    request: GET /api/weixin-channels/get-video-basic-info/v1
+    params:
+      feedInfo:
+        required: true
+        about: WeChat Channels copied video link, finder-preview URL, or short feed id.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weixin-channels-get-video-title:
+    title: Video Title
+    about: Retrieves lightweight title information for a WeChat Channels video by object ID and optional nonce ID.
+      Use it to identify known video content without requesting downloadable media.
+    request: GET /api/weixin-channels/get-video-title/v1
+    params:
+      objectId:
+        required: true
+        about: WeChat Channels video object id.
+      objectNonceId:
+        about: Optional WeChat Channels object nonce id. Supplying it can improve lookup accuracy.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  weixin-channels-convert-export-id:
+    title: Export Id Conversion
+    about: Converts an encrypted WeChat Channels export ID from search results into a usable video object identity.
+      Use it to prepare the identifier required by video lookup endpoints.
+    request: GET /api/weixin-channels/convert-export-id/v1
+    params:
+      exportId:
+        required: true
+        about: Encrypted WeChat Channels exportId returned by video search results.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  weixin-channels-get-video-download-url:
+    title: Video Download URL
+    about: Retrieves a downloadable media URL for a WeChat Channels video by object ID and optional nonce ID. Use
+      it to download or play media from a known Channels video.
+    request: GET /api/weixin-channels/get-video-download-url/v1
+    params:
+      objectId:
+        required: true
+        about: WeChat Channels video object id used to fetch downloadable media links.
+      objectNonceId:
+        about: Optional WeChat Channels object nonce id. Supplying it can improve media lookup accuracy.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  weixin-channels-get-video-share-url:
+    title: Video Share URL
+    about: Generates a share link for a WeChat Channels video identified by objectId. Use it to share a known Channels
+      video or obtain its link for a subsequent lookup.
+    request: GET /api/weixin-channels/get-video-share-url/v1
+    params:
+      objectId:
+        required: true
+        about: WeChat Channels video objectId as a numeric string of up to 32 digits.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  weixin-channels-get-video-metrics:
+    title: Video Metrics
+    about: Retrieves interaction metrics for a WeChat Channels video by object ID with optional continuation-buffer
+      input. Use it to review engagement for known video content.
+    request: POST /api/weixin-channels/get-video-metrics/v1
+    params:
+      objectId:
+        in: form
+        required: true
+        about: WeChat Channels video object id used to fetch interaction metrics.
+      objectNonceId:
+        in: form
+        about: Optional WeChat Channels object nonce id.
+      last_buffer:
+        in: form
+        about: Pagination buffer returned by the previous WeChat Channels metrics response. Leave it empty for the
+          first page. For this POST endpoint, send it in an application/x-www-form-urlencoded form body.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  weixin-channels-get-video-comment:
+    title: Video Comments
+    about: Retrieves first-level comments for a WeChat Channels video by object ID with continuation-buffer pagination.
+      Use it to review audience discussion on known video content.
+    request: POST /api/weixin-channels/get-video-comment/v1
+    params:
+      objectId:
+        in: form
+        required: true
+        about: WeChat Channels video object id used to fetch first-level comments. If you only have the exportId
+          returned by a video search result, first call the Export Id Conversion (V1) endpoint at…
+      objectNonceId:
+        in: form
+        about: Optional WeChat Channels object nonce id.
+      last_buffer:
+        in: form
+        about: Pagination buffer returned by the previous first-level WeChat Channels comment response. Leave it
+          empty for the first page. For this POST endpoint, send it in an application/x-www-form-urlencoded…
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  weixin-channels-get-video-sub-comment:
+    title: Video Sub Comments
+    about: Retrieves replies under a first-level WeChat Channels video comment using the video and root-comment
+      IDs. Use it to continue a threaded comment discussion with buffer pagination.
+    request: POST /api/weixin-channels/get-video-sub-comment/v1
+    params:
+      objectId:
+        in: form
+        required: true
+        about: WeChat Channels video object id used to fetch second-level comment replies.
+      rootCommentId:
+        in: form
+        required: true
+        about: Root first-level comment id returned by the WeChat Channels video comments endpoint.
+      last_buffer:
+        in: form
+        about: Pagination buffer for WeChat Channels second-level comment replies. Use the first-level comment's
+          last_buffer for the first reply page when present. For this POST endpoint, send it in an…
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  advertiser-finder-publisher-search:
+    title: Video Account Creator Search
+    about: Searches or browses QQ Huxuan Video Account creators by optional nickname keyword with page-number pagination.
+      Use it to discover and shortlist video creators for Tencent Huxuan campaign planning.
+    request: GET /api/qq-huxuan/cgi-bin/advertiser/finder_publisher/search/v1
+    params:
+      keyword:
+        about: Creator nickname keyword. Leave empty to browse the default marketplace list.
+      page:
+        type: integer
+        about: Page number. The first page is 1.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  advertiser-mp-publisher-search:
+    title: Official Account Creator Search
+    about: Searches or browses QQ Huxuan Official Account creators by optional nickname or account keyword with
+      page-number pagination. Use it to discover and shortlist publishers for Tencent Huxuan campaign…
+    request: GET /api/qq-huxuan/cgi-bin/advertiser/mp_publisher/search/v1
+    params:
+      keyword:
+        about: Creator nickname or account keyword. Leave empty to browse the default marketplace list.
+      page:
+        type: integer
+        about: Page number. The first page is 1.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  advertiser-finder-publisher-detail:
+    title: Video Account Creator Details
+    about: Retrieves QQ Huxuan Video Account creator details for a known creator app ID. Use it to review a shortlisted
+      video creator before Tencent Huxuan campaign selection.
+    request: GET /api/qq-huxuan/cgi-bin/advertiser/finder_publisher/detail/v1
+    params:
+      appId:
+        required: true
+        about: Video Account creator app ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  advertiser-finder-publisher-get-finder-video-show:
+    title: Video Account Recent Videos
+    about: Lists videos from a QQ Huxuan Video Account creator within a required date range, with a choice of all,
+      Huxuan order, hot, or personal videos. Use it to review a shortlisted creator's content for…
+    request: GET /api/qq-huxuan/cgi-bin/advertiser/finder_publisher/get_finder_video_show/v1
+    params:
+      appId:
+        required: true
+        about: Video Account creator app ID.
+      videoType:
+        choices:
+        - ALL
+        - ORDER
+        - HOT
+        - PERSON
+        about: 'Tencent Huxuan video type filter. Available Values: - ALL: All videos - ORDER: QQ Huxuan order videos
+          - HOT: Hot videos - PERSON: Personal videos'
+      beginDate:
+        required: true
+        about: Start date in yyyyMMdd format.
+      endDate:
+        required: true
+        about: End date in yyyyMMdd format.
+      page:
+        type: integer
+        about: Page number. The first page is 1.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  advertiser-mp-publisher-detail:
+    title: Official Account Creator Details
+    about: Retrieves QQ Huxuan Official Account creator details for a known creator app ID. Use it to review a shortlisted
+      publisher before Tencent Huxuan campaign selection.
+    request: GET /api/qq-huxuan/cgi-bin/advertiser/mp_publisher/detail/v1
+    params:
+      appId:
+        required: true
+        about: Official Account creator app ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  advertiser-mp-publisher-get-user-articles:
+    title: Official Account Article List
+    about: Lists articles from a QQ Huxuan Official Account creator within a required date range, with an optional
+      title keyword and a choice between all articles and Huxuan order articles. Use it to review a…
+    request: GET /api/qq-huxuan/cgi-bin/advertiser/mp_publisher/get_user_articles/v1
+    params:
+      appId:
+        required: true
+        about: Official Account creator app ID.
+      keyword:
+        about: Article title keyword. Leave empty to return all matched articles.
+      articleType:
+        choices:
+        - ALL
+        - ORDER
+        about: 'Tencent Huxuan article type filter. Available Values: - ALL: All articles - ORDER: QQ Huxuan order
+          articles'
+      startDate:
+        required: true
+        about: Start date in yyyyMMdd format.
+      endDate:
+        required: true
+        about: End date in yyyyMMdd format.
+      page:
+        type: integer
+        about: Page number. The first page is 1.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  advertiser-finder-publisher-get-rank-finder-content:
+    title: Hot Content Trends
+    about: Lists QQ Huxuan hot Video Account content by month and creator category, with six descending sort metrics
+      and page-number pagination. Use it to research monthly content trends for Tencent Huxuan…
+    request: GET /api/qq-huxuan/cgi-bin/advertiser/finder_publisher/get_rank_finder_content/v1
+    params:
+      category:
+        about: 'Creator category. ALL includes every category. Available Values: - ALL: All creator categories -
+          FOOD: Food - LIFESTYLE: Lifestyle - COMEDY: Comedy - EMOTION: Emotion and relationships - SOCIETY:…'
+      sort:
+        choices:
+        - INTERACTION
+        - PLAY
+        - THUMB_LIKE
+        - HEART_LIKE
+        - COMMENT
+        - SHARE
+        about: 'Sort metric. Results are sorted in descending order. Available Values: - INTERACTION: Interaction
+          count - PLAY: Play count - THUMB_LIKE: Thumbs-up like count - HEART_LIKE: Heart like count - COMMENT:…'
+      month:
+        about: Statistics month in yyyy-MM format. Omit to use the latest month available on QQ Huxuan.
+      page:
+        type: integer
+        about: Page number, starting at 1. Each page contains up to 48 items.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weibo-search-all:
+    title: Keyword Search
+    about: Searches Weibo posts by keyword within a required day-and-hour time range, with page-based pagination,
+      hot or time sorting, and filters for pictures, video, music, or links. Use it to find…
+    request: GET /api/weibo/search-all/v2
+    params:
+      q:
+        required: true
+        about: Search Keywords.
+      startDay:
+        required: true
+        about: Start Day (yyyy-MM-dd).
+      startHour:
+        type: integer
+        required: true
+        about: Start Hour (0-23).
+      endDay:
+        required: true
+        about: End Day (yyyy-MM-dd).
+      endHour:
+        type: integer
+        required: true
+        about: End Hour (0-23).
+      hotSort:
+        type: boolean
+        about: Hot sort, true for hot sort, false for time sort. Default is false.
+      contains:
+        choices:
+        - ALL
+        - PICTURE
+        - VIDEO
+        - MUSIC
+        - LINK
+        about: 'Contains filter for the result set. Available Values: - ALL: All - PICTURE: Has Picture - VIDEO:
+          Has Video - MUSIC: Has Music - LINK: Has Link'
+      page:
+        type: integer
+        about: Page number, starting with 1.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weibo-get-weibo-detail:
+    title: Post Details
+    about: Retrieves details for a Weibo post identified by its post ID. Use it to look up a known post for content
+      review, archiving, or related engagement analysis.
+    request: GET /api/weibo/get-weibo-detail/v1
+    params:
+      id:
+        required: true
+        about: Weibo post ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weibo-get-user-detail:
+    title: User Profile
+    about: Retrieves a Weibo user profile identified by UID. Use it to look up a known account for creator research,
+      profile review, or subsequent retrieval of that user's posts and videos.
+    request: GET /api/weibo/get-user-detail/v3
+    params:
+      uid:
+        required: true
+        about: Weibo User ID (UID).
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weibo-get-fans:
+    title: User Fans
+    about: Retrieves a page of fan accounts that follow a Weibo user identified by UID. Use it to browse the account's
+      follower audience or continue through its fan list.
+    request: GET /api/weibo/get-fans/v1
+    params:
+      uid:
+        required: true
+        about: Weibo User ID (UID).
+      page:
+        type: integer
+        about: Page number, starting with 1.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weibo-get-followers:
+    title: User Followers
+    about: Retrieves a page of accounts followed by a Weibo user identified by UID. Use it to examine the account's
+      outgoing follow network or continue through its following list.
+    request: GET /api/weibo/get-followers/v1
+    params:
+      uid:
+        required: true
+        about: Weibo User ID (UID).
+      page:
+        type: integer
+        about: Page number, starting with 1.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  weibo-get-user-post:
+    title: User Published Posts
+    about: Retrieves posts published by a Weibo user identified by UID, using page numbers and a required sinceId
+      cursor after the first page. Use it to browse an account's posting history or continue through…
+    request: GET /api/weibo/get-user-post/v1
+    params:
+      uid:
+        required: true
+        about: Weibo User ID (UID).
+      page:
+        type: integer
+        about: Page number, starting with 1.
+      sinceId:
+        about: Pagination cursor (since_id). Required if page > 1.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  weibo-get-user-video-list:
+    title: User Video List
+    about: Retrieves a Weibo user's video waterfall feed by UID, with an optional cursor from a prior response.
+      Use it to browse videos published by a known account or continue through its video feed.
+    request: GET /api/weibo/get-user-video-list/v1
+    params:
+      uid:
+        required: true
+        about: Weibo User ID (UID).
+      cursor:
+        about: Pagination cursor returned by the previous response.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weibo-tv-component:
+    title: TV Video Details
+    about: Retrieves Weibo TV video details for a colon-delimited object ID (OID). Use it to look up a known TV
+      video for content review, cataloging, or downstream processing.
+    request: GET /api/weibo/tv-component/v1
+    params:
+      oid:
+        required: true
+        about: Weibo video/object ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weibo-hot-search:
+    title: Hot Search
+    about: Retrieves the current Weibo hot-search ranking. Use it to identify trending topics for newsroom monitoring,
+      content planning, or timely topic discovery.
+    request: GET /api/weibo/hot-search/v1
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weibo-get-post-comments:
+    title: Post Comments
+    about: Retrieves comments for a Weibo post identified by MID, with optional maxId cursor pagination and time
+      or hot sorting. Use it to review audience discussion, continue through comment pages, or support…
+    request: GET /api/weibo/get-post-comments/v1
+    params:
+      mid:
+        required: true
+        about: Weibo post mid.
+      sort:
+        choices:
+        - TIME
+        - HOT
+        about: 'Sort order for the result set. Available Values: - TIME: Time - HOT: Hot'
+      maxId:
+        about: Pagination cursor returned by the previous response.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-weibo-search-profile:
+    title: Search User Published Posts
+    about: Searches posts published by a specific Weibo user, using a keyword, optional date range, and page-based
+      pagination. Use it to find historical posts from a known account for topic research or campaign…
+    request: GET /api/weibo/search-profile/v1
+    params:
+      uid:
+        required: true
+        about: Weibo User ID (UID).
+      q:
+        required: true
+        about: Search Keywords.
+      startDay:
+        about: Start Day (yyyy-MM-dd).
+      endDay:
+        about: End Day (yyyy-MM-dd).
+      page:
+        type: integer
+        about: Page number, starting with 1.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-bilibili-get-video-detail:
+    title: Video Details
+    about: Retrieves details for a Bilibili video identified by its BVID. Use it to look up a known video for content
+      review, cataloging, or subsequent engagement analysis.
+    request: GET /api/bilibili/get-video-detail/v2
+    params:
+      bvid:
+        required: true
+        about: Bilibili Video ID (BVID).
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  bilibili-get-user-video-list:
+    title: User Published Videos
+    about: Retrieves videos published by a Bilibili user identified by UID, with an optional continuation parameter
+      from a prior response. Use it to browse a creator's uploads or continue through their video…
+    request: GET /api/bilibili/get-user-video-list/v2
+    params:
+      uid:
+        required: true
+        about: Bilibili User ID (UID).
+      param:
+        about: Pagination parameter from previous response.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-bilibili-get-user-detail:
+    title: User Profile
+    about: Retrieves a Bilibili user profile identified by UID. Use it to look up a known account for creator research,
+      profile review, or subsequent retrieval of that user's videos.
+    request: GET /api/bilibili/get-user-detail/v2
+    params:
+      uid:
+        required: true
+        about: Bilibili User ID (UID).
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-bilibili-get-video-danmu:
+    title: Video Danmaku
+    about: Retrieves one page of danmaku comments for a Bilibili video segment identified by AID and CID. Use it
+      to review time-synchronized audience reactions or page through danmaku for a known video.
+    request: GET /api/bilibili/get-video-danmu/v2
+    params:
+      aid:
+        required: true
+        about: Bilibili Archive ID (AID).
+      cid:
+        required: true
+        about: Bilibili Chat ID (CID).
+      page:
+        about: Page number for pagination.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-bilibili-get-video-comment:
+    title: Video Comments
+    about: Retrieves comments for a Bilibili video identified by AID, with optional cursor pagination. Use it to
+      review audience discussion, continue through comment pages, or support comment moderation and…
+    request: GET /api/bilibili/get-video-comment/v2
+    params:
+      aid:
+        required: true
+        about: Bilibili Archive ID (AID).
+      cursor:
+        about: Pagination cursor.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-bilibili-search-video:
+    title: Video Search
+    about: Searches Bilibili videos by keyword with page-based pagination and sorting by general ranking, play count,
+      publish time, danmaku count, or favorites. Use it to support content discovery, topic…
+    request: GET /api/bilibili/search-video/v2
+    params:
+      keyword:
+        required: true
+        about: Search keyword.
+      page:
+        about: Page number for pagination.
+      order:
+        choices:
+        - general
+        - click
+        - pubdate
+        - dm
+        - stow
+        about: 'Sorting criteria for search results. Available Values: - general: General - click: Most Played -
+          pubdate: Latest - dm: Most Danmaku - stow: Most Favorite'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-bilibili-share-url-transfer:
+    title: Share Link Resolution
+    about: Resolve a supported Bilibili short share link that targets a video and return its public redirect URL.
+      Use it to expand video links before subsequent Bilibili content lookup or processing.
+    request: GET /api/bilibili/share-url-transfer/v1
+    params:
+      shareUrl:
+        required: true
+        about: A Bilibili short share URL beginning with https://b23.tv/.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-bilibili-get-user-relation-stat:
+    title: User Relation Stats
+    about: Retrieves relation statistics for a Bilibili user identified by WMID. Use it to compare audience relationships
+      across creator accounts or track relation-count changes for a known user.
+    request: GET /api/bilibili/get-user-relation-stat/v1
+    params:
+      wmid:
+        required: true
+        about: Bilibili User ID (WMID).
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-bilibili-get-video-caption:
+    title: Video Captions
+    about: Retrieves caption data for a Bilibili video segment identified by BVID, AID, and CID. Use it to obtain
+      subtitles for transcript extraction, accessibility review, or language-focused content analysis.
+    request: GET /api/bilibili/get-video-caption/v2
+    params:
+      bvid:
+        required: true
+        about: Bilibili Video ID (BVID).
+      aid:
+        required: true
+        about: Bilibili AID.
+      cid:
+        required: true
+        about: Bilibili CID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-aliexpress-search-products:
+    title: Product Search
+    about: Searches AliExpress products with optional query, page, sort, category, brand, location, attribute, price,
+      locale, region, and currency controls. Use it for product discovery, catalog research, and…
+    request: GET /api/aliexpress/search-products/v1
+    params:
+      q:
+        about: Product search query.
+      page:
+        about: One-based page number for pagination.
+      sort:
+        choices:
+        - default
+        - salesDesc
+        - priceAsc
+        - priceDesc
+        about: 'Sort order for product search results. Available Values: - default: Default result order - salesDesc:
+          Sales volume, highest first - priceAsc: Price, lowest first - priceDesc: Price, highest first'
+      catId:
+        about: Category ID used to filter product search results.
+      brandId:
+        about: Brand ID used to filter product search results.
+      loc:
+        about: Location filter for product search results.
+      switches:
+        about: Search switches used to select optional result features.
+      attr:
+        about: Product attribute filter for search results.
+      startPrice:
+        type: number
+        about: Minimum product price filter, inclusive.
+      endPrice:
+        type: number
+        about: Maximum product price filter, inclusive.
+      locale:
+        about: Locale used for the AliExpress response.
+      region:
+        about: AliExpress marketplace region.
+      currency:
+        about: Currency code used for product prices.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-aliexpress-get-product-detail:
+    title: Product Overview
+    about: Retrieves an AliExpress product overview by item ID for the United States or global site. Use it to inspect
+      a known listing for catalog review or search snippets.
+    request: GET /api/aliexpress/get-product-detail/v1
+    params:
+      itemId:
+        required: true
+        about: Numeric AliExpress item ID.
+      site:
+        choices:
+        - GLO
+        - US
+        about: 'AliExpress site: US (default) or GLO (global). Available Values: - GLO: Global site - US: United
+          States site'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-douban-get-movie-reviews:
+    title: Movie Reviews
+    about: Retrieves paginated Douban long-form reviews for a movie or TV subject, ordered by time or popularity.
+      Use it to browse in-depth audience reviews for a known subject.
+    request: GET /api/douban/get-movie-reviews/v1
+    params:
+      subjectId:
+        required: true
+        about: The unique ID for a movie or TV subject on Douban.
+      sort:
+        choices:
+        - time
+        - hotest
+        about: 'Sort order for the result set. Available Values: - time: Time - hotest: Hotest'
+      page:
+        type: integer
+        about: Page number for pagination.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-douban-get-movie-review-detail:
+    title: Review Details
+    about: Retrieves a single Douban long-form review by its review ID. Use it to inspect a known review after discovering
+      it in a subject's review list.
+    request: GET /api/douban/get-movie-review-detail/v1
+    params:
+      reviewId:
+        required: true
+        about: The unique ID for a specific review on Douban.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-douban-get-subject-detail:
+    title: Subject Details
+    about: Retrieves the public detail page data for a Douban movie or TV subject by subject ID. Use it to inspect
+      a known title before requesting its reviews or comments.
+    request: GET /api/douban/get-subject-detail/v1
+    params:
+      subjectId:
+        required: true
+        about: The unique ID for a movie or TV subject on Douban.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-douban-get-movie-comments:
+    title: Comments
+    about: Retrieves paginated Douban short comments for a movie or TV subject, ordered by time or newest rating.
+      Use it to review concise audience feedback for a known subject.
+    request: GET /api/douban/get-movie-comments/v1
+    params:
+      subjectId:
+        required: true
+        about: The unique ID for a movie or TV subject on Douban.
+      sort:
+        choices:
+        - time
+        - new_score
+        about: 'Sort order for the result set. Available Values: - time: Time - new_score: New Score'
+      page:
+        type: integer
+        about: Page number for pagination.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-douban-get-recent-hot-movie:
+    title: Recent Hot Movie
+    about: Retrieves a paginated list of movies currently featured in Douban's recent-hot collection. Use it to
+      discover popular movie titles and continue through result pages.
+    request: GET /api/douban/get-recent-hot-movie/v1
+    params:
+      page:
+        type: integer
+        about: Page number for pagination.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-douban-get-recent-hot-tv:
+    title: Recent Hot Tv
+    about: Retrieves a paginated list of TV titles currently featured in Douban's recent-hot collection. Use it
+      to discover popular series and continue through result pages.
+    request: GET /api/douban/get-recent-hot-tv/v1
+    params:
+      page:
+        type: integer
+        about: Page number for pagination.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  tiktok-get-user-post:
+    title: User Published Posts
+    about: Retrieves posts published by a TikTok user identified by secUid, with cursor pagination and latest or
+      popular sorting. Use it to browse a creator's posting history or continue through their public…
+    request: GET /api/tiktok/get-user-post/v1
+    params:
+      secUid:
+        required: true
+        about: The opaque security ID returned for the TikTok user.
+      cursor:
+        about: Pagination cursor. Use '0' for the first page, then use the max_cursor value returned in the previous
+          response.
+      sort:
+        choices:
+        - LATEST
+        - MOST_POPULAR
+        about: 'Sorting criteria for the user''s posts. Available Values: - LATEST: Newest posts first (default)
+          - MOST_POPULAR: Most popular posts first'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-tiktok-get-post-detail:
+    title: Post Details
+    about: Retrieves details for a TikTok post identified by its post ID. Use it to look up a known TikTok video
+      before content review, reporting, or related engagement analysis.
+    request: GET /api/tiktok/get-post-detail/v1
+    params:
+      postId:
+        required: true
+        about: The unique ID of the TikTok post.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-tiktok-get-user-detail:
+    title: User Profile
+    about: Retrieves a TikTok user profile by public username or secUid. Use it to look up a known account for creator
+      research, profile review, or subsequent user-post retrieval.
+    request: GET /api/tiktok/get-user-detail/v1
+    params:
+      uniqueId:
+        about: The public TikTok handle or username of the user.
+      secUid:
+        about: The unique security ID of the user.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-tiktok-get-post-comment:
+    title: Post Comments
+    about: Retrieves comments for a TikTok post with cursor pagination. Use it to review audience discussion, continue
+      through comment pages, or support comment analysis for a known post.
+    request: GET /api/tiktok/get-post-comment/v1
+    params:
+      awemeId:
+        required: true
+        about: The unique ID of the TikTok post (awemeId).
+      cursor:
+        about: Pagination cursor. Start with '0'.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-tiktok-get-post-sub-comment:
+    title: Comment Replies
+    about: Retrieves replies to a specific comment on a TikTok post with cursor pagination. Use it to inspect threaded
+      discussions and continue through reply pages for a known post comment.
+    request: GET /api/tiktok/get-post-sub-comment/v1
+    params:
+      awemeId:
+        required: true
+        about: The unique ID of the TikTok post.
+      commentId:
+        required: true
+        about: The unique ID of the comment to retrieve replies for.
+      cursor:
+        about: Pagination cursor. Start with '0'.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  tiktok-search-post:
+    title: Post Search
+    about: Searches TikTok posts by keyword with offset pagination plus sorting, publish-time, and region controls.
+      Use it to support regional content discovery, topic research, or monitoring keyword-related…
+    request: GET /api/tiktok/search-post/v1
+    params:
+      keyword:
+        required: true
+        about: Search keywords.
+      offset:
+        type: integer
+        about: Pagination offset, starting from 0 and stepping by 20.
+      sortType:
+        choices:
+        - RELEVANCE
+        - MOST_LIKED
+        about: 'Sorting criteria for search results. Available Values: - RELEVANCE: Relevance (Default) - MOST_LIKED:
+          Most Liked'
+      publishTime:
+        choices:
+        - ALL
+        - ONE_DAY
+        - ONE_WEEK
+        - ONE_MONTH
+        - THREE_MONTHS
+        - HALF_YEAR
+        about: 'Filter posts by publishing time. Available Values: - ALL: All Time - ONE_DAY: Last 24 Hours - ONE_WEEK:
+          Last 7 Days - ONE_MONTH: Last 30 Days - THREE_MONTHS: Last 90 Days - HALF_YEAR: Last 180 Days'
+      region:
+        about: ISO 3166-1 alpha-2 country code (e.g., 'US', 'GB').
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-tiktok-shop-search-products:
+    title: Product Search
+    about: Searches TikTok Shop products by keyword within a selected region, with offset and page-token pagination.
+      Use it to discover regional products and continue through search results.
+    request: GET /api/tiktok-shop/search-products/v1
+    params:
+      keyword:
+        required: true
+        about: Search keyword.
+      region:
+        choices:
+        - US
+        - GB
+        - FR
+        - SG
+        - MY
+        - PH
+        - TH
+        - VN
+        - ID
+        about: 'Target region for product search. Available Values: - US: United States - GB: United Kingdom - FR:
+          France - SG: Singapore - MY: Malaysia - PH: Philippines - TH: Thailand - VN: Vietnam - ID: Indonesia'
+      offset:
+        type: integer
+        about: Search result offset.
+      pageToken:
+        about: Pagination token for the next page.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-tiktok-shop-get-product-detail:
+    title: Product Details
+    about: Retrieves the public TikTok Shop product detail for a product ID in a selected region. Use it to inspect
+      a known regional product after search or catalog discovery.
+    request: GET /api/tiktok-shop/get-product-detail/v1
+    params:
+      productId:
+        required: true
+        about: TikTok Shop Product ID.
+      region:
+        choices:
+        - US
+        - GB
+        - FR
+        - SG
+        - MY
+        - PH
+        - TH
+        - VN
+        - ID
+        about: 'Target region for product detail. Available Values: - US: United States - GB: United Kingdom - FR:
+          France - SG: Singapore - MY: Malaysia - PH: Philippines - TH: Thailand - VN: Vietnam - ID: Indonesia'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-instagram-get-user-detail:
+    title: User Profile
+    about: Retrieves an Instagram user profile by username. Use it to review a known account before creator research,
+      brand monitoring, or related post analysis.
+    request: GET /api/instagram/get-user-detail/v1
+    params:
+      username:
+        required: true
+        about: The Instagram username whose profile details are to be retrieved.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-instagram-get-user-detail-2:
+    title: User Profile
+    about: Retrieves an Instagram user profile by username. Use it to review a known account before creator research,
+      brand monitoring, or related post analysis.
+    request: GET /api/instagram/get-user-detail/v2
+    params:
+      username:
+        required: true
+        about: The Instagram username whose profile details are to be retrieved.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-instagram-get-post-detail:
+    title: Post Details
+    about: Retrieves an Instagram post by its shortcode. Use it to look up a known post before content review, archiving,
+      comment analysis, or related workflows.
+    request: GET /api/instagram/get-post-detail/v1
+    params:
+      code:
+        required: true
+        about: The unique shortcode from the Instagram post URL.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-instagram-get-user-posts:
+    title: User Published Posts
+    about: Retrieves posts published by an Instagram user with token-based pagination. Use it to browse a known
+      account's post history or continue through subsequent result pages.
+    request: GET /api/instagram/get-user-posts/v1
+    params:
+      username:
+        required: true
+        about: The Instagram username whose published posts are to be retrieved.
+      paginationToken:
+        about: Token used for retrieving the next page of results.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-instagram-general-search:
+    title: General Search
+    about: Performs a general search on Instagram by keyword with token-based pagination. Use it to discover matching
+      results, research topics, and continue through subsequent result pages.
+    request: GET /api/instagram/general-search/v1
+    params:
+      keyword:
+        required: true
+        about: The keyword to search for on Instagram.
+      paginationToken:
+        about: Pagination token from the previous response. Omit it for the first page.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-instagram-search-reels:
+    title: Reels Search
+    about: Searches Instagram Reels by keyword or hashtag with token-based pagination. Use it to discover short-form
+      videos, monitor topics, and continue through matching results.
+    request: GET /api/instagram/search-reels/v1
+    params:
+      keyword:
+        required: true
+        about: The search keyword or hashtag to filter Reels.
+      paginationToken:
+        about: Token used for retrieving the next page of results.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-instagram-search-hashtag-posts:
+    title: Hashtag Posts Search
+    about: Searches Instagram posts by hashtag with cursor pagination. Use it to explore tagged content, monitor
+      topics, and continue through subsequent result pages.
+    request: GET /api/instagram/search-hashtag-posts/v1
+    params:
+      hashtag:
+        required: true
+        about: The hashtag or keyword to search for.
+      endCursor:
+        about: Cursor used for retrieving the next page of results.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-instagram-get-post-comments:
+    title: Post Comment List
+    about: Retrieves top-level comments for an Instagram post by shortcode, with cursor pagination and popular or
+      newest sorting. Use it to review audience feedback or analyze discussion around a known post.
+    request: GET /api/instagram/get-post-comments/v1
+    params:
+      code:
+        required: true
+        about: The unique shortcode for the Instagram post.
+      minId:
+        about: Pagination cursor returned as next_min_id from the previous response.
+      sortOrder:
+        choices:
+        - popular
+        - newest
+        about: 'Sort order for the comments. Available Values: - popular: Popular - newest: Newest'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-instagram-get-comment-replies:
+    title: Comment Reply List
+    about: Retrieves replies to a specific Instagram post comment by media and comment IDs, with cursor pagination.
+      Use it to inspect threaded discussion and continue through reply pages.
+    request: GET /api/instagram/get-comment-replies/v1
+    params:
+      mediaId:
+        required: true
+        about: The numeric media ID of the Instagram post.
+      commentId:
+        required: true
+        about: The parent comment ID whose replies are to be retrieved.
+      minId:
+        about: Pagination cursor returned as next_min_child_cursor from the previous response.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-youtube-search:
+    title: General Search
+    about: Search YouTube videos by keyword with optional language, upload-date, duration, and sort filters, or
+      continue with a pagination token. Use it to discover public videos or browse additional result…
+    request: GET /api/youtube/search/v1
+    params:
+      keyword:
+        about: Search term. Required for the first page; leave empty when using nextToken.
+      lang:
+        about: Optional IETF language tag for localized results, such as en-US. Leave empty to use the default language.
+      uploadDate:
+        choices:
+        - all
+        - lastHour
+        - today
+        - thisWeek
+        - thisMonth
+        - thisYear
+        about: 'Upload-date filter. Available Values: - all: No upload-date limit - lastHour: Uploaded within the
+          last hour - today: Uploaded today - thisWeek: Uploaded this week - thisMonth: Uploaded this month -…'
+      duration:
+        choices:
+        - all
+        - short
+        - medium
+        - long
+        about: 'Video-duration filter. Available Values: - all: No duration limit - short: Short videos under 4
+          minutes - medium: Medium videos from 4 to 20 minutes - long: Long videos over 20 minutes'
+      sortBy:
+        choices:
+        - relevance
+        - uploadDate
+        - viewCount
+        - rating
+        about: 'Sort order for search results. Available Values: - relevance: Sort by relevance - uploadDate: Sort
+          by upload date - viewCount: Sort by view count - rating: Sort by rating'
+      nextToken:
+        about: Pagination token returned by the previous response. When provided, the keyword and filter parameters
+          are ignored; very long tokens may exceed GET URL limits.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-youtube-get-video-detail:
+    title: Video Details
+    about: Retrieve public details for a YouTube video identified by video ID. Use it to inspect a known video before
+      further content or comment analysis.
+    request: GET /api/youtube/get-video-detail/v1
+    params:
+      videoId:
+        required: true
+        about: The unique identifier for a YouTube video.
+      lang:
+        about: Optional IETF language tag for localized video details, such as en-US. Leave empty to use the default
+          language.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-youtube-get-channel-videos:
+    title: Channel Videos
+    about: Retrieve public videos from a YouTube channel, with optional cursor-based pagination. Use it to browse
+      a channel's uploads and continue through additional result pages.
+    request: GET /api/youtube/get-channel-videos/v1
+    params:
+      channelId:
+        required: true
+        about: The unique identifier for a YouTube channel.
+      cursor:
+        about: The cursor for pagination.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-youtube-get-video-captions:
+    title: Video Captions
+    about: Retrieve available caption tracks for a YouTube video or request captions in SRT, XML, JSON3, or plain-text
+      format. Use it to support transcription, accessibility, localization, or text analysis.
+    request: GET /api/youtube/get-video-captions/v1
+    params:
+      videoId:
+        required: true
+        about: The unique identifier for a YouTube video.
+      languageCode:
+        about: Caption language code, such as en, zh-Hans, or a.en. Leave it empty to retrieve available caption
+          tracks.
+      format:
+        choices:
+        - srt
+        - xml
+        - json3
+        - txt
+        about: 'Caption output format. Available Values: - srt: SubRip caption format with timeline cues - xml:
+          Original XML caption format - json3: YouTube original JSON caption structure - txt: Plain text without…'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-youtube-get-channel-shorts:
+    title: Channel Shorts
+    about: Retrieve public Shorts from a YouTube channel ID with optional continuation-token pagination. Use it
+      to browse a channel's short-form videos and continue through additional result pages.
+    request: GET /api/youtube/get-channel-shorts/v1
+    params:
+      channelId:
+        required: true
+        about: The UC-prefixed unique identifier for a YouTube channel. @username handles are not supported.
+      continuationToken:
+        about: Pagination token returned by the previous response.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-youtube-get-video-comment:
+    title: Video Comment List
+    about: Retrieve first-level comments for a YouTube video with sorting, locale options, and cursor pagination.
+      Use it to review audience discussion or continue through additional comment pages.
+    request: GET /api/youtube/get-video-comment/v1
+    params:
+      videoId:
+        required: true
+        about: The unique identifier for a YouTube video.
+      cursor:
+        about: Pagination cursor returned by the previous response.
+      languageCode:
+        about: Language preference for response data.
+      countryCode:
+        about: Region code for response data.
+      sortBy:
+        choices:
+        - top
+        - newest
+        about: 'Sort order for the comment list. Available Values: - top: Top comments - newest: Newest comments'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-youtube-get-video-sub-comment:
+    title: Video Sub Comment List
+    about: Retrieve replies associated with a YouTube comment continuation cursor, with optional locale settings.
+      Use it to follow threaded discussion beyond first-level comments.
+    request: GET /api/youtube/get-video-sub-comment/v1
+    params:
+      cursor:
+        required: true
+        about: Reply cursor from a first-level comment response.
+      languageCode:
+        about: Language preference for response data.
+      countryCode:
+        about: Region code for response data.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-reddit-get-post-detail:
+    title: Post Details
+    about: Retrieves details for a Reddit post identified by its full post ID. Use it to look up a known post before
+      discussion review, content analysis, or subsequent comment retrieval.
+    request: GET /api/reddit/get-post-detail/v1
+    params:
+      postId:
+        required: true
+        about: The Reddit post identifier in t3_ format.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-reddit-get-post-comments:
+    title: Post Comments
+    about: Retrieves comments for a Reddit post with pagination-token support. Use it to review a thread's discussion
+      or continue through additional comment results for a known post.
+    request: GET /api/reddit/get-post-comments/v1
+    params:
+      postId:
+        required: true
+        about: The unique identifier of the Reddit post.
+      cursor:
+        about: Pagination token for the next page of results.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-reddit-search:
+    title: Keyword Search
+    about: Searches Reddit posts by keyword with an optional continuation token. Use it to discover topic-related
+      discussions or continue through additional search-result pages.
+    request: GET /api/reddit/search/v1
+    params:
+      keyword:
+        required: true
+        about: Search query keywords.
+      after:
+        about: Pagination token to retrieve the next set of results.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-toutiao-get-article-detail:
+    title: Article Details
+    about: Retrieves details for a Toutiao article identified by its article ID. Use it to look up a known article
+      for content review, archiving, or related media analysis.
+    request: GET /api/toutiao/get-article-detail/v1
+    params:
+      id:
+        required: true
+        about: The unique identifier of the Toutiao article.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-toutiao-get-video-detail:
+    title: Video Details
+    about: Retrieves details for a Toutiao video identified by its video ID. Use it to look up a known video for
+      content review, archiving, or related media analysis.
+    request: GET /api/toutiao/get-video-detail/v1
+    params:
+      videoId:
+        required: true
+        about: The unique identifier of the Toutiao video.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-toutiao-get-user-detail:
+    title: User Profile
+    about: Retrieves a Toutiao user profile identified by user ID. Use it to look up a known account for creator
+      research, profile review, or related article analysis.
+    request: GET /api/toutiao/get-user-detail/v1
+    params:
+      userId:
+        required: true
+        about: The unique identifier of the Toutiao user.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-toutiao-get-user-id:
+    title: User ID
+    about: Resolves the user ID associated with a Toutiao profile URL. Use it to convert a known profile link into
+      the identifier required for subsequent user-profile lookups.
+    request: GET /api/toutiao/get-user-id/v1
+    params:
+      userProfileUrl:
+        required: true
+        about: The Toutiao user profile URL used to resolve the user ID.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-toutiao-search:
+    title: Web Keyword Search
+    about: Searches Toutiao web articles by keyword. Use it to discover relevant articles for topic research, media
+      monitoring, or source collection.
+    request: GET /api/toutiao/search/v2
+    params:
+      keyword:
+        required: true
+        about: Search keyword or query.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-zhihu-get-column-article-detail:
+    title: Column Article Details
+    about: Retrieve details for a Zhihu column article identified by article ID. Use it to inspect a known article
+      for reading, review, or archiving.
+    request: GET /api/zhihu/get-column-article-detail/v1
+    params:
+      id:
+        required: true
+        about: Article ID
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  zhihu-get-answer-list:
+    title: Answer List
+    about: Retrieve answers for a Zhihu question with sorting and pagination controls. Use it to browse responses
+      to a known question and continue through additional answer pages.
+    request: GET /api/zhihu/get-answer-list/v1
+    params:
+      questionId:
+        required: true
+        about: Question ID
+      cursor:
+        about: Pagination cursor from previous result.
+      offset:
+        type: integer
+        about: Start offset, begins with 0.
+      order:
+        choices:
+        - _default
+        - _updated
+        about: 'Sorting criteria for answers. Available Values: - _default: Default sorting. - _updated: Sorted
+          by updated time.'
+      sessionId:
+        about: Session ID from previous result.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-zhihu-search:
+    title: Keyword Search
+    about: Search Zhihu by keyword with optional result-type, sort, time-interval, topic-display, and offset controls.
+      Use it to find relevant answers, articles, or videos.
+    request: GET /api/zhihu/search/v1
+    params:
+      keyword:
+        required: true
+        about: Search keywords.
+      offset:
+        type: integer
+        about: Start offset, begins with 0.
+      showAllTopics:
+        choices:
+        - 'FALSE'
+        - 'TRUE'
+        about: 'Whether to show all topics. Available Values: - FALSE: Do not show topics. - TRUE: Show all topics.'
+      vertical:
+        choices:
+        - answer
+        - article
+        - zvideo
+        about: 'Result type filter. Available Values: - answer: Answers only. - article: Articles only. - zvideo:
+          Videos only.'
+      sort:
+        choices:
+        - upvoted_count
+        - created_time
+        about: 'Sorting criteria. Available Values: - upvoted_count: Most upvoted. - created_time: Latest published.'
+      timeInterval:
+        choices:
+        - a_day
+        - a_week
+        - a_month
+        - three_months
+        - half_a_year
+        - a_year
+        about: 'Publish time interval filter. Available Values: - a_day: Within one day. - a_week: Within one week.
+          - a_month: Within one month. - three_months: Within three months. - half_a_year: Within half a…'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  zhihu-get-column-article-list:
+    title: Column Article List
+    about: Retrieve articles from a Zhihu column with offset pagination. Use it to browse a known column's publication
+      history and select articles for detail lookup.
+    request: GET /api/zhihu/get-column-article-list/v1
+    params:
+      columnId:
+        required: true
+        about: Column ID
+      offset:
+        type: integer
+        about: Start offset, begins with 0.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-zhihu-get-user-info:
+    title: User Info
+    about: Retrieve the public profile for a Zhihu user identified by URL token. Use it to inspect an account found
+      through Zhihu content or relationship data.
+    request: GET /api/zhihu/get-user-info/v1
+    params:
+      userUrlToken:
+        required: true
+        about: Zhihu user URL token, such as the value in zhihu.com/people/{userUrlToken}.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-zhihu-get-user-followees:
+    title: User Followees
+    about: Retrieve accounts followed by a Zhihu user, with offset pagination. Use it to explore the outgoing connections
+      of a known account.
+    request: GET /api/zhihu/get-user-followees/v1
+    params:
+      userUrlToken:
+        required: true
+        about: Zhihu user URL token, such as the value in zhihu.com/people/{userUrlToken}.
+      offset:
+        type: integer
+        about: Start offset, begins with 0.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-zhihu-get-user-followers:
+    title: User Followers
+    about: Retrieve accounts that follow a Zhihu user, with offset pagination. Use it to explore the audience connections
+      of a known account.
+    request: GET /api/zhihu/get-user-followers/v1
+    params:
+      userUrlToken:
+        required: true
+        about: Zhihu user URL token, such as the value in zhihu.com/people/{userUrlToken}.
+      offset:
+        type: integer
+        about: Start offset, begins with 0.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-zhihu-get-user-articles:
+    title: User Articles
+    about: Retrieve articles published by a Zhihu user with offset pagination and publish-time or upvote sorting.
+      Use it to browse a creator's articles in the selected order.
+    request: GET /api/zhihu/get-user-articles/v1
+    params:
+      userUrlToken:
+        required: true
+        about: Zhihu user URL token, such as the value in zhihu.com/people/{userUrlToken}.
+      offset:
+        type: integer
+        about: Start offset, begins with 0.
+      sortType:
+        choices:
+        - created
+        - voteups
+        about: 'Sorting criteria for user articles. Available Values: - created: Sort by publish time. - voteups:
+          Sort by upvote count.'
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-zhihu-get-user-included-articles:
+    title: User Included Articles
+    about: Retrieve the included-article records exposed for a Zhihu user, with offset pagination. Use it to browse
+      that account's included-article list.
+    request: GET /api/zhihu/get-user-included-articles/v1
+    params:
+      userUrlToken:
+        required: true
+        about: Zhihu user URL token, such as the value in zhihu.com/people/{userUrlToken}.
+      offset:
+        type: integer
+        about: Start offset, begins with 0.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-zhihu-get-user-follow-columns:
+    title: User Follow Columns
+    about: Retrieve Zhihu columns followed by a user, with offset pagination. Use it to browse the columns associated
+      with a known account's follow activity.
+    request: GET /api/zhihu/get-user-follow-columns/v1
+    params:
+      userUrlToken:
+        required: true
+        about: Zhihu user URL token, such as the value in zhihu.com/people/{userUrlToken}.
+      offset:
+        type: integer
+        about: Start offset, begins with 0.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  zhihu-get-user-follow-collections:
+    title: User Follow Collections
+    about: Retrieve Zhihu collections followed by a user, with offset pagination. Use it to browse the collections
+      associated with a known account's follow activity.
+    request: GET /api/zhihu/get-user-follow-collections/v1
+    params:
+      userUrlToken:
+        required: true
+        about: Zhihu user URL token, such as the value in zhihu.com/people/{userUrlToken}.
+      offset:
+        type: integer
+        about: Start offset, begins with 0.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-zhihu-get-user-follow-topics:
+    title: User Follow Topics
+    about: Retrieve Zhihu topics followed by a user, with offset pagination. Use it to browse the topics associated
+      with a known account's follow activity.
+    request: GET /api/zhihu/get-user-follow-topics/v1
+    params:
+      userUrlToken:
+        required: true
+        about: Zhihu user URL token, such as the value in zhihu.com/people/{userUrlToken}.
+      offset:
+        type: integer
+        about: Start offset, begins with 0.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-zhihu-get-answer-comments:
+    title: Answer Comments
+    about: Retrieve comments for a Zhihu answer with hottest or latest sorting and offset pagination. Use it to
+      review discussion around a known answer and continue through additional comment pages.
+    request: GET /api/zhihu/get-answer-comments/v1
+    params:
+      answerId:
+        required: true
+        about: Answer ID
+      orderBy:
+        choices:
+        - score
+        - ts
+        about: 'Sorting order for comments. Available Values: - score: Sort by highest score. - ts: Sort by latest
+          time.'
+      offset:
+        about: Pagination offset from the previous result.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-zhihu-get-comment-replies:
+    title: Comment Replies
+    about: Retrieve replies to a Zhihu comment with hottest or latest sorting and offset pagination. Use it to follow
+      discussion under a known comment and continue through additional reply pages.
+    request: GET /api/zhihu/get-comment-replies/v1
+    params:
+      commentId:
+        required: true
+        about: Comment ID
+      orderBy:
+        choices:
+        - score
+        - ts
+        about: 'Sorting order for replies. Available Values: - score: Sort by highest score. - ts: Sort by latest
+          time.'
+      offset:
+        about: Pagination offset from the previous result.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  facebook-search-post:
+    title: Post Search
+    about: Searches public Facebook posts by keyword with optional inclusive date-range filters and cursor pagination.
+      Use it to find topic-related posts or continue a time-bounded public-content search.
+    request: GET /api/facebook/search-post/v1
+    params:
+      keyword:
+        required: true
+        about: Keyword to search for in public posts. Supports basic text matching.
+      startDate:
+        about: Start date for the search range (inclusive), formatted as yyyy-MM-dd.
+      endDate:
+        about: End date for the search range (inclusive), formatted as yyyy-MM-dd.
+      cursor:
+        about: Pagination cursor for fetching the next set of results.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-facebook-get-profile-id:
+    title: Get Profile ID
+    about: Resolves the Facebook profile ID associated with a submitted profile-path value. Use it to obtain the
+      identifier required before retrieving posts for a known public profile.
+    request: GET /api/facebook/get-profile-id/v1
+    params:
+      url:
+        required: true
+        about: The path portion of the Facebook profile URL, such as /. Do not include the scheme or host.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-facebook-get-profile-posts:
+    title: Get Profile Posts
+    about: Retrieves public posts for a Facebook profile ID with cursor pagination. Use it to browse a known profile's
+      public posting history or continue through subsequent post pages.
+    request: GET /api/facebook/get-profile-posts/v1
+    params:
+      profileId:
+        required: true
+        about: The unique Facebook profile ID.
+      cursor:
+        about: Pagination cursor for fetching the next set of results.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-facebook-get-post-comments:
+    title: Post Comments
+    about: Retrieves comments for a Facebook post ID with cursor pagination. Use it to review discussion associated
+      with a known public post or continue through subsequent comment pages.
+    request: GET /api/facebook/get-post-comments/v1
+    params:
+      postId:
+        required: true
+        about: The unique identifier of the Facebook post.
+      cursor:
+        about: Pagination cursor for fetching the next set of comments.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-facebook-get-comment-replies:
+    title: Comment Replies
+    about: Retrieves replies to a specific Facebook post comment using the legacy post ID, comment ID, and expansion
+      token. Use it to inspect a known comment's nested discussion.
+    request: GET /api/facebook/get-comment-replies/v1
+    params:
+      postId:
+        required: true
+        about: The legacy numeric identifier of the Facebook post.
+      commentId:
+        required: true
+        about: The unique identifier of the parent Facebook comment.
+      expansionToken:
+        required: true
+        about: The expansion token associated with the parent Facebook comment.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-twitter-search:
+    title: Search Timeline
+    about: Searches X (Twitter) by keyword across top, latest, media, people, or list result modes with cursor pagination.
+      Use it to find public conversations, accounts, media, or lists related to a topic.
+    request: GET /api/twitter/search/v1
+    params:
+      keyword:
+        required: true
+        about: Search keyword.
+      searchType:
+        choices:
+        - TOP
+        - LATEST
+        - MEDIA
+        - PEOPLE
+        - LISTS
+        about: 'Search result type. Available Values: - TOP: Top search results - LATEST: Latest search results
+          - MEDIA: Media search results - PEOPLE: People search results - LISTS: List search results'
+      cursor:
+        about: Pagination cursor returned by the previous response.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-twitter-get-user-detail:
+    title: User Profile
+    about: Retrieves an X (Twitter) user profile identified by its numeric Rest ID. Use it to review a known account
+      before monitoring its posts or conducting creator and account research.
+    request: GET /api/twitter/get-user-detail/v1
+    params:
+      restId:
+        required: true
+        about: The unique numeric identifier (Rest ID) for the X user.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-twitter-get-user-posts:
+    title: User Published Posts
+    about: Retrieves posts published by an X (Twitter) user identified by Rest ID, with cursor pagination. Use it
+      to browse a known account's timeline or continue through its public post history.
+    request: GET /api/twitter/get-user-posts/v1
+    params:
+      restId:
+        required: true
+        about: The unique numeric identifier (Rest ID) for the X user.
+      cursor:
+        about: Pagination cursor for navigating through long timelines.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-twitter-get-post-comments:
+    title: Post Comments
+    about: Retrieves the latest comments for an X (Twitter) post identified by tweet ID, with cursor pagination.
+      Use it to review recent discussion on a known post and continue through additional comment pages.
+    request: GET /api/twitter/get-post-comments/v1
+    params:
+      tweetId:
+        required: true
+        about: The unique identifier of the X (Twitter) post.
+      cursor:
+        about: Pagination cursor returned by the previous response.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-twitter-get-post-detail:
+    title: Post Detail
+    about: Retrieves the full detail of an X (Twitter) post identified by its tweet ID. Use it to inspect a known
+      post after finding it through search, a user timeline, or an existing post URL.
+    request: GET /api/twitter/get-post-detail/v1
+    params:
+      tweetId:
+        required: true
+        about: The unique identifier of the X (Twitter) post.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-linkedin-get-user-detail:
+    title: User Profile
+    about: Retrieves a LinkedIn profile by username, including documented core profile fields such as name and headline.
+      Use it to inspect a person's professional background or before requesting published posts.
+    request: GET /api/linkedin/get-user-detail/v1
+    params:
+      username:
+        required: true
+        about: LinkedIn username from the profile URL, for example jack from linkedin.com/in/jack.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-linkedin-get-user-posts:
+    title: User Published Posts
+    about: Retrieves posts published, commented on, or reacted to by a LinkedIn member using a profile URL, activity
+      type, offset, and pagination token. Use it to review public professional activity and…
+    request: GET /api/linkedin/get-user-posts/v1
+    params:
+      url:
+        required: true
+        about: Full LinkedIn profile URL.
+      type:
+        choices:
+        - POSTS
+        - COMMENTS
+        - REACTIONS
+        about: 'User activity type. Available Values: - POSTS: Posts published by the user - COMMENTS: Posts commented
+          on by the user - REACTIONS: Posts reacted to by the user'
+      start:
+        type: integer
+        about: Pagination offset starting from 0, normally increasing by 50.
+      paginationToken:
+        about: Pagination token returned by a previous response.
+    price:
+      per: call
+      note: billed per successful request; see pricing
+  get-api-linkedin-get-post-comments:
+    title: Post Comments
+    about: Retrieves LinkedIn comments for an activity post with relevance or recent sorting, page-based navigation,
+      a pagination token, and optional share URN. Use it to review public discussion around known…
+    request: GET /api/linkedin/get-post-comments/v1
+    params:
+      postId:
+        required: true
+        about: LinkedIn post ID.
+      page:
+        type: integer
+        about: Page number, starting from 1.
+      sortOrder:
+        choices:
+        - RELEVANCE
+        - RECENT
+        about: 'Comment sort order. Available Values: - RELEVANCE: Sort comments by relevance - RECENT: Sort comments
+          from most recent'
+      paginationToken:
+        about: Pagination token returned by a previous response.
+      shareUrn:
+        about: Optional share URN for a shared post.
+    price:
+      per: call
+      note: billed per successful request; see pricing

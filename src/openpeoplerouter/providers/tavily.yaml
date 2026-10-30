@@ -1,0 +1,448 @@
+id: tavily
+title: Tavily
+about: Web search, extraction, crawling and research built for AI agents.
+site: https://tavily.com
+docs: https://docs.tavily.com
+pricing: https://tavily.com/pricing
+api: https://api.tavily.com
+key:
+  env: TAVILY_API_KEY
+  bearer: true
+operations:
+  search:
+    title: Search for data based on a query
+    about: Execute a search query using Tavily Search.
+    request: POST /search
+    params:
+      query:
+        in: body
+        required: true
+        about: The search query to execute with Tavily.
+      search_depth:
+        in: body
+        choices:
+        - advanced
+        - basic
+        - fast
+        - ultra-fast
+        about: 'Controls the latency vs. relevance tradeoff and how results[].content is generated: - advanced:
+          Highest relevance with increased latency. Best for detailed, high-precision queries. Returns multiple…'
+      chunks_per_source:
+        in: body
+        type: integer
+        about: Chunks are short content snippets (about 500 characters each for basic and fast, 800 for advanced)
+          pulled directly from the source. Use chunks_per_source to define the maximum number of relevant…
+      max_results:
+        in: body
+        type: integer
+        about: The maximum number of search results to return.
+      topic:
+        in: body
+        choices:
+        - general
+        - news
+        - finance
+        about: The category of the search.news is useful for retrieving real-time updates, particularly about politics,
+          sports, and major current events covered by mainstream media sources. general is for broader,…
+      time_range:
+        in: body
+        choices:
+        - day
+        - week
+        - month
+        - year
+        - d
+        - w
+        - m
+        - y
+        about: The time range back from the current date to filter results based on publish date or last updated
+          date. Useful when looking for sources that have published or updated data. By default, results with…
+      start_date:
+        in: body
+        about: Will return all results after the specified start date based on publish date or last updated date.
+          Required to be written in the format YYYY-MM-DD. By default, results with no detectable published…
+      end_date:
+        in: body
+        about: Will return all results before the specified end date based on publish date or last updated date.
+          Required to be written in the format YYYY-MM-DD. By default, results with no detectable published…
+      include_published_date:
+        in: body
+        type: boolean
+        about: Include a published_date field in each result. The date is Tavily's best estimate of when the source
+          was published or last updated, so it can be later than the original publish date. Results with no…
+      filter_by_published_date:
+        in: body
+        type: boolean
+        about: Remove results whose published date falls outside the time_range, start_date, or end_date window.
+          Results with no detectable published date are also removed. Setting this to true also enables…
+      max_age_hours:
+        in: body
+        type: integer
+        about: 'The maximum age in hours of Tavily''s cached copy of each result. Accepted values: - unset (default):
+          Tavily serves cached copies and fetches pages live as needed. - 1 to 720 (30 days): only return a…'
+      include_answer:
+        in: body
+        type: boolean
+        about: Include an LLM-generated answer to the provided query. basic or true returns a quick answer. advanced
+          returns a more detailed answer.
+      include_raw_content:
+        in: body
+        type: boolean
+        about: Include the cleaned and parsed HTML content of each search result. markdown or true returns search
+          result content in markdown format. text returns the plain text from the results and may increase…
+      include_images:
+        in: body
+        type: boolean
+        about: Include images in the response. Returns both a top-level images list of query-related images and
+          an images array inside each result object with images extracted from that specific source.
+      include_image_descriptions:
+        in: body
+        type: boolean
+        about: When include_images is true, also add a descriptive text for each image.
+      include_favicon:
+        in: body
+        type: boolean
+        about: Whether to include the favicon URL for each result.
+      include_domains:
+        in: body
+        type: array
+        about: A list of domains to specifically include in the search results. Maximum 300 domains.
+      exclude_domains:
+        in: body
+        type: array
+        about: A list of domains to specifically exclude from the search results. Maximum 150 domains.
+      include_domains_mode:
+        in: body
+        choices:
+        - restrict
+        - prefer
+        about: Controls how include_domains is applied. restrict limits results to only the listed domains. prefer
+          also searches the rest of the web, so results outside include_domains can still surface, rather…
+      country:
+        in: body
+        about: Boost search results from a specific country. This will prioritize content from the selected country
+          in the search results. Available only if topic is general.
+      language:
+        in: body
+        about: Boost search results in a specific language. Accepts an ISO 639-1 code (e.g. en, fr, zh-cn) or an
+          English language name (e.g. english, french). By default this only boosts matching-language results…
+      filter_by_language:
+        in: body
+        type: boolean
+        about: Strictly filter out search results that don't match the language parameter, instead of only boosting
+          them in ranking. Requires language to be set; returns a 400 error otherwise.
+      auto_parameters:
+        in: body
+        type: boolean
+        about: When auto_parameters is enabled, Tavily automatically configures search parameters based on your
+          query's content and intent. You can still set other parameters manually, and your explicit values will…
+      exact_match:
+        in: body
+        type: boolean
+        about: Ensure that only search results containing the exact quoted phrase(s) in the query are returned,
+          bypassing synonyms or semantic variations. Wrap target phrases in quotes within your query (e.g. "John…
+      include_usage:
+        in: body
+        type: boolean
+        about: Whether to include credit usage information in the response.
+      safe_search:
+        in: body
+        type: boolean
+        about: Whether to filter out adult or unsafe content from results. Not supported for fast or ultra-fast
+          search depths.
+    price:
+      credits: 1
+      per: call
+      note: advanced search costs 2
+  extract:
+    title: Retrieve raw web content from specified URLs
+    about: Extract content from one URL or batch up to 20 URLs in one request. Successful URLs appear in results;
+      per-URL failures appear in failed_results. Check both arrays even when the response is HTTP 200.…
+    request: POST /extract
+    params:
+      urls:
+        in: body
+        type: array
+        required: true
+      query:
+        in: body
+        about: User intent for reranking extracted content chunks. When provided, chunks are reranked based on relevance
+          to this query.
+      chunks_per_source:
+        in: body
+        type: integer
+        about: Chunks are short content snippets (about 800 characters each) pulled directly from the source. Use
+          chunks_per_source to define the maximum number of relevant chunks returned per source and to control…
+      extract_depth:
+        in: body
+        choices:
+        - basic
+        - advanced
+        about: The depth of the extraction process. advanced extraction retrieves more data, including tables and
+          embedded content, with higher success but may increase latency.basic extraction costs 1 credit per 5…
+      include_images:
+        in: body
+        type: boolean
+        about: Include a list of images extracted from the URLs in the response. Default is false.
+      include_favicon:
+        in: body
+        type: boolean
+        about: Whether to include the favicon URL for each result.
+      format:
+        in: body
+        choices:
+        - markdown
+        - text
+        about: The format of the extracted web page content. markdown returns content in markdown format. text returns
+          plain text and may increase latency.
+      timeout:
+        in: body
+        type: number
+        about: 'Maximum time in seconds to wait for the URL extraction before timing out. Must be between 1.0 and
+          60.0 seconds. If not specified, default timeouts are applied based on extract_depth: 10 seconds for…'
+      include_usage:
+        in: body
+        type: boolean
+        about: Whether to include credit usage information in the response. NOTE:The value may be 0 if the total
+          successful URL extractions has not yet reached 5 calls. See our Credits & Pricing documentation for…
+    price:
+      credits: 1
+      per: call
+      note: advanced search costs 2
+  crawl:
+    title: Initiate a web crawl from a base URL
+    about: Tavily Crawl is a graph-based website traversal tool that can explore hundreds of paths in parallel with
+      built-in extraction and intelligent discovery.
+    request: POST /crawl
+    params:
+      url:
+        in: body
+        required: true
+        about: The root URL to begin the crawl.
+      instructions:
+        in: body
+        about: Natural language instructions for the crawler. When specified, the mapping cost increases to 2 API
+          credits per 10 successful pages instead of 1 API credit per 10 pages.
+      chunks_per_source:
+        in: body
+        type: integer
+        about: Chunks are short content snippets (about 800 characters each) pulled directly from the source. Use
+          chunks_per_source to define the maximum number of relevant chunks returned per source and to control…
+      max_depth:
+        in: body
+        type: integer
+        about: Max depth of the crawl. Defines how far from the base URL the crawler can explore.
+      max_breadth:
+        in: body
+        type: integer
+        about: Max number of links to follow per level of the tree (i.e., per page).
+      limit:
+        in: body
+        type: integer
+        about: Total number of links the crawler will process before stopping.
+      select_paths:
+        in: body
+        type: array
+        about: Regex patterns to select only URLs with specific path patterns (e.g., /docs/.*, /api/v1.*).
+      select_domains:
+        in: body
+        type: array
+        about: Regex patterns to select crawling to specific domains or subdomains (e.g., ^docs\.example\.com$).
+      exclude_paths:
+        in: body
+        type: array
+        about: Regex patterns to exclude URLs with specific path patterns (e.g., /private/.*, /admin/.*).
+      exclude_domains:
+        in: body
+        type: array
+        about: Regex patterns to exclude specific domains or subdomains from crawling (e.g., ^private\.example\.com$).
+      allow_external:
+        in: body
+        type: boolean
+        about: Whether to include external domain links in the final results list.
+      include_images:
+        in: body
+        type: boolean
+        about: Whether to include images in the crawl results.
+      extract_depth:
+        in: body
+        choices:
+        - basic
+        - advanced
+        about: Advanced extraction retrieves more data, including tables and embedded content, with higher success
+          but may increase latency. basic extraction costs 1 credit per 5 successful extractions, while…
+      format:
+        in: body
+        choices:
+        - markdown
+        - text
+        about: The format of the extracted web page content. markdown returns content in markdown format. text returns
+          plain text and may increase latency.
+      include_favicon:
+        in: body
+        type: boolean
+        about: Whether to include the favicon URL for each result.
+      timeout:
+        in: body
+        type: number
+        about: Maximum time in seconds to wait for the crawl operation before timing out. Must be between 10 and
+          150 seconds.
+      include_usage:
+        in: body
+        type: boolean
+        about: Whether to include credit usage information in the response. NOTE:The value may be 0 if the total
+          use of /extract and /map have not yet reached minimum requirements. See our Credits & Pricing…
+    price:
+      credits: 1
+      per: call
+      note: advanced search costs 2
+  map:
+    title: Initiate a web mapping from a base URL
+    about: Tavily Map traverses websites like a graph and can explore hundreds of paths in parallel with intelligent
+      discovery to generate comprehensive site maps.
+    request: POST /map
+    params:
+      url:
+        in: body
+        required: true
+        about: The root URL to begin the mapping.
+      instructions:
+        in: body
+        about: Natural language instructions for the crawler. When specified, the cost increases to 2 API credits
+          per 10 successful pages instead of 1 API credit per 10 pages.
+      max_depth:
+        in: body
+        type: integer
+        about: Max depth of the mapping. Defines how far from the base URL the crawler can explore.
+      max_breadth:
+        in: body
+        type: integer
+        about: Max number of links to follow per level of the tree (i.e., per page).
+      limit:
+        in: body
+        type: integer
+        about: Total number of links the crawler will process before stopping.
+      select_paths:
+        in: body
+        type: array
+        about: Regex patterns to select only URLs with specific path patterns (e.g., /docs/.*, /api/v1.*).
+      select_domains:
+        in: body
+        type: array
+        about: Regex patterns to select crawling to specific domains or subdomains (e.g., ^docs\.example\.com$).
+      exclude_paths:
+        in: body
+        type: array
+        about: Regex patterns to exclude URLs with specific path patterns (e.g., /private/.*, /admin/.*).
+      exclude_domains:
+        in: body
+        type: array
+        about: Regex patterns to exclude specific domains or subdomains from crawling (e.g., ^private\.example\.com$).
+      allow_external:
+        in: body
+        type: boolean
+        about: Whether to include external domain links in the final results list.
+      timeout:
+        in: body
+        type: number
+        about: Maximum time in seconds to wait for the map operation before timing out. Must be between 10 and 150
+          seconds.
+      include_usage:
+        in: body
+        type: boolean
+        about: Whether to include credit usage information in the response.NOTE:The value may be 0 if the total
+          successful pages mapped has not yet reached 10 calls. See our Credits & Pricing documentation for…
+    price:
+      credits: 1
+      per: call
+      note: advanced search costs 2
+  create-research:
+    title: Initiate a research task
+    about: Tavily Research performs comprehensive research on a given topic by conducting multiple searches, analyzing
+      sources, and generating a detailed research report.
+    request: POST /research
+    params:
+      input:
+        in: body
+        required: true
+        about: The research task or question to investigate.
+      model:
+        in: body
+        choices:
+        - mini
+        - pro
+        - auto
+        about: The model used by the research agent. "mini" is optimized for targeted, efficient research and works
+          best for narrow or well-scoped questions. "pro" provides comprehensive, multi-angle research and…
+      stream:
+        in: body
+        type: boolean
+        about: Whether to stream the research results as they are generated. When 'true', returns a Server-Sent
+          Events (SSE) stream. See Streaming documentation for details.
+      output_schema:
+        in: body
+        type: object
+        about: A JSON Schema object that defines the structure of the research output. When provided, the research
+          response will be structured to match this schema, ensuring a predictable and validated output…
+      citation_format:
+        in: body
+        choices:
+        - numbered
+        - mla
+        - apa
+        - chicago
+        about: The format for citations in the research report.
+      include_domains:
+        in: body
+        type: array
+        about: Soft preference for sources. The research agent prioritizes these domains, but URLs from other domains
+          can still appear in the final report. Matching is host-based and includes subdomains (e.g.,…
+      exclude_domains:
+        in: body
+        type: array
+        about: Hard blocklist. No URL from a listed domain or any of its subdomains appears in the response. Subdomain
+          matching is downward only — blocking medium.com also blocks blog.medium.com, but blocking…
+      output_length:
+        in: body
+        choices:
+        - short
+        - standard
+        - long
+        about: Typed control over response size. Ranges are targets, not hard caps — individual responses can fall
+          outside when the question requires it.
+      files:
+        in: body
+        type: array
+        about: Attach files to the research request and the agent uses their contents as a source alongside the
+          web. Each entry carries a filename and its base64-encoded contents. The agent reads the relevant parts…
+    price:
+      credits: 1
+      per: call
+      note: advanced search costs 2
+  get-research:
+    title: Get research task status and results
+    about: Retrieve the status and results of a research task using its request ID.
+    request: GET /research/{request_id}
+    params:
+      request_id:
+        in: path
+        required: true
+        about: The unique identifier of the research task.
+      include_usage:
+        type: boolean
+        about: Whether to include credit usage information in the response.
+    price:
+      credits: 1
+      per: call
+      note: advanced search costs 2
+  get-usage:
+    title: Get API key and account usage details
+    request: GET /usage
+    params:
+      X-Project-ID:
+        in: header
+        about: Optional project ID to scope the usage query to a specific project
+    price:
+      credits: 1
+      per: call
+      note: advanced search costs 2

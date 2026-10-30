@@ -1,0 +1,1431 @@
+id: coresignal
+title: Coresignal
+about: Employee and company records from public professional profiles, with history, headcount and job postings,
+  searchable by filters or Elasticsearch.
+site: https://coresignal.com
+docs: https://docs.coresignal.com
+pricing: https://coresignal.com/pricing/
+api: https://api.coresignal.com/cdapi
+key:
+  env: CORESIGNAL_API_KEY
+  header: apikey
+operations:
+  company-base-by-id:
+    title: Read Base Company
+    request: GET /v2/company_base/collect/{company_id}
+    params:
+      company_id:
+        in: path
+        type: integer
+        required: true
+        about: Company ID as mentioned in coresignal’s database
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  company-base-by-name:
+    title: Find Base Company
+    request: GET /v2/company_base/collect/{shorthand_name}
+    params:
+      shorthand_name:
+        in: path
+        required: true
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  company-base-search-filter:
+    title: Search Base Companies
+    request: POST /v2/company_base/search/filter
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      sort:
+        about: Sort results by a field, currently accepts a list with either id or last_updated value
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      name:
+        in: body
+        about: 'Full name (as input in Linkedin’s public profile) of a company. E.g.: ''Tesla'', (''Microsoft''
+          OR ''Labs'')'
+      website:
+        in: body
+        about: 'Search based on company''s website domain. E.g.: ''microsoft.com''; ''tesla.com'''
+      exact_website:
+        in: body
+        about: 'Search based on the exact company''s website URL. E.g.: ''https://www.microsoft.com''; ''https://www.tesla.com'''
+      size:
+        in: body
+        about: 'Company size as seen in LinkedIn. E.g.: ''1-10 employees''; ''1,001-5,000 employees'''
+      industry:
+        in: body
+        about: 'Industry, company operates in. E.g.: ''(Information Technology) OR Agriculture''; ''Internet'''
+      country:
+        in: body
+        about: 'Country of the company as parsed by our in-house country parser. E.g.: ''(United States) OR Germany'';
+          ''France'''
+      location:
+        in: body
+        about: 'Location of the company as input by the company on Linkedin. E.g.: ''London''; ''Denver, Colorado'''
+      created_at_gte:
+        in: body
+        about: 'Date and time when the company record was created in Coresignal''s database. Greater (or equal)
+          than {value}. E.g.: 2021-06-26 12:21:01'
+      created_at_lte:
+        in: body
+        about: 'Data and time when the company record was created in Coresignal''s database. Less (or equal) than
+          {value}. E.g.: 2021-06-26 12:21:01'
+      last_updated_gte:
+        in: body
+        about: 'Data and time when the company record was last updated. Greater (or equal) than {value}. E.g.: 2021-02-26
+          12:41:01'
+      last_updated_lte:
+        in: body
+        about: 'Data and time when the company record was last updated. Less (or equal) than {value}. E.g.: 2021-02-26
+          12:41:01'
+      deleted:
+        in: body
+        type: boolean
+        about: Company's profile is deleted. True/False
+      employees_count_gte:
+        in: body
+        type: integer
+        about: 'Employees on Linkedin, who associated their experience with a company. Greater (or equal) than {value}.
+          E.g.: 20'
+      employees_count_lte:
+        in: body
+        type: integer
+        about: 'Employees on Linkedin, who associated their experience with a company. Less (or equal) than {value}.
+          E.g.: 50'
+      source_id:
+        in: body
+        type: integer
+        about: Unique ID on Linkedin database
+      founded_year_gte:
+        in: body
+        type: integer
+        about: 'Year when the company was founded. Greater (or equal) than {value}. E.g.: 2000'
+      founded_year_lte:
+        in: body
+        type: integer
+        about: 'Year when the company was founded. Less (or equal) than {value}. E.g.: 2020'
+      funding_total_rounds_count_gte:
+        in: body
+        type: integer
+        about: 'Number of funding rounds. Greater (or equal) than {value}. E.g.: 20'
+      funding_total_rounds_count_lte:
+        in: body
+        type: integer
+        about: 'Number of funding rounds. Less (or equal) than {value}. E.g.: 50'
+      funding_last_round_type:
+        in: body
+        about: 'Type of the last funding round. E.g.: ''Series A'''
+      funding_last_round_date_gte:
+        in: body
+        about: 'Date of the last funding round. Greater (or equal) than {value}. E.g.: 2021-02-26'
+      funding_last_round_date_lte:
+        in: body
+        about: 'Date of the last funding round. Less (or equal) than {value}. E.g.: 2021-02-26'
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  company-base-search-es-dsl:
+    title: Search Base Company Query
+    request: POST /v2/company_base/search/es_dsl
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      query:
+        in: body
+        type: object
+        required: true
+        about: Query written in Elasticsearch Query DSL
+      sort:
+        in: body
+        type: array
+        about: Sort results by a field, currently accepts a list with either _score or id value
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  employee-base-by-id:
+    title: Read Base Employee
+    request: GET /v2/employee_base/collect/{employee_id}
+    params:
+      employee_id:
+        in: path
+        type: integer
+        required: true
+        about: Employee ID as mentioned in coresignal’s database
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  employee-base-by-name:
+    title: Find Base Employee
+    request: GET /v2/employee_base/collect/{shorthand_name}
+    params:
+      shorthand_name:
+        in: path
+        required: true
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  employee-base-search-es-dsl:
+    title: Search Base Employee Query
+    request: POST /v2/employee_base/search/es_dsl
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      query:
+        in: body
+        type: object
+        required: true
+        about: Query written in Elasticsearch Query DSL
+      sort:
+        in: body
+        type: array
+        about: Sort results by a field, currently accepts a list with either _score or id value
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  employee-base-search-filter:
+    title: Search Base Employees
+    request: POST /v2/employee_base/search/filter
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      sort:
+        about: Sort results by a field, currently accepts a list with either id or last_updated value
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      full_name:
+        in: body
+        about: 'Full name (as input in Linkedin''s public profile) of an employee. E.g.: ''John Doe'''
+      headline:
+        in: body
+        about: 'Headline (Headline field in Linkedin''s public profile) of an employee. E.g.: ''Python developer'''
+      location:
+        in: body
+        about: 'Employee''s location as input by the employee on Linkedin. E.g.: ''Berlin''; ''Greater Chicago Area'''
+      industry:
+        in: body
+        about: 'Employee''s industry as input by the employee on Linkedin (not directly related to any particular
+          work experience). E.g.: ''Information Technology'' OR ''Internet''. For exact match search, use escaped…'
+      summary:
+        in: body
+        about: Text in employee’s profile summary field. E.g. 'python'; '(project manager) OR scrum'
+      created_at_gte:
+        in: body
+        about: 'Date and time when the employee record was created in Coresignal''s database. Greater (or equal)
+          than {value}. E.g.: 2021-01-26 12:41:10'
+      created_at_lte:
+        in: body
+        about: 'Date and time when the employee record was created in Coresignal''s database. Less (or equal) than
+          {value}. E.g.: 2021-01-26 12:41:10'
+      updated_at_gte:
+        in: body
+        about: 'Date and time when the employee record was last updated. Greater (or equal) than {value}. E.g.:
+          2021-02-26 12:41:01'
+      updated_at_lte:
+        in: body
+        about: 'Date and time when the employee record was last updated. Less (or equal) than {value}. E.g.: 2021-02-26
+          12:41:01'
+      deleted:
+        in: body
+        type: boolean
+        about: Employee's profile is deleted. True/False
+      country:
+        in: body
+        about: 'The country of the employee (as parsed by us from the ''location'' value). E.g.: ''(United States)
+          OR Germany''; France'
+      certification_title:
+        in: body
+        about: 'Title of the certificate an employee holds. E.g.: ''Data Processing'''
+      experience_title:
+        in: body
+        about: 'Job title. E.g.: ''(sales manager) OR (product manager)''; ''developer''; ''vice president''. For
+          exact match search, use escaped double quotes in the query, e.g.: ''"Project manager"'''
+      experience_company_name:
+        in: body
+        about: 'Name of the company a person worked for. E.g.: ''ibm OR (digital ocean)''; ''uber'''
+      experience_company_exact_name:
+        in: body
+        about: 'Exact name of the company a person worked for. E.g.: ''Microsoft'''
+      experience_company_website_url:
+        in: body
+        about: 'Search based on company''s website domain. E.g.: ''microsoft.com''; ''tesla.com'''
+      experience_company_website_exact_url:
+        in: body
+        about: 'Search based on the exact company''s website URL. E.g.: ''https://www.microsoft.com''; ''https://www.tesla.com'''
+      experience_company_linkedin_url:
+        in: body
+        about: 'Link to a company''s Linkedin page. E.g.: ''https://www.linkedin.com/company/rainbow-sushi'', ''rainbow-sushi'''
+      experience_company_industry:
+        in: body
+        about: 'Industry, company operates in. E.g.: ''(Information Technology) OR Agriculture''; ''Internet'''
+      experience_company_size:
+        in: body
+        about: 'Company size as seen in LinkedIn. E.g.: ''1-10 employees''; ''1,001-5,000 employees'''
+      experience_company_employees_count_gte:
+        in: body
+        type: integer
+        about: 'Employees on Linkedin, who associated their experience with a company. Greater (or equal) than {value}.
+          E.g.: 20'
+      experience_company_employees_count_lte:
+        in: body
+        type: integer
+        about: 'Employees on Linkedin, who associated their experience with a company. Less (or equal) than {value}.
+          E.g.: 50'
+      experience_date_from:
+        in: body
+        about: 'Experience start date. Format: (B Y || Y); E.g.: ''January 2018’; ''2017’, ''1000''*; 1000 = NULL;
+          1001 = NOT NULL'
+      experience_date_to:
+        in: body
+        about: 'Experience end date. Format: (B Y || Y); E.g.: ''January 2018’; ''2017’, ''1000''*; 1000 = NULL;
+          9999 = NOT NULL'
+      experience_description:
+        in: body
+        about: 'Text in job experience description. E.g.: ''python'', ''data science'''
+      experience_deleted:
+        in: body
+        type: boolean
+        about: Whether to include outdated records. True/False
+      experience_company_id:
+        in: body
+        type: integer
+        about: 'Company ID (as registered in Coresignal''s company database) of a company which is mentioned in
+          employee''s experience record. E.g.: 123; 787879'
+      active_experience:
+        in: body
+        type: boolean
+        about: Combo filter. When true, filters the experience records we identify as 'active' - employee is considered
+          to be still working in this position. false - no effect.
+      keyword:
+        in: body
+        about: 'Text in multiple employee''s profile fields. Fields included in search: summary; industry; skill;
+          experience_title; experience_description. E.g. ''python''; ''(project manager) OR scrum'''
+      inferred_skills:
+        in: body
+        about: Filter to search employees by inferred skill. E.g. 'Python', 'Data Engineering'
+      education_institution_name:
+        in: body
+        about: 'Name of the school/university a person got education in for. E.g.: ''harvard OR (princeton university)'';
+          ''yale'''
+      education_institution_exact_name:
+        in: body
+        about: 'Exact name of the school/university a person got education in for. E.g.: ''Massachusetts Institute
+          of Technology'''
+      education_program_name:
+        in: body
+        about: 'Program of education. E.g.: ''(computer science) OR (business)''; ''physics''; ''masters''For exact
+          match search, use escaped double quotes in the query, e.g.: ''"Applied Sciences"'''
+      education_description:
+        in: body
+        about: 'Text in education entry description. E.g.: ''thesis'', ''publications'''
+      education_date_from:
+        in: body
+        about: 'Education start date. Format: (B Y || Y); E.g.: ''2018’; ''2017’, ''1000''*; 1000 = NULL; 1001 =
+          NOT NULL'
+      education_date_to:
+        in: body
+        about: 'Education end date. Format: (B Y || Y); E.g.: ''January 2018’; ''2017’, ''1000''*; 1000 = NULL;
+          1001 = NOT NULL'
+      education_institution_linkedin_url:
+        in: body
+        about: 'Link to a school''s/university''s Linkedin page. E.g.: ''https://www.linkedin.com/school/harvard-university/'',''harvard-university'''
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  job-base-search-filter:
+    title: Search Base Jobs
+    request: POST /v2/job_base/search/filter
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      version:
+        type: integer
+        about: Job data structure version. 1 returns the current structure, 2 returns the new one. Defaults to 1
+          for the duration of the migration window.
+      sort:
+        about: Sort results by a field, currently accepts a list with either id or last_updated value
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      created_at_gte:
+        in: body
+        about: 'Date and time when the job record was created in Coresignal''s database. Greater (or equal) than
+          {value}. E.g.: 2021-06-26 12:21:01'
+      created_at_lte:
+        in: body
+        about: 'Date and time when the job record was created in Coresignal''s database. Less (or equal) than {value}.
+          E.g.: 2021-06-26 12:21:01'
+      last_updated_gte:
+        in: body
+        about: 'Date and time when the job record was last updated. Greater (or equal) than {value}. E.g.: 2021-02-26
+          12:41:01'
+      last_updated_lte:
+        in: body
+        about: 'Date and time when the job record was last updated. Less (or equal) than {value}. E.g.: 2021-02-26
+          12:41:01'
+      title:
+        in: body
+        about: Position title that the job record is intended for. E.g. ‘Python developer'
+      keyword_description:
+        in: body
+        about: Keywords in the description of a job record. E.g. 'python'; '(project manager) OR scrum'
+      employment_type:
+        in: body
+        about: Employment type that the employer company is offering. E.g. ‘Full-time'
+      location:
+        in: body
+        about: 'Location that the employer company is hiring in. E.g.: ''Berlin''; ''Greater Chicago Area'''
+      company_id:
+        in: body
+        type: integer
+        about: Company ID of the employer company as referred to in Coresignal’s database. E.g. 12345
+      company_name:
+        in: body
+        about: 'Full name (as input in LinkedIn) of the employer company. E.g.: ''Tesla'', (''Microsoft'' OR ''Labs'')'
+      company_domain:
+        in: body
+        about: 'Website domain of the employer company. E.g.: ''microsoft.com'', ''tesla.com'''
+      company_exact_website:
+        in: body
+        about: Exact website of the employer company. E.g. 'https://www.microsoft.com'; 'https://www.tesla.com'
+      company_linkedin_url:
+        in: body
+        about: LinkedIn URL of the employer. E.g. 'https://www.linkedin.com/company/microsoft/'
+      deleted:
+        in: body
+        type: boolean
+        about: Marks whether historical records are included. E.g. 'True'
+      application_active:
+        in: body
+        type: boolean
+        about: Marks whether the job ad is active. E.g. 'False'
+      country:
+        in: body
+        about: 'Country that the employer company is hiring in, as parsed by Coresignal’s in-house country parser.
+          E.g.: ''(United States) OR Germany''; ''France'''
+      industry:
+        in: body
+        about: 'Industry that the employer company is operating in. E.g.: ''(Information Technology) OR Agriculture'';
+          ''Internet'''
+      seniority:
+        in: body
+        about: 'Seniority of job. E.g.: ''Junior''; ''Mid-Senior'''
+      function:
+        in: body
+        about: 'Function represents a type or category of job. E.g.: ''(Marketing) OR Management''; ''Human Resources'''
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  job-base-search-es-dsl:
+    title: Search Base Job Query
+    request: POST /v2/job_base/search/es_dsl
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      version:
+        type: integer
+        about: Job data structure version. 1 returns the current structure, 2 returns the new one. Defaults to 1
+          for the duration of the migration window.
+      query:
+        in: body
+        type: object
+        required: true
+        about: Query written in Elasticsearch Query DSL
+      sort:
+        in: body
+        type: array
+        about: Sort results by a field, currently accepts a list with either _score or id value
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  job-base-collect:
+    title: Read Base Job
+    request: GET /v2/job_base/collect/{job_id}
+    params:
+      job_id:
+        in: path
+        type: integer
+        required: true
+        about: Job ID in coresignal’s database
+      version:
+        type: integer
+        about: Job data structure version. 1 returns the current structure, 2 returns the new one. Defaults to 1
+          for the duration of the migration window.
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  job-base-map-ids:
+    title: Map Base Job Ids
+    request: POST /v2/job_base/map/ids
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  company-clean-search-es-dsl:
+    title: Search Clean Company Query
+    request: POST /v2/company_clean/search/es_dsl
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      query:
+        in: body
+        type: object
+        required: true
+        about: Query written in Elasticsearch Query DSL
+      sort:
+        in: body
+        type: array
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  company-clean-enrich:
+    title: Enrich Clean Company
+    request: GET /v2/company_clean/enrich
+    params:
+      website:
+        about: Company website (full URL, domain-only, etc.). Will be shortened to domain-only
+      social_url:
+        about: Company social media full URL
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  company-clean-by-id:
+    title: Read Clean Company
+    request: GET /v2/company_clean/collect/{company_id}
+    params:
+      company_id:
+        in: path
+        type: integer
+        required: true
+        about: Company ID as mentioned in coresignal’s database
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  company-clean-by-name:
+    title: Find Clean Company
+    request: GET /v2/company_clean/collect/{shorthand_name}
+    params:
+      shorthand_name:
+        in: path
+        required: true
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  employee-clean-search-es-dsl:
+    title: Search Clean Employee Query
+    request: POST /v2/employee_clean/search/es_dsl
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      query:
+        in: body
+        type: object
+        required: true
+        about: Query written in Elasticsearch Query DSL
+      sort:
+        in: body
+        type: array
+        about: Sort results by a field, currently accepts a list with either _score or id value
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  employee-clean-by-id:
+    title: Read Clean Employee
+    request: GET /v2/employee_clean/collect/{employee_id}
+    params:
+      employee_id:
+        in: path
+        type: integer
+        required: true
+        about: Employee ID as mentioned in coresignal’s database
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  employee-clean-by-name:
+    title: Find Clean Employee
+    request: GET /v2/employee_clean/collect/{shorthand_name}
+    params:
+      shorthand_name:
+        in: path
+        required: true
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  employee-clean-enrich:
+    title: Enrich Clean Employee
+    request: GET /v2/employee_clean/enrich
+    params:
+      linkedin_url:
+        required: true
+        about: Employee LinkedIn URL
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+    not_found: 404
+    jobs:
+      enrich_person:
+        needs:
+        - - linkedin_url
+        send:
+          linkedin_url: linkedin_url
+        result: '@'
+        fields:
+          name: full_name
+          first_name: name_first
+          last_name: name_last
+          headline: headline
+          title: job_title
+          company: experience[?order_in_profile == `1`] | [0].company_name
+          location: location_raw_address
+          country: location_country_iso_2
+          linkedin_url: websites_linkedin
+          image: picture_url
+          experience: experience
+          education: education
+  headcount-by-id:
+    title: Read Company Headcounts
+    request: GET /v2/historical_headcount/collect/{company_id}
+    params:
+      company_id:
+        in: path
+        type: integer
+        required: true
+        about: Company ID as mentioned in coresignal’s database
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  headcount-by-name:
+    title: Find Company Headcounts
+    request: GET /v2/historical_headcount/collect/{shorthand_name}
+    params:
+      shorthand_name:
+        in: path
+        required: true
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  company-multi-source-search-es-dsl:
+    title: Search Multi Source Company Query
+    request: POST /v2/company_multi_source/search/es_dsl
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      query:
+        in: body
+        type: object
+        required: true
+        about: Query written in Elasticsearch Query DSL
+      sort:
+        in: body
+        type: array
+        about: Sort results by a field, currently accepts a list with either _score or id value
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  company-multi-source-semantic-search-es-dsl:
+    title: Semantic Search Multi Source Company Query
+    request: POST /v2/company_multi_source/semantic_search/es_dsl
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      threshold:
+        type: number
+        about: Minimum confidence score (0-1) for a synonym inclusion. Defaults to 0.9. Synonyms for the business_areas
+          and offerings fields score lower than for the other fields, rarely above 0.9 even on a strong…
+      boost:
+        type: number
+        about: 'Score boost (0-1) added to a synonym''s confidence score when its seniority level matches the original
+          phrase. Defaults to 0.1. Applies to active_job_postings.job_posting_title only: business_areas…'
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      query:
+        in: body
+        type: object
+        required: true
+        about: Query written in Elasticsearch Query DSL
+      sort:
+        in: body
+        type: array
+        about: Sort results by a field, currently accepts a list with either _score or id value
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  company-multi-source-by-id:
+    title: Read Multi Source Company
+    request: GET /v2/company_multi_source/collect/{company_id}
+    params:
+      company_id:
+        in: path
+        type: integer
+        required: true
+        about: Company ID as mentioned in coresignal’s database
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+      bundle:
+        type: array
+        about: Bundles to return and be charged for. Repeatable. Omit it to receive the whole document at the standard
+          price. Naming bundles narrows the response and lowers the charge; core_company_data is always…
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  company-multi-source-by-name:
+    title: Find Multi Source Company
+    request: GET /v2/company_multi_source/collect/{shorthand_name}
+    params:
+      shorthand_name:
+        in: path
+        required: true
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+      bundle:
+        type: array
+        about: Bundles to return and be charged for. Repeatable. Omit it to receive the whole document at the standard
+          price. Naming bundles narrows the response and lowers the charge; core_company_data is always…
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  company-multi-source-enrich:
+    title: Enrich Multi Source Company
+    request: GET /v2/company_multi_source/enrich
+    params:
+      website:
+        about: Company website (full URL, domain-only, etc.). Will be shortened to domain-only
+      social_url:
+        about: Company social media full URL
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+      bundle:
+        type: array
+        about: Bundles to return and be charged for. Repeatable. Omit it to receive the whole document at the standard
+          price. Naming bundles narrows the response and lowers the charge; core_company_data is always…
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+    jobs:
+      enrich_company:
+        needs:
+        - - domain
+        - - linkedin_url
+        send:
+          domain: website
+          linkedin_url: social_url
+        result: '@'
+        fields:
+          name: company_name
+          domain: website_domain
+          website: website
+          description: description
+          industry: industry
+          employees: employees_count
+          founded: founded_year
+          location: hq_location
+          country: hq_country_iso2
+          linkedin_url: linkedin_url
+          logo: company_logo_url
+  company-multi-source-search-filter:
+    title: Search Multi Source Companies By Filter
+    about: One value means equals, a list means any of, and an exclude_ parameter means not. Parameters combine
+      with AND; cross-field OR is not supported, use the ES DSL endpoint for that. Free-text parameters…
+    request: POST /v2/company_multi_source/search/filter
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      sort:
+        about: Sort results by a field, currently accepts a list with either id or last_updated value
+      name:
+        in: body
+        type: array
+        about: Company name. Searches the name, its aliases and the legal name.
+      exact_name:
+        in: body
+        type: array
+        about: Company name, matched whole and case sensitive.
+      website:
+        in: body
+        type: array
+        about: Company website. Searches the URL, its domain and known aliases.
+      exact_website:
+        in: body
+        type: array
+        about: Company website, matched whole.
+      professional_network_url:
+        in: body
+        type: array
+        about: Professional network URL or shorthand name.
+      hq_country_iso2:
+        in: body
+        type: array
+        about: 'Two-letter ISO 3166-1 alpha-2 country code of the headquarters. E.g.: ''US'', [''US'', ''GB''].
+          Filtering by full country name is not available yet.'
+      hq_city:
+        in: body
+        type: array
+        about: Headquarters city.
+      hq_state:
+        in: body
+        type: array
+        about: Headquarters state or region.
+      hq_location:
+        in: body
+        type: array
+        about: Headquarters location as a single string.
+      industry:
+        in: body
+        type: array
+        about: 'Industry. E.g.: ''Software'', ''Software | Internet''.'
+      exact_industry:
+        in: body
+        type: array
+        about: Industry, matched whole and case sensitive.
+      size_range:
+        in: body
+        type: array
+        about: 'Employee size range as stored on the record. E.g.: ''51-200''.'
+      employees_count_gte:
+        in: body
+        type: integer
+        about: Minimum employee count.
+      employees_count_lte:
+        in: body
+        type: integer
+        about: Maximum employee count.
+      founded_year_gte:
+        in: body
+        type: integer
+        about: Earliest founding year. Four digits.
+      founded_year_lte:
+        in: body
+        type: integer
+        about: Latest founding year. Four digits.
+      type:
+        in: body
+        type: array
+        about: 'Company type. E.g.: ''Privately Held''.'
+      is_b2b:
+        in: body
+        type: boolean
+        about: Whether the company sells to businesses.
+      is_public:
+        in: body
+        type: boolean
+        about: Whether the company is publicly traded.
+      is_saas:
+        in: body
+        type: boolean
+        about: Whether the company sells software as a service.
+      business_model:
+        in: body
+        type: array
+        about: Business model.
+      description:
+        in: body
+        type: array
+        about: Company description. Searches the description and its enriched variant.
+      categories_and_keywords:
+        in: body
+        type: array
+        about: Categories and keywords.
+      business_areas:
+        in: body
+        type: array
+        about: Business areas.
+      offerings:
+        in: body
+        type: array
+        about: Offerings.
+      technologies_used:
+        in: body
+        type: array
+        about: 'Technology used by the company. E.g.: ''Salesforce''. Matched as text, so a value contained in a
+          longer technology name also matches.'
+      active_job_postings_count_gte:
+        in: body
+        type: integer
+        about: Minimum number of active job postings.
+      active_job_postings_count_lte:
+        in: body
+        type: integer
+        about: Maximum number of active job postings.
+      active_job_postings_title:
+        in: body
+        type: array
+        about: Title of an active job posting.
+      revenue_gte:
+        in: body
+        type: number
+        about: Minimum annual revenue. Matches if either revenue source is in range.
+      revenue_lte:
+        in: body
+        type: number
+        about: Maximum annual revenue. Matches if either revenue source is in range.
+      last_funding_round_type:
+        in: body
+        type: array
+        about: 'Type of the last funding round. E.g.: ''Series A''. Matched as text, so a value contained in a longer
+          type also matches: ''Seed'' returns Pre-Seed rounds too.'
+      last_funding_round_date_gte:
+        in: body
+        about: Earliest announcement date of the last funding round.
+      last_funding_round_date_lte:
+        in: body
+        about: Latest announcement date of the last funding round.
+      created_at_gte:
+        in: body
+        about: Earliest record creation date.
+      created_at_lte:
+        in: body
+        about: Latest record creation date.
+      last_updated_at_gte:
+        in: body
+        about: Earliest record update date.
+      last_updated_at_lte:
+        in: body
+        about: Latest record update date.
+      source_id:
+        in: body
+        type: array
+        about: External source identifier. Matched as text, so a value contained in a longer id also matches.
+      exclude_name:
+        in: body
+        type: array
+        about: Company name. Searches the name, its aliases and the legal name.
+      exclude_exact_name:
+        in: body
+        type: array
+        about: Company name, matched whole and case sensitive.
+      exclude_website:
+        in: body
+        type: array
+        about: Company website. Searches the URL, its domain and known aliases.
+      exclude_hq_country_iso2:
+        in: body
+        type: array
+        about: 'Two-letter ISO 3166-1 alpha-2 country code of the headquarters. E.g.: ''US'', [''US'', ''GB''].
+          Filtering by full country name is not available yet.'
+      exclude_industry:
+        in: body
+        type: array
+        about: 'Industry. E.g.: ''Software'', ''Software | Internet''.'
+      exclude_exact_industry:
+        in: body
+        type: array
+        about: Industry, matched whole and case sensitive.
+      exclude_type:
+        in: body
+        type: array
+        about: 'Company type. E.g.: ''Privately Held''.'
+      exclude_description:
+        in: body
+        type: array
+        about: Company description. Searches the description and its enriched variant.
+      exclude_categories_and_keywords:
+        in: body
+        type: array
+        about: Categories and keywords.
+      exclude_business_areas:
+        in: body
+        type: array
+        about: Business areas.
+      exclude_offerings:
+        in: body
+        type: array
+        about: Offerings.
+      exclude_technologies_used:
+        in: body
+        type: array
+        about: 'Technology used by the company. E.g.: ''Salesforce''. Matched as text, so a value contained in a
+          longer technology name also matches.'
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  employee-multi-source-search-es-dsl:
+    title: Search Multi Source Employee Query
+    request: POST /v2/employee_multi_source/search/es_dsl
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      query:
+        in: body
+        type: object
+        required: true
+        about: Query written in Elasticsearch Query DSL
+      sort:
+        in: body
+        type: array
+        about: Sort results by a field, currently accepts a list with either _score or id value
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  employee-multi-source-semantic-search-es-dsl:
+    title: Semantic Search Multi Source Employee Query
+    request: POST /v2/employee_multi_source/semantic_search/es_dsl
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      threshold:
+        type: number
+        about: Minimum confidence score (0-1) for a synonym inclusion. Defaults to 0.9. Must be identical on every
+          page of a paginated search.
+      boost:
+        type: number
+        about: Score boost (0-1) added to a synonym's confidence score when its seniority level matches the original
+          phrase. Defaults to 0.1. Must be identical on every page of a paginated search.
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      query:
+        in: body
+        type: object
+        required: true
+        about: Query written in Elasticsearch Query DSL
+      sort:
+        in: body
+        type: array
+        about: Sort results by a field, currently accepts a list with either _score or id value
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  employee-multi-source-by-id:
+    title: Read Multi Source Employee
+    request: GET /v2/employee_multi_source/collect/{employee_id}
+    params:
+      employee_id:
+        in: path
+        type: integer
+        required: true
+        about: Employee ID as mentioned in coresignal’s database
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+      bundle:
+        type: array
+        about: Bundles to return and be charged for. Repeatable. Omit it to receive every bundle at the standard
+          price. Naming bundles narrows the response and lowers the charge; core_employee_data is always…
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  employee-multi-source-by-name:
+    title: Find Multi Source Employee
+    request: GET /v2/employee_multi_source/collect/{shorthand_name}
+    params:
+      shorthand_name:
+        in: path
+        required: true
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+      bundle:
+        type: array
+        about: Bundles to return and be charged for. Repeatable. Omit it to receive every bundle at the standard
+          price. Naming bundles narrows the response and lowers the charge; core_employee_data is always…
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  employee-multi-source-enrich:
+    title: Enrich Multi Source Employee
+    request: GET /v2/employee_multi_source/enrich
+    params:
+      linkedin_url:
+        required: true
+        about: Employee LinkedIn URL
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+      bundle:
+        type: array
+        about: Bundles to return and be charged for. Repeatable. Omit it to receive every bundle at the standard
+          price. Naming bundles narrows the response and lowers the charge; core_employee_data is always…
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  job-multi-source-search-es-dsl:
+    title: Search Multi Source Job Query
+    request: POST /v2/job_multi_source/search/es_dsl
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      query:
+        in: body
+        type: object
+        required: true
+        about: Query written in Elasticsearch Query DSL
+      sort:
+        in: body
+        type: array
+        about: Sort results by a field, currently accepts a list with either _score or id value
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  job-multi-source-semantic-search-es-dsl:
+    title: Semantic Search Multi Source Job Query
+    request: POST /v2/job_multi_source/semantic_search/es_dsl
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      threshold:
+        type: number
+        about: Minimum confidence score (0-1) for a synonym inclusion. Defaults to 0.9. Must be identical on every
+          page of a paginated search.
+      boost:
+        type: number
+        about: Score boost (0-1) added to a synonym's confidence score when its seniority level matches the original
+          phrase. Defaults to 0.1. Must be identical on every page of a paginated search.
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      query:
+        in: body
+        type: object
+        required: true
+        about: Query written in Elasticsearch Query DSL
+      sort:
+        in: body
+        type: array
+        about: Sort results by a field, currently accepts a list with either _score or id value
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  job-multi-source-collect:
+    title: Read Multi Source Job
+    request: GET /v2/job_multi_source/collect/{job_id}
+    params:
+      job_id:
+        in: path
+        type: integer
+        required: true
+        about: Job ID in coresignal’s database
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  employee-post-collect:
+    title: Read Post Employee
+    request: GET /v2/employee_post/collect/{post_id}
+    params:
+      post_id:
+        in: path
+        type: integer
+        required: true
+        about: Post ID in coresignal’s database
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  employee-post-search-es-dsl:
+    title: Search Post Employee
+    request: POST /v2/employee_post/search/es_dsl
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      query:
+        in: body
+        type: object
+        required: true
+        about: Query written in Elasticsearch Query DSL
+      sort:
+        in: body
+        type: array
+        about: Sort results by a field, currently accepts a list with either _score or id value
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  employee-post-search-filter:
+    title: Filter Post Employees
+    request: POST /v2/employee_post/search/filter
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      sort:
+        about: Sort results by a field, currently accepts a list with either id or last_updated value
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      author_profile_url:
+        in: body
+        about: 'Full name (as input in Linkedin''s public profile) of an employee. E.g.: ''John Doe'''
+      article_body:
+        in: body
+        about: 'Title (Headline field in Linkedin''s public profile) of an employee. E.g.: ''Python developer'''
+      comments_profile_url:
+        in: body
+        about: 'Employee''s location as input by the employee on Linkedin. E.g.: ''Berlin''; ''Greater Chicago Area'''
+      comments_body:
+        in: body
+        about: 'Employee''s industry as input by the employee on Linkedin (not directly related to any particular
+          work experience). E.g.: ''Information Technology'' OR ''Internet''. For exact match search, use escaped…'
+      date_published_gte:
+        in: body
+        about: Text in employee’s profile summary field. E.g. 'python'; '(project manager) OR scrum'
+      date_published_lte:
+        in: body
+        about: 'Date and time when the employee record was created in Coresignal''s database. Greater (or equal)
+          than {value}. E.g.: 2021-01-26 12:41:10'
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  company-post-collect:
+    title: Read Post Company
+    request: GET /v2/company_post/collect/{post_id}
+    params:
+      post_id:
+        in: path
+        type: integer
+        required: true
+        about: Post ID in coresignal’s database
+      fields:
+        type: array
+        about: List of fields to return. If not specified, all fields will be returned. Fields the record does not
+          store are left out, so a record can come back as an empty object.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  company-post-search-es-dsl:
+    title: Search Post Company
+    request: POST /v2/company_post/search/es_dsl
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      query:
+        in: body
+        type: object
+        required: true
+        about: Query written in Elasticsearch Query DSL
+      sort:
+        in: body
+        type: array
+        about: Sort results by a field, currently accepts a list with either _score or id value
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  company-post-search-filter:
+    title: Filter Post Companies
+    request: POST /v2/company_post/search/filter
+    params:
+      items_per_page:
+        type: integer
+        about: Limit the number of results returned per page from 1 to 1000. By default, 1000 results are returned.
+      sort:
+        about: Sort results by a field, currently accepts a list with either id or last_updated value
+      after:
+        about: Next page of IDs (see x-next-page-after in response header)
+      company_url:
+        in: body
+        about: 'LinkedIn URL of the company that authored the post. E.g.: ''https://www.linkedin.com/company/tesla-motors'''
+      article_body:
+        in: body
+        about: 'Text in the body of the company post. E.g.: ''hiring''; ''(product launch) OR announcement'''
+      comments_profile_url:
+        in: body
+        about: 'LinkedIn profile URL of a commenter on the post. E.g.: ''https://www.linkedin.com/in/jane-doe-5091181'''
+      comments_body:
+        in: body
+        about: 'Text in the body of a comment on the post. E.g.: ''congratulations''; ''(great news) OR welcome'''
+      date_published_gte:
+        in: body
+        about: 'Date when the post was published. Greater (or equal) than {value}. Format: YYYY-MM-DD. E.g.: 2021-02-26'
+      date_published_lte:
+        in: body
+        about: 'Date when the post was published. Less (or equal) than {value}. Format: YYYY-MM-DD. E.g.: 2021-02-26'
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  agentic-search-fast:
+    title: Agentic Search Fast
+    request: POST /v2/agentic_search/fast
+    params:
+      x-request-source:
+        in: header
+      prompt:
+        in: body
+        required: true
+      return_data:
+        in: body
+        type: boolean
+      entity:
+        in: body
+        choices:
+        - employee
+        - company
+        - job
+      threshold:
+        in: body
+        type: number
+        about: Synonym-match threshold passed through to the enricher, from 0 to 1. Higher values demand closer
+          synonym matches. If omitted, the default of 0.97 is applied.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids
+  agentic-search-reasoning:
+    title: Agentic Search Reasoning
+    request: POST /v2/agentic_search/reasoning
+    params:
+      x-request-source:
+        in: header
+      prompt:
+        in: body
+        required: true
+      session_id:
+        in: body
+        required: true
+      return_data:
+        in: body
+        type: boolean
+      allow_clarification:
+        in: body
+        type: boolean
+      threshold:
+        in: body
+        type: number
+        about: Synonym-match threshold for the reasoning engine, from 0 to 1. Higher values demand closer synonym
+          matches. If omitted, the default of 0.97 is applied.
+    price:
+      credits: 1
+      per: success
+      note: collect and enrich cost credits per record; searches return ids

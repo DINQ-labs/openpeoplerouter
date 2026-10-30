@@ -1,0 +1,470 @@
+id: diffbot
+title: Diffbot Knowledge Graph
+about: A web-scale graph of organizations, people and articles, queried with DQL or matched (enhanced) from partial
+  details.
+site: https://www.diffbot.com
+docs: https://docs.diffbot.com/kgapi
+pricing: https://www.diffbot.com/pricing/
+api: https://kg.diffbot.com
+key:
+  env: DIFFBOT_TOKEN
+  query: token
+operations:
+  dql:
+    title: Search with DQL
+    about: Search the Knowledge Graph using DQL
+    request: GET /dql
+    params:
+      type:
+        choices:
+        - query
+        - crawl
+        about: Query type
+      query:
+        required: true
+        about: DQL Query
+      col:
+        about: Comma-delimited list of custom crawl collections to query. Specify all to query all collections for
+          your token. This parameter is valid only when type=crawl and defaults to all
+      from:
+        type: integer
+        about: Return results starting at from index. from+size <= 10_000 for facet queries. Please note that the
+          from parameter is no longer applicable to Article queries and has been deprecated. In the future,…
+      size:
+        type: integer
+        about: Maximum number of results to return. -1 to return all results. from+size <= 10_000 for facet queries.
+      format:
+        choices:
+        - json
+        - jsonl
+        - csv
+        - xls
+        - xlsx
+        about: Output format
+      exportspec:
+        about: The spec defines the columns to export. This is applicable for csv, xls and xslx formats. Export
+          spec specifies how to export the entity JSON to a csv. A simple export spec looks like name;summary.…
+      exportseparator:
+        about: The export separator
+      exportfile:
+        about: For export endpoint, The file name of the export file
+      filter:
+        about: Semi-colon separated path filter to filter response json. You can use a simple dot notation skills.name
+          or a JsonPath expression such as $.name;$.locations.country.name. For more advanced options,…
+      filterExclude:
+        about: Semi-colon separated path filter to filter and exclude data from response json. You can use a simple
+          dot notation skills.name or a JsonPath expression such as $.name;$.locations.country.name. For…
+      jsonmode:
+        choices:
+        - extended
+        - id
+        about: extended returns origin information for facts. id returns just the diffbotIds and origins.
+      nonCanonicalFacts:
+        type: boolean
+        about: nonCanonicalFacts=true returns non-canonical facts.
+      noDedupArticles:
+        type: boolean
+        about: noDedupArticles=true indicates that articles should not be deduplicated but all of them returned
+      cluster:
+        choices:
+        - all
+        - best
+        - dedupe
+        about: Articles only. Utilize Diffbot clustering algorithms to identify related or similar objects. - cluster=all
+          to return each article with a clusterId identifying thematically-similar articles. -…
+      report:
+        type: boolean
+        about: Generate coverage report. See Coverage Reports for more details on generating coverage reports for
+          DQL queries.
+      view: {}
+    price:
+      per: result
+      note: credits per entity returned; see pricing
+    jobs:
+      find_people:
+        needs:
+        - - title
+        - - company
+        send:
+          title:
+            to: query
+            as: employments.{title:"$" isCurrent:true}
+          company:
+            to: query
+            as: employments.{employer.name:"$" isCurrent:true}
+          location:
+            to: query
+            as: locations.address:"$"
+        fixed:
+          query: type:Person
+        limit: size
+        result: data[].entity
+        fields:
+          name: name
+          title: employments[?isCurrent] | [0].title
+          company: employments[?isCurrent] | [0].employer.name
+          location: location.address
+          linkedin_url: linkedInUri && join('', ['https://', linkedInUri])
+          image: image
+  post-dql:
+    title: Search with DQL
+    about: Search the Knowledge Graph using DQL
+    request: POST /dql
+    params:
+      type:
+        in: body
+        choices:
+        - query
+        - text
+        - queryTextFallback
+        - crawl
+        about: Query type
+      query:
+        in: body
+        required: true
+        about: DQL Query
+      col:
+        in: body
+        about: Comma-delimited list of custom crawl collections to query. Specify all to query all collections for
+          your token. This parameter is valid only when type=crawl and defaults to all
+      from:
+        in: body
+        type: integer
+        about: Return results starting at from index. from+size <= 10_000 for facet queries. Please note that the
+          from parameter is no longer applicable to Article queries and has been deprecated. In the future,…
+      size:
+        in: body
+        type: integer
+        about: Maximum number of results to return. -1 to return all results. from+size <= 10_000 for facet queries.
+      format:
+        in: body
+        choices:
+        - json
+        - jsonl
+        - csv
+        - xls
+        - xlsx
+        about: Output format
+      exportspec:
+        in: body
+        about: The spec defines the columns to export. This is applicable for csv, xls and xslx formats. Export
+          spec specifies how to export the entity JSON to a csv. A simple export spec looks like name;summary.…
+      exportseparator:
+        in: body
+        about: For export endpoint, define separator for fields which contains multiple values
+      exportfile:
+        in: body
+        about: For export endpoint, The file name of the export file
+      filter:
+        in: body
+        about: Semi-colon separated path filter to filter response json. You can use a simple dot notation skills.name
+          or a JsonPath expression such as $.name;$.locations.country.name. For more advanced options,…
+      filterExclude:
+        in: body
+        about: Semi-colon separated path filter to filter and exclude data from response json. You can use a simple
+          dot notation skills.name or a JsonPath expression such as $.name;$.locations.country.name. For…
+      jsonmode:
+        in: body
+        choices:
+        - extended
+        - id
+        about: extended returns origin information for facts. id returns just the diffbotIds and origins.
+      nonCanonicalFacts:
+        in: body
+        type: boolean
+        about: nonCanonicalFacts=true returns non-canonical facts.
+      noDedupArticles:
+        in: body
+        type: boolean
+        about: noDedupArticles=true indicates that articles should not be deduplicated but all of them returned
+      cluster:
+        in: body
+        about: Articles only. Utilize Diffbot clustering algorithms to identify related or similar objects. - cluster=all
+          to return each article with a clusterId identifying thematically-similar articles. -…
+      report:
+        in: body
+        type: boolean
+        about: Generate coverage report. See Coverage Reports for more details on generating coverage reports for
+          DQL queries.
+      view:
+        in: body
+    price:
+      per: result
+      note: credits per entity returned; see pricing
+  dql-report-by-id:
+    title: Coverage report by ID
+    about: Download coverage report by report ID
+    request: GET /dql/report/{id}
+    params:
+      id:
+        in: path
+        required: true
+        about: The report id
+    price:
+      per: result
+      note: credits per entity returned; see pricing
+  enhance:
+    title: Enhance
+    about: Enrich a person or organization record with partial data input
+    request: GET /enhance
+    params:
+      type:
+        required: true
+        choices:
+        - Person
+        - Organization
+        about: Diffbot entity type
+      id:
+        about: DiffbotId of entity to enhance. Parameter can be used with types Person and Organization
+      name:
+        type: array
+        about: Name of the entity to enhance. Parameter can be used with types Person and Organization
+      url:
+        type: array
+        about: Origin or homepage URI of entity to enhance. Parameter can be used with types Person and Organization
+      phone:
+        about: Phone of the entity to enhance. Parameter can be used with types Person and Organization
+      email:
+        type: array
+        about: Email of the entity to enhance. Parameter can be used only with type Person
+      employer:
+        about: Employer of the entity to enhance. Parameter can be used only with type Person
+      title:
+        about: Title of the entity to enhance. Parameter can be used only with type Person
+      school:
+        about: School of the entity to enhance. Parameter can be used only with type Person
+      location:
+        about: Location of the entity to enhance. Parameter can be used with types Person and Organization
+      description:
+        about: Description of the entity to enhance. Parameter can be used with types Person and Organization
+      ip:
+        about: IP address of the entity to enhance. Parameter can be used with types Person and Organization
+      customId:
+        about: User defined ID for correlation
+      size:
+        type: integer
+        about: Maximum number of results to return
+      threshold:
+        type: number
+        about: Enhance similarity threshold
+      refresh:
+        type: boolean
+        about: refresh=true indicates that Diffbot will attempt to recrawl all the origins of the identified entity
+          and reconstruct the returned entity from this refreshed data.
+      search:
+        type: boolean
+        about: search=true indicates that Diffbot will attempt to search the web for origins for the search query
+          and merge relevant results with whats found in the KG.
+      nonCanonicalFacts:
+        type: boolean
+        about: nonCanonicalFacts=true returns non-canonical facts.
+      jsonmode:
+        choices:
+        - extended
+        about: jsonmode=extended returns origin information for facts.
+      filter:
+        about: Semi-colon separated path filter to filter response json. You can use a simple dot notation skills.name
+          or a JsonPath expression such as $.name;$.locations.country.name. For more advanced options,…
+      filterExclude:
+        about: Semi-colon separated path filter to filter and exclude data from response json. You can use a simple
+          dot notation skills.name or a JsonPath expression such as $.name;$.locations.country.name. For…
+    price:
+      per: result
+      note: credits per entity returned; see pricing
+    jobs:
+      enrich_person:
+        needs:
+        - - linkedin_url
+        - - email
+        - - full_name
+          - company
+        send:
+          linkedin_url: url
+          email: email
+          full_name: name
+          company: employer
+        fixed:
+          type: Person
+        result: data[0].entity
+        fields:
+          name: name
+          title: employments[?isCurrent] | [0].title
+          company: employments[?isCurrent] | [0].employer.name
+          location: location.address
+          country: location.country.name
+          linkedin_url: linkedInUri && join('', ['https://', linkedInUri])
+          image: image
+          experience: employments
+          education: educations
+      enrich_company:
+        needs:
+        - - domain
+        - - name
+        - - linkedin_url
+        send:
+          domain: url
+          name: name
+          linkedin_url: url
+        fixed:
+          type: Organization
+        result: data[0].entity
+        fields:
+          name: name
+          website: homepageUri
+          description: description
+          industry: industries[0]
+          employees: nbEmployees
+          founded: foundingDate.str
+          location: location.address
+          country: location.country.name
+          linkedin_url: linkedInUri && join('', ['https://', linkedInUri])
+          logo: logo
+          revenue: revenue.value
+  post-enhance:
+    title: Enhance
+    about: Enrich a person or organization record with partial data input (POST option)
+    request: POST /enhance
+    params:
+      type:
+        in: body
+        required: true
+        choices:
+        - Person
+        - Organization
+        about: Diffbot entity type
+      id:
+        in: body
+        about: DiffbotId of entity to enhance. Parameter can be used with types Person and Organization
+      name:
+        in: body
+        type: array
+        about: Name of the entity to enhance. Parameter can be used with types Person and Organization
+      url:
+        in: body
+        type: array
+        about: Origin or homepage URI of entity to enhance. Parameter can be used with types Person and Organization
+      location:
+        in: body
+        about: Location of the entity to enhance. Parameter can be used with types Person and Organization
+      ip:
+        in: body
+        about: IP address of the entity to enhance. Parameter can be used with types Person and Organization
+      phone:
+        in: body
+        about: Phone of the entity to enhance. Parameter can be used with types Person and Organization
+      description:
+        in: body
+        about: Description of the entity to enhance. Parameter can be used with types Person and Organization
+      email:
+        in: body
+        type: array
+        about: Email of the entity to enhance. Parameter can be used only with type Person
+      employer:
+        in: body
+        about: Employer of the entity to enhance. Parameter can be used only with type Person
+      title:
+        in: body
+        about: Title of the entity to enhance. Parameter can be used only with type Person
+      school:
+        in: body
+        about: School of the entity to enhance. Parameter can be used only with type Person
+      customId:
+        in: body
+        about: User defined ID for correlation
+      size:
+        in: body
+        type: integer
+        about: Maximum number of results to return
+      threshold:
+        in: body
+        type: number
+        about: Enhance similarity threshold
+      refresh:
+        in: body
+        type: boolean
+        about: refresh=true indicates that Diffbot will attempt to recrawl all the origins of the identified entity
+          and reconstruct the returned entity from this refreshed data.
+      search:
+        in: body
+        type: boolean
+        about: search=true indicates that Diffbot will attempt to search the web for origins for the search query
+          and merge relevant results with whats found in the KG.
+      nonCanonicalFacts:
+        in: body
+        type: boolean
+        about: nonCanonicalFacts=true returns non-canonical facts.
+      jsonmode:
+        in: body
+        choices:
+        - extended
+        about: jsonmode=extended returns origin information for facts.
+      filter:
+        in: body
+        about: Semi-colon separated path filter to filter response json. You can use a simple dot notation skills.name
+          or a JsonPath expression such as $.name;$.locations.country.name. For more advanced options,…
+      filterExclude:
+        in: body
+        about: Semi-colon separated path filter to filter and exclude data from response json. You can use a simple
+          dot notation skills.name or a JsonPath expression such as $.name;$.locations.country.name. For…
+    price:
+      per: result
+      note: credits per entity returned; see pricing
+  combine:
+    title: Combine
+    about: Enrich a person record and return both person and current employer data
+    request: GET /enhance/combine
+    params:
+      type:
+        required: true
+        choices:
+        - Person
+        about: Diffbot entity type
+      name:
+        type: array
+        about: Name of the entity to enhance. Parameter can be used with types Person and Organization
+      url:
+        type: array
+        about: Origin or homepage URI of entity to enhance. Parameter can be used with types Person and Organization
+      phone:
+        about: Phone of the entity to enhance. Parameter can be used with types Person and Organization
+      email:
+        about: Email of the entity to enhance. Parameter can be used only with type Person
+      employer:
+        about: Employer of the entity to enhance. Parameter can be used only with type Person
+      title:
+        about: Title of the entity to enhance. Parameter can be used only with type Person
+      school:
+        about: School of the entity to enhance. Parameter can be used only with type Person
+      location:
+        about: Location of the entity to enhance. Parameter can be used with types Person and Organization
+      ip:
+        about: IP address of the entity to enhance. Parameter can be used with types Person and Organization
+      customId:
+        about: User defined ID for correlation
+      threshold:
+        type: number
+        about: Enhance similarity threshold
+      refresh:
+        type: boolean
+        about: refresh=true indicates that Diffbot will attempt to recrawl all the origins of the identified entity
+          and reconstruct the returned entity from this refreshed data.
+      search:
+        type: boolean
+        about: search=true indicates that Diffbot will attempt to search the web for origins for the search query
+          and merge relevant results with whats found in the KG.
+      nonCanonicalFacts:
+        type: boolean
+        about: nonCanonicalFacts=true returns non-canonical facts.
+      jsonmode:
+        choices:
+        - extended
+        about: jsonmode=extended returns origin information for facts.
+      filter:
+        about: Semi-colon separated path filter to filter response json. You can use a simple dot notation skills.name
+          or a JsonPath expression such as $.name;$.locations.country.name. For more advanced options,…
+      filterExclude:
+        about: Semi-colon separated path filter to filter and exclude data from response json. You can use a simple
+          dot notation skills.name or a JsonPath expression such as $.name;$.locations.country.name. For…
+    price:
+      per: result
+      note: credits per entity returned; see pricing

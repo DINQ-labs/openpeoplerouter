@@ -1,0 +1,805 @@
+id: contextdev
+title: Context.dev
+about: Company brand data by domain or name, company and people search, person enrichment, news, and web search
+  and scraping. Formerly Brand.dev.
+site: https://www.context.dev
+docs: https://docs.context.dev
+pricing: https://www.context.dev/pricing
+api: https://api.context.dev/v1
+key:
+  env: CONTEXTDEV_API_KEY
+  bearer: true
+operations:
+  brand:
+    title: Retrieve a brand
+    about: Retrieve logos, colors, company details, and social links using one lookup identifier. A direct URL limits
+      extraction to that page.
+    request: POST /brand/retrieve
+    params:
+      type:
+        in: body
+        choices:
+        - by_domain
+        about: Discriminator for domain-based brand retrieval.
+      transaction_info:
+        in: body
+        about: Transaction information to identify the brand.
+      force_language:
+        in: body
+      maxSpeed:
+        in: body
+        type: boolean
+        about: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip
+          time-consuming operations for faster response at the cost of less comprehensive data.
+      timeoutOpts:
+        in: body
+        type: object
+        about: Request deadline and what to return when it passes.
+      country_gl:
+        in: body
+      city:
+        in: body
+        about: Optional city name to prioritize when searching for the brand.
+      mcc:
+        in: body
+        type: number
+        about: Optional Merchant Category Code (MCC) to help identify the business category or industry.
+      phone:
+        in: body
+        type: number
+        about: Optional phone number from the transaction to help verify brand match.
+      high_confidence_only:
+        in: body
+        type: boolean
+        about: When set to true, the API performs additional verification to ensure the identified brand matches
+          the transaction with high confidence.
+      zdr:
+        in: body
+        choices:
+        - enabled
+        - disabled
+        about: enabled disables request logs and traces and omits request and response content from usage logs.
+          Brand data and hosted assets may still be stored. Returns 403 ZDR_NOT_ENABLED unless your organization…
+      tags:
+        in: body
+        type: array
+        about: Labels for filtering usage in the dashboard.
+      policies:
+        in: body
+        type: array
+        about: Access policy IDs to apply. A URL must pass every policy.
+      direct_url:
+        in: body
+        about: Full http(s) URL to fetch brand data from (e.g., 'https://stripe.com/enterprise'). Only this URL
+          is fetched — not the entire internet.
+      maxAgeMs:
+        in: body
+        type: integer
+        about: Maximum age of cached brand data in ms. Defaults to 3 months; clamped to 0–1 year. 0 refreshes.
+      ticker:
+        in: body
+        about: Stock ticker symbol to retrieve brand data for (e.g., 'AAPL').
+      ticker_exchange:
+        in: body
+      email:
+        in: body
+        about: Email address to retrieve brand data for (e.g., 'jane@stripe.com').
+      name:
+        in: body
+        about: Company name to retrieve brand data for (e.g., 'Apple Inc').
+      domain:
+        in: body
+        about: Domain name to retrieve brand data for (e.g., 'stripe.com').
+    price:
+      per: call
+      note: credits reported in key_metadata.credits_consumed
+    jobs:
+      enrich_company:
+        needs:
+        - - domain
+        - - name
+        send:
+          domain: domain
+          name: name
+        result: brand
+        fields:
+          name: title
+          domain: domain
+          description: description
+          employees: employees.exact || employees.range
+          location: join(', ', [address.city, address.country][?@])
+          country: address.country_code
+          linkedin_url: socials[?type == 'linkedin'] | [0].url
+          logo: logos[0].url
+  brand-autocomplete:
+    title: Auto-complete Brand
+    about: Find up to 10 brands by name or domain, ordered by popularity. Optionally filter by country and primary
+      language; both filters must match when provided together. Results include description, country,…
+    request: GET /brand/search
+    params:
+      query:
+        required: true
+        about: Search term, matched against the fields selected by queryBy (e.g. 'stripe', 'stripe.com', 'stri').
+      country:
+        about: Only return brands in this country, as an uppercase ISO 3166-1 alpha-2 code such as US or GB.
+      language:
+        about: Only return brands with this primary language, such as english or french.
+      autocomplete:
+        type: boolean
+        about: Whether the search term matches by prefix, so partial words match as they are typed (e.g. 'stri'
+          matches Stripe). Set to false to match whole words only.
+      queryBy:
+        type: array
+        about: 'Fields to match the search term against, as a comma-separated list or repeated parameter: ''name'',
+          ''domain'', or both. Defaults to both.'
+      typoTolerance:
+        type: integer
+        about: Maximum number of typos tolerated when matching, from 0 to 2. Defaults to 0 (no typo tolerance).
+      tags:
+        type: array
+        about: Comma-separated labels for filtering usage, e.g. production,team-alpha.
+    price:
+      per: call
+      note: credits reported in key_metadata.credits_consumed
+  styleguide:
+    title: Extract a styleguide
+    about: Extract colors, typography, spacing, and component styles from a website.
+    request: GET /web/styleguide
+    params:
+      domain:
+        about: Domain name to extract styleguide from (e.g., 'example.com', 'google.com'). The domain will be automatically
+          normalized and validated. You must provide either 'domain' or 'directUrl', but not both.
+      directUrl:
+        about: Exact URL to inspect. Provide either domain or directUrl, not both.
+      maxAgeMs:
+        type: integer
+        about: Maximum age of cached brand data in ms. Defaults to 3 months; clamped to 0–1 year. 0 refreshes.
+      timeoutOpts:
+        type: object
+        about: Request deadline and what to return when it passes.
+      colorScheme:
+        choices:
+        - light
+        - dark
+        about: Optional browser color scheme to emulate for websites that respond to prefers-color-scheme. This
+          value is part of the styleguide cache key.
+      zdr:
+        choices:
+        - enabled
+        - disabled
+        about: enabled disables request logs and traces and omits request and response content from usage logs.
+          Brand data and hosted assets may still be stored. Returns 403 ZDR_NOT_ENABLED unless your organization…
+      policies:
+        type: array
+        about: Comma-separated access policy IDs to apply. A URL must pass every policy.
+      tags:
+        type: array
+        about: Comma-separated labels for filtering usage, e.g. production,team-alpha.
+    price:
+      per: call
+      note: credits reported in key_metadata.credits_consumed
+  company-search:
+    title: Search companies
+    about: Find companies with a natural-language query.
+    request: POST /company/search
+    params:
+      query:
+        in: body
+        required: true
+        about: Describe the companies to find.
+      filters:
+        in: body
+        type: object
+        about: Additional constraints every result must match.
+      cursor:
+        in: body
+        about: Use next_cursor with the same query and filters to fetch the next page.
+      tags:
+        in: body
+        type: array
+        about: Labels for filtering usage in the dashboard.
+    price:
+      per: call
+      note: credits reported in key_metadata.credits_consumed
+    jobs:
+      find_companies:
+        needs:
+        - - query
+        send:
+          query: query
+          country: filters.countries[]
+        result: results
+        fields:
+          name: name
+          domain: domain
+          description: description
+          industry: industries[0]
+          employees: employees.count
+          founded: founded_year
+          location: join(', ', [headquarters.city, headquarters.country_code][?@])
+          country: headquarters.country_code
+  news-search:
+    title: Search news
+    about: Find news about a company by name, domain, ticker, or ISIN, or search all news with a natural-language
+      query. Filter articles and continue through results with a cursor.
+    request: POST /news/search
+    params:
+      searchBy:
+        in: body
+        type: object
+        required: true
+        about: 'What to search for: a specific company, or a natural-language query across all news.'
+      filterBy:
+        in: body
+        type: object
+        about: Optional result filters. Use at most one of sourceDomain, sourceCountry, articleLanguage, or articleType.
+          A date range may accompany that category; date.from must not exceed date.to.
+      sortBy:
+        in: body
+        type: object
+        about: Result ordering. Defaults to newest for entity searches. Natural-language searches are always ordered
+          by relevance.
+      limit:
+        in: body
+        type: integer
+        about: Maximum results to return. Defaults to 10.
+      cursor:
+        in: body
+        about: Opaque next_cursor from the previous response, or null for the first page.
+      policies:
+        in: body
+        type: array
+        about: Access policy IDs to apply. A URL must pass every policy.
+      tags:
+        in: body
+        type: array
+        about: Labels for filtering usage in the dashboard.
+    price:
+      per: call
+      note: credits reported in key_metadata.credits_consumed
+  people-enrich:
+    title: Enrich a person
+    about: Find a person from identity clues and return their profile with a match score. Available on all plans;
+      free or disposable email addresses return 422.
+    request: POST /people/enrich
+    params:
+      social_urls:
+        in: body
+        type: array
+        about: Public profile URLs for the person. A person-profile URL can identify the person without a name.
+      name:
+        in: body
+        type: object
+        about: Person name. Without an email or person-profile URL, provide both first and last name plus company,
+          education, or location.
+      email:
+        in: body
+        about: Email address of the person to find.
+      company:
+        in: body
+        type: object
+        about: Company context to help identify the person. Provide a name or domain.
+      education:
+        in: body
+        type: array
+        about: Education history to help distinguish people with similar names.
+      location:
+        in: body
+        type: object
+        about: Location context to help identify the person. Provide a city, region, or country.
+      timeoutOpts:
+        in: body
+        type: object
+        about: Request deadline and what to return when it passes.
+      zdr:
+        in: body
+        choices:
+        - enabled
+        - disabled
+        about: enabled turns on zero data retention. Returns 403 ZDR_NOT_ENABLED unless your organization has ZDR.
+      tags:
+        in: body
+        type: array
+        about: Labels for filtering usage in the dashboard.
+    price:
+      per: call
+      note: credits reported in key_metadata.credits_consumed
+    jobs:
+      enrich_person:
+        needs:
+        - - email
+        - - linkedin_url
+        - - full_name
+          - company_domain
+        - - full_name
+          - company
+        send:
+          email: email
+          linkedin_url: social_urls[]
+          first_name: name.first
+          last_name: name.last
+          company_domain: company.domain
+          company: company.name
+        result: match.person
+        fields:
+          name: name.full
+          first_name: name.first
+          last_name: name.last
+          headline: bio
+          title: current_role.title
+          company: current_role.organization
+          location: location.display
+          country: location.country_code
+          linkedin_url: social_urls[?contains(@, 'linkedin.com')] | [0]
+          email: email
+          image: avatar_url
+          skills: skills
+          experience: experience
+          education: education
+  people-search:
+    title: Search people
+    about: Find people with a natural-language query.
+    request: POST /people/search
+    params:
+      query:
+        in: body
+        required: true
+        about: Describe the people to find. Up to 500 characters in fast mode and 5000 in ultra mode.
+      mode:
+        in: body
+        choices:
+        - fast
+        - ultra
+        about: fast matches people on basic criteria (e.g. their role, location or background); ultra plans a deeper
+          search, judges each candidate against every criterion in the query. Complex ultra searches can…
+      filters:
+        in: body
+        type: object
+        about: Additional constraints every result must match.
+      cursor:
+        in: body
+        about: Use next_cursor with the same query, mode and filters to fetch the next page.
+      tags:
+        in: body
+        type: array
+        about: Labels for filtering usage in the dashboard.
+    price:
+      per: call
+      note: credits reported in key_metadata.credits_consumed
+    jobs:
+      find_people:
+        needs:
+        - - query
+        send:
+          query: query
+          country: filters.countries[]
+        result: results
+        fields:
+          name: name
+          headline: description
+          title: role.title
+          company: role.company.name
+          company_domain: role.company.domain
+          location: join(', ', [location.city, location.country_code][?@])
+          country: location.country_code
+          linkedin_url: profiles[?contains(@, 'linkedin.com')] | [0]
+          url: profiles[0]
+  usage-history:
+    title: Retrieve usage history
+    about: Retrieve credits and requests over time, bucketed by hour, day, or month. History is kept for one year.
+    request: GET /org/usage/history
+    params:
+      from:
+        about: Start of the range, as an ISO 8601 timestamp. Defaults to 24 hours before to for hour, 30 days for
+          day, and 366 days for month.
+      to:
+        about: End of the range, as an ISO 8601 timestamp. Defaults to now.
+      interval:
+        choices:
+        - hour
+        - day
+        - month
+        about: Bucket size. hour covers up to 7 days; day and month cover up to 366 days. Buckets start on UTC boundaries.
+      group_by:
+        choices:
+        - path
+        - key_id
+        - status_code
+        about: Split each bucket by endpoint path, API key, or HTTP status code.
+    price:
+      usd: 0
+      per: call
+  usage:
+    title: Retrieve credit usage
+    about: Retrieve your organization’s credit balance, current-period usage, and next refill.
+    request: GET /org/usage
+    price:
+      usd: 0
+      per: call
+  parse-file:
+    title: Parse a file
+    about: Convert uploaded file bytes into Markdown and optional HTML.
+    request: POST /parse
+    params:
+      extension:
+        about: Optional file extension hint, such as pdf, docx, xlsx, pptx, html, json, csv, md, py, rtf, jpg, png,
+          or txt.
+      includeLinks:
+        type: boolean
+        about: Preserve hyperlinks in Markdown output
+      includeImages:
+        type: boolean
+        about: Include image references in Markdown output
+      shortenBase64Images:
+        type: boolean
+        about: Shorten base64-encoded image data in the Markdown output
+      useMainContentOnly:
+        type: boolean
+        about: Extract only the main content from HTML-like inputs
+      ocr:
+        type: boolean
+        about: Read text from images and scanned PDF pages. PDF page ranges still apply.
+      includeNumberedPages:
+        type: boolean
+        about: Start each PDF page in the Markdown with a line, where N is the original 1-based page number.
+      pdf:
+        type: object
+        about: 'PDF page-range options as a JSON object, e.g. {"start": 2, "end": 5}.'
+      client:
+        about: Optional client identifier used for usage attribution.
+      zdr:
+        choices:
+        - enabled
+        - disabled
+        about: enabled turns on zero data retention. Returns 403 ZDR_NOT_ENABLED unless your organization has ZDR.
+      tags:
+        type: array
+        about: Comma-separated labels for filtering usage, e.g. production,team-alpha.
+    price:
+      per: call
+      note: credits reported in key_metadata.credits_consumed
+  web-answers:
+    title: Answer a research task
+    about: Research the web and return a sourced answer in your JSON shape. Choose fast for a short task or ultra
+      for deeper research.
+    request: POST /web/answers
+    params:
+      mode:
+        in: body
+        choices:
+        - fast
+        - ultra
+        about: fast prioritizes speed, with extra verification for people and companies; ultra supports deeper research
+          (default).
+      task:
+        in: body
+        required: true
+        about: Research task. The agent selects company/profile lookups, web searches, or page reads. Include domains
+          or URLs to focus the research.
+      json_format:
+        in: body
+        type: object
+        about: Example answer object, not JSON Schema. Up to 8 levels, 500 values, and 16000 characters; unknowns
+          may be null.
+      timeoutOpts:
+        in: body
+        type: object
+        about: Request deadline and what to return when it passes.
+      tags:
+        in: body
+        type: array
+        about: Labels for filtering usage in the dashboard.
+      zdr:
+        in: body
+        choices:
+        - enabled
+        - disabled
+        about: enabled turns on zero data retention. Returns 403 ZDR_NOT_ENABLED unless your organization has ZDR.
+      policies:
+        in: body
+        type: array
+        about: Access policy IDs to apply. A URL must pass every policy.
+    price:
+      per: call
+      note: credits reported in key_metadata.credits_consumed
+  web-crawl:
+    title: Crawl a website
+    about: Crawl a website and return page content as Markdown. Use a batch for crawls beyond 500 pages.
+    request: POST /web/crawl
+    params:
+      url:
+        in: body
+        required: true
+        about: Start URL, including http:// or https://.
+      maxPages:
+        in: body
+        type: integer
+        about: Maximum pages to crawl.
+      maxDepth:
+        in: body
+        type: integer
+        about: Maximum link depth from the starting URL (0 = only the starting page)
+      urlRegex:
+        in: body
+        about: Regex pattern. Only URLs matching this pattern will be followed and scraped. An automatic prefix
+          scope in the form ^ follows a redirect of the starting page.
+      excludeUrlRegex:
+        in: body
+        about: Regex pattern. URLs matching this pattern are never followed or scraped, even when they match urlRegex.
+          The starting URL is always scraped.
+      includeLinks:
+        in: body
+        type: boolean
+        about: Preserve hyperlinks in the Markdown output (html-conversion only).
+      includeImages:
+        in: body
+        type: boolean
+        about: Include image references in the Markdown output (html-conversion only).
+      shortenBase64Images:
+        in: body
+        type: boolean
+        about: Truncate base64-encoded image data in the Markdown output (html-conversion only).
+      useMainContentOnly:
+        in: body
+        type: boolean
+        about: Extract only the main content, stripping headers, footers, sidebars, and navigation
+      sourcePreference:
+        in: body
+        type: array
+        about: 'Markdown sources in order of preference: html-conversion converts the page HTML, markdown-direct
+          uses Markdown the site publishes.'
+      followSubdomains:
+        in: body
+        type: boolean
+        about: When true, follow links on subdomains of the starting URL's domain (e.g. docs.example.com when starting
+          from example.com). www and apex are always treated as equivalent.
+      pdf:
+        in: body
+        type: object
+        about: PDF handling. start/end limit parsing to an inclusive, 1-based page range.
+      includeFrames:
+        in: body
+        type: boolean
+        about: When true, the contents of iframes are rendered to Markdown for each crawled page.
+      includeSelectors:
+        in: body
+        type: array
+        about: Keep matching HTML subtrees before converting each page to Markdown.
+      excludeSelectors:
+        in: body
+        type: array
+        about: Remove matching elements after inclusions. Exclusions take precedence.
+      maxAgeMs:
+        in: body
+        type: integer
+        about: Maximum cache age in milliseconds. Defaults to 1 day; 0 fetches fresh.
+      waitForMs:
+        in: body
+        type: integer
+        about: 'Browser wait time in milliseconds after initial page load for each crawled page. Defaults to 3500
+          (3.5 seconds). Min: 0. Max: 30000 (30 seconds).'
+      settleAnimations:
+        in: body
+        type: boolean
+        about: Wait briefly for CSS animations and transitions to settle before reading each page.
+      stopAfterMs:
+        in: body
+        type: integer
+        about: Soft crawl deadline in milliseconds. Returns pages collected before the next deadline check.
+      timeoutOpts:
+        in: body
+        type: object
+        about: Request deadline and what to return when it passes.
+      country:
+        in: body
+        about: Fetch from this country (ISO 3166-1 alpha-2).
+      zdr:
+        in: body
+        choices:
+        - enabled
+        - disabled
+        about: enabled turns on zero data retention. Returns 403 ZDR_NOT_ENABLED unless your organization has ZDR.
+      policies:
+        in: body
+        type: array
+        about: Access policy IDs to apply. A URL must pass every policy.
+      tags:
+        in: body
+        type: array
+        about: Labels for filtering usage in the dashboard.
+    price:
+      per: call
+      note: credits reported in key_metadata.credits_consumed
+  web-map:
+    title: Map URLs
+    about: Discover a site's URLs, with page titles, descriptions, keywords, and language when available. Metadata
+      can be missing on newly discovered URLs.
+    request: GET /web/urls
+    params:
+      domain:
+        required: true
+        about: Domain to map, e.g. stripe.com.
+      includeSubdomains:
+        type: boolean
+        about: Include URLs on subdomains.
+      maxLinks:
+        type: integer
+        about: Maximum number of URLs to return.
+      sitemapUrl:
+        about: Fetch this sitemap instead of discovering sitemaps. Must belong to the domain or a subdomain.
+      urlRegex:
+        about: Regex pattern. Only URLs matching this pattern are returned and counted against maxLinks.
+      excludeUrlRegex:
+        about: Regex pattern. URLs matching this pattern are not returned, even when they match urlRegex.
+      search:
+        about: Filter URLs by a topic or phrase, most relevant first.
+      headers:
+        type: object
+        about: HTTP headers for the target origin. Non-empty headers bypass caching.
+      timeoutOpts:
+        type: object
+        about: Request deadline and what to return when it passes.
+      zdr:
+        choices:
+        - enabled
+        - disabled
+        about: enabled turns on zero data retention. Returns 403 ZDR_NOT_ENABLED unless your organization has ZDR.
+      policies:
+        type: array
+        about: Comma-separated access policy IDs to apply. A URL must pass every policy.
+      tags:
+        type: array
+        about: Comma-separated labels for filtering usage, e.g. production,team-alpha.
+    price:
+      per: call
+      note: credits reported in key_metadata.credits_consumed
+  web-scrape:
+    title: Scrape Anything
+    about: Scrape anything from a URL on the internet. Returns the outputs you enable in formats. Handles PDFs,
+      DOCX, PPT, XLSX, and 40 other file formats.
+    request: POST /web/scrape
+    params:
+      url:
+        in: body
+        required: true
+        about: Public HTTP or HTTPS URL to scrape.
+      formats:
+        in: body
+        type: object
+        required: true
+        about: Outputs to return. Set at least one to true.
+      sharedParams:
+        in: body
+        type: object
+        about: Browser and content settings shared by all outputs.
+      markdownParams:
+        in: body
+        type: object
+        about: Markdown options. Requires formats.markdown.
+      screenshotParams:
+        in: body
+        type: object
+        about: 'Screenshot options. Requires formats.screenshot: true.'
+      imageParams:
+        in: body
+        type: object
+        about: 'Image options. Requires formats.images: true.'
+      parseParams:
+        in: body
+        type: object
+        about: 'Requires formats.parse: true; required when it is set.'
+      productParams:
+        in: body
+        type: object
+        about: 'Product options. Requires formats.product: true.'
+      highlightsParams:
+        in: body
+        type: object
+        about: 'Requires formats.highlights: true; required when it is set.'
+      jsonParams:
+        in: body
+        type: object
+        about: 'Requires formats.json: true; required when it is set.'
+      maxAgeMs:
+        in: body
+        type: integer
+        about: 'Maximum age of a cached output, in milliseconds. 0 fetches fresh. Defaults to 3 days (259200000
+          ms). Maximum: 1 year (31536000000 ms).'
+      zdr:
+        in: body
+        choices:
+        - enabled
+        - disabled
+        about: enabled turns on zero data retention. Your organization must have ZDR enabled.
+      timeoutOpts:
+        in: body
+        type: object
+        about: Request deadline and what to return when it passes.
+      tags:
+        in: body
+        type: array
+        about: Labels for filtering usage in the dashboard.
+      policies:
+        in: body
+        type: array
+        about: Access policy IDs to apply. A URL must pass every policy.
+    price:
+      per: call
+      note: credits reported in key_metadata.credits_consumed
+  web-search:
+    title: Search the web
+    about: Search the web and optionally return page content or relevant passages with each result.
+    request: POST /web/search
+    params:
+      query:
+        in: body
+        required: true
+        about: Search query. Accepts natural language as well as Google-style search operators such as site:, -site:,
+          inurl:, intitle:, quoted phrases, and OR.
+      numResults:
+        in: body
+        type: integer
+        about: Number of results to request and return (1–100). Defaults to 10.
+      includeDomains:
+        in: body
+        type: array
+        about: 'Allowlist — only return results from these domains. Up to 100 domains. Example: ["arxiv.org", "github.com"].'
+      excludeDomains:
+        in: body
+        type: array
+        about: 'Blocklist — drop results from these domains. Up to 100 domains. Example: ["pinterest.com", "reddit.com"].'
+      freshness:
+        in: body
+        choices:
+        - last_24_hours
+        - last_week
+        - last_month
+        - last_year
+        about: Restrict results to content published within this window.
+      country:
+        in: body
+        about: 'Two-letter ISO 3166-1 alpha-2 country code to localize results to a specific country (maps to Google''s
+          gl parameter). Example: "us", "gb", "de".'
+      languages:
+        in: body
+        type: array
+        about: 'Languages to return results in, as BCP 47 language codes such as en or de, or "all" for any language.
+          Defaults to "all". Example: ["en", "de"].'
+      queryFanout:
+        in: body
+        type: boolean
+        about: Currently has no effect.
+      markdownOptions:
+        in: body
+        type: object
+        about: 'Inline Markdown scraping for each result. Set enabled: true to activate.'
+      highlightsOptions:
+        in: body
+        type: object
+        about: Passages from each result page that are relevant to the query. Pages are read with the markdownOptions
+          settings.
+      descriptionMaxCharacters:
+        in: body
+        type: integer
+        about: Maximum length of each result's description, in characters.
+      timeoutOpts:
+        in: body
+        type: object
+        about: Request deadline and what to return when it passes.
+      zdr:
+        in: body
+        choices:
+        - enabled
+        - disabled
+        about: enabled turns on zero data retention. Returns 403 ZDR_NOT_ENABLED unless your organization has ZDR.
+      policies:
+        in: body
+        type: array
+        about: Access policy IDs to apply. A URL must pass every policy.
+      tags:
+        in: body
+        type: array
+        about: Labels for filtering usage in the dashboard.
+    price:
+      per: call
+      note: credits reported in key_metadata.credits_consumed

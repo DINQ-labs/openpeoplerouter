@@ -1,0 +1,666 @@
+id: apollo
+title: Apollo
+about: B2B database of people and companies, with search, enrichment, emails and phone numbers.
+site: https://www.apollo.io
+docs: https://docs.apollo.io/reference/apollo-api
+pricing: https://docs.apollo.io/docs/api-pricing
+api: https://api.apollo.io/api/v1
+key:
+  env: APOLLO_API_KEY
+  header: x-api-key
+operations:
+  people-enrichment:
+    title: People enrichment
+    about: Match one person by email, LinkedIn URL, name with employer, or Apollo id. Reveal flags unlock personal
+      emails and phones.
+    request: POST /people/match
+    docs: https://docs.apollo.io/reference/people-enrichment
+    params:
+      first_name:
+        about: 'The first name of the person. This is typically used in combination with the last_name parameter.
+          Example: jordan'
+      last_name:
+        about: 'The last name of the person. This is typically used in combination with the first_name parameter.
+          Example: blake'
+      name:
+        about: The full name of the person. This will typically be a first name and last name separated by a space.
+          If you use this parameter, you do not need to use the first_name and last_name parameters.…
+      email:
+        about: 'The email address of the person. Example: jordan@ymail.org'
+      hashed_email:
+        about: 'The hashed email of the person. The email should adhere to either the MD5 or SHA-256 hash format.
+          Example: 8d935115b9ff4489f2d1f9249503cadf (MD5) or…'
+      organization_name:
+        about: 'The name of the person''s employer. This can be the current employer or a previous employer. Example:
+          northstar analytics'
+      domain:
+        about: 'The domain name for the person''s employer. This can be the current employer or a previous employer.
+          Do not include www., the @ symbol, or similar. Example: apollo.io or microsoft.com'
+      id:
+        about: The Apollo ID for the person. Each person in the Apollo database is assigned a unique ID. To find
+          IDs, call the people API search endpoint and identify the values for person_id. Example:…
+      linkedin_url:
+        about: 'The URL for the person''s LinkedIn profile. Example: https://www.linkedin.com/in/jordan-blake-4a7c21'
+      run_waterfall_email:
+        type: boolean
+        about: Set to true to enable email waterfall enrichment
+      run_waterfall_phone:
+        type: boolean
+        about: Set to true to enable phone waterfall enrichment
+      reveal_personal_emails:
+        type: boolean
+        about: Set to true if you want to enrich the person's data with personal emails. This potentially consumes
+          credits as part of your Apollo pricing plan. The default value is false. If a person resides in a…
+      reveal_phone_number:
+        type: boolean
+        about: Set to true if you want to enrich the person's data with all available phone numbers, including mobile
+          phone numbers. This potentially consumes credits as part of your Apollo pricing plan. The…
+      webhook_url:
+        about: If you set the reveal_phone_number parameter to true, this parameter becomes mandatory. Otherwise,
+          do not use this parameter. Enter the webhook URL that specifies where Apollo should send a JSON…
+      poll_only:
+        type: boolean
+        about: Set to true to receive phone or waterfall enrichment results by polling instead of a webhook. When
+          poll_only is true, omit webhook_url — Apollo returns a request_id you can pass to the poll webhook…
+    price:
+      credits: 1
+      per: success
+      note: 1 credit for profile and email
+      8 more when a mobile phone is returned: null
+    jobs:
+      enrich_person:
+        needs:
+        - - email
+        - - linkedin_url
+        - - full_name
+          - company_domain
+        - - full_name
+          - company
+        send:
+          email: email
+          linkedin_url: linkedin_url
+          full_name: name
+          company_domain: domain
+          company: organization_name
+        result: person
+        fields:
+          name: name
+          first_name: first_name
+          last_name: last_name
+          title: title
+          headline: headline
+          company: organization.name
+          company_domain: organization.primary_domain
+          location: join(', ', [city, state, country][?@])
+          country: country
+          linkedin_url: linkedin_url
+          email: email
+          image: photo_url
+          experience: employment_history
+      find_contact:
+        needs:
+        - - linkedin_url
+        - - full_name
+          - company_domain
+        - - full_name
+          - company
+        send:
+          linkedin_url: linkedin_url
+          full_name: name
+          company_domain: domain
+          company: organization_name
+        result: person
+        fields:
+          email: email
+          email_status: email_status
+          name: name
+          title: title
+          company_domain: organization.primary_domain
+  bulk-people-enrichment:
+    title: Bulk people enrichment
+    about: Up to 10 people per request, same matching and credits as single enrichment.
+    request: POST /people/bulk_match
+    params:
+      run_waterfall_email:
+        type: boolean
+        about: Set to true to enable email waterfall enrichment
+      run_waterfall_phone:
+        type: boolean
+        about: Set to true to enable phone waterfall enrichment
+      reveal_personal_emails:
+        type: boolean
+        about: Set to true if you want to enrich all matched people with personal emails. This potentially consumes
+          credits as part of your Apollo pricing plan. The default value is false. If a person resides in a…
+      reveal_phone_number:
+        type: boolean
+        about: Set to true if you want to enrich the data of all matched people with all available phone numbers,
+          including mobile phone numbers. This potentially consumes credits as part of your Apollo pricing…
+      webhook_url:
+        about: If you set the reveal_phone_number parameter to true, this parameter becomes mandatory. Otherwise,
+          do not use this parameter. Enter the webhook URL that specifies where Apollo should send a JSON…
+      poll_only:
+        type: boolean
+        about: Set to true to receive phone or waterfall enrichment results by polling instead of a webhook. When
+          poll_only is true, omit webhook_url — Apollo returns a request_id you can pass to the poll webhook…
+      details:
+        in: body
+        type: array
+        required: true
+        about: Provide info for each person you want to enrich as an object within this array. Add up to 10 people.
+    price:
+      credits: 1
+      per: success
+      note: per person matched
+  organization-enrichment:
+    title: Organization enrichment
+    about: One company by domain, LinkedIn URL or website.
+    request: GET /organizations/enrich
+    docs: https://docs.apollo.io/reference/organization-enrichment
+    params:
+      domain:
+        about: The domain of the company that you want to enrich. Do not include www., the @ symbol, or similar.
+          Use domain, linkedin_url, or website to identify the company. You can also provide name to improve…
+      linkedin_url:
+        about: The URL for the company's LinkedIn profile. Use domain, linkedin_url, or website to identify the
+          company. You can also provide name to improve match accuracy. Example:…
+      name:
+        about: 'The name of the company that you want to enrich. Provide this with domain, linkedin_url, or website
+          to improve match accuracy. Example: apollo'
+      website:
+        about: The full website URL of the company that you want to enrich. Use domain, linkedin_url, or website
+          to identify the company. You can also provide name to improve match accuracy. Example:…
+    price:
+      credits: 1
+      per: success
+    jobs:
+      enrich_company:
+        needs:
+        - - domain
+        - - linkedin_url
+        send:
+          domain: domain
+          linkedin_url: linkedin_url
+        result: organization
+        fields:
+          name: name
+          domain: primary_domain
+          website: website_url
+          description: short_description
+          industry: industry
+          employees: estimated_num_employees
+          founded: founded_year
+          location: join(', ', [city, state, country][?@])
+          country: country
+          linkedin_url: linkedin_url
+          logo: logo_url
+          technologies: technology_names
+          revenue: annual_revenue
+          funding: total_funding
+  bulk-organization-enrichment:
+    title: Bulk organization enrichment
+    about: Up to 10 companies by domain per request.
+    request: POST /organizations/bulk_enrich
+    params:
+      domains[]:
+        type: array
+        about: The domain of each company that you want to enrich. Do not include www., the @ symbol, or similar.
+          Use this parameter to match companies by domain only. To match by LinkedIn URL, name, or website in…
+      details:
+        in: body
+        type: array
+        about: Provide info for each company you want to enrich as an object within this array. Add up to 10 companies.
+          Each object can include any combination of domain, linkedin_url, name, and website. Providing…
+    price:
+      credits: 1
+      per: success
+      note: per company
+  people-api-search:
+    title: People API search
+    about: Search 200M+ people by title, seniority, location, employer domain or keywords. Free; returns no emails
+      or phones (enrich for those) and obfuscates last names.
+    request: POST /mixed_people/api_search
+    docs: https://docs.apollo.io/reference/people-api-search
+    params:
+      person_titles[]:
+        type: array
+        about: Job titles held by the people you want to find. For a person to be included in search results, they
+          only need to match 1 of the job titles you add. Adding more job titles expands your search results.…
+      include_similar_titles:
+        type: boolean
+        about: This parameter determines whether people with job titles similar to the titles you define in the
+          person_titles[] parameter are returned in the response. Set this parameter to false when using…
+      person_not_titles[]:
+        type: array
+        about: Exclude people whose current job title matches any of these job titles. This is the counterpart to
+          person_titles[]. Like person_titles[], matching isn't limited to exact job titles. For example,…
+      person_not_past_titles[]:
+        type: array
+        about: Exclude people who held any of these job titles in a previous role. Only past roles are checked;
+          a person's current job title isn't affected by this filter. To exclude current job titles, use…
+      q_keywords:
+        about: A string of words over which we want to filter the results.
+      q_person_name:
+        about: The name of the person you want to find. Use this parameter to search by name only, independent of
+          any other filters. Search results include people whose name contains all the words you enter.…
+      person_locations[]:
+        type: array
+        about: The location where people live. You can search across cities, US states, countries, and postal codes
+          (ZIP codes). Postal codes are supported for the United States, Germany, and the United Kingdom. To…
+      person_not_locations[]:
+        type: array
+        about: Exclude people from your search results based on where they live. You can use cities, US states,
+          countries, and postal codes (ZIP codes) as locations to exclude. Postal codes are supported for the…
+      person_seniorities[]:
+        type: array
+        about: The job seniority that people hold within their current employer. This enables you to find people
+          that currently hold positions at certain reporting levels, such as Director level or senior IC level.…
+      organization_locations[]:
+        type: array
+        about: The location of the company headquarters for a person's current employer. You can search across cities,
+          US states, countries, and postal codes (ZIP codes). Postal codes are supported for the United…
+      organization_not_locations[]:
+        type: array
+        about: Exclude people from your search results based on the headquarters location of their current employer.
+          You can use cities, US states, countries, and postal codes (ZIP codes) as locations to exclude.…
+      organization_industry_tag_ids[]:
+        type: array
+        about: The Apollo IDs for the industries of the person's current employer. For a person to be included in
+          search results, their employer only needs to match one of the industries you add. Each industry in…
+      organization_not_industry_tag_ids[]:
+        type: array
+        about: Exclude people whose current employer belongs to any of these industries, identified by Apollo industry
+          ID. This is the counterpart to organization_industry_tag_ids[]. To find industry IDs, refer to…
+      organization_industries[]:
+        type: array
+        about: The industry names for the person's current employer. For a person to be included in search results,
+          their employer only needs to match one of the industries you add. Values must exactly match an…
+      organization_naics_codes[]:
+        type: array
+        about: The North American Industry Classification System (NAICS) codes for the person's current employer.
+          For a person to be included in search results, their employer only needs to match one of the codes…
+      not_organization_naics_codes[]:
+        type: array
+        about: 'Exclude people whose current employer matches any of these NAICS codes. This is the counterpart
+          to organization_naics_codes[], and uses the same prefix and range matching. Examples: 92; 31-33'
+      organization_sic_codes[]:
+        type: array
+        about: The Standard Industrial Classification (SIC) codes for the person's current employer. For a person
+          to be included in search results, their employer only needs to match one of the codes you add. Codes…
+      not_organization_sic_codes[]:
+        type: array
+        about: 'Exclude people whose current employer matches any of these SIC codes. This is the counterpart to
+          organization_sic_codes[], and uses the same prefix matching. Examples: 91; 7372'
+      q_organization_domains_list[]:
+        type: array
+        about: The domain name for the person's employer. This can be the current employer or a previous employer.
+          Do not include www., the @ symbol, or similar. This parameter accepts up to 1,000 domains in a…
+      contact_email_status[]:
+        type: array
+        about: 'The email statuses for the people you want to find. You can add multiple statuses to expand your
+          search. The statuses you can search include: verified unverified likely to engage unavailable'
+      organization_ids[]:
+        type: array
+        about: The Apollo IDs for the companies (employers) you want to include in your search results. Each company
+          in the Apollo database is assigned a unique ID. To find IDs, call the organization search…
+      organization_num_employees_ranges[]:
+        type: array
+        about: The number range of employees working for the person's current company. This enables you to find
+          people based on the headcount of their employer. You can add multiple ranges to expand your search…
+      revenue_range[min]:
+        type: integer
+        about: The minimum revenue the person's current employer generates. Use this parameter in combination with
+          revenue_range[max] to set a revenue range. Do not enter currency symbols, commas, or decimal points…
+      revenue_range[max]:
+        type: integer
+        about: The maximum revenue the person's current employer generates. Use this parameter in combination with
+          revenue_range[min] to set a revenue range. Do not enter currency symbols, commas, or decimal points…
+      currently_using_all_of_technology_uids[]:
+        type: array
+        about: Find people based on all of the technologies their current employer uses. Apollo supports filtering
+          by 1,500+ technologies. Apollo calculates technologies data from multiple sources. This data is…
+      currently_using_any_of_technology_uids[]:
+        type: array
+        about: Find people based on any of the technologies their current employer uses. Apollo supports filtering
+          by 1,500+ technologies. Apollo calculates technologies data from multiple sources. This data is…
+      currently_not_using_any_of_technology_uids[]:
+        type: array
+        about: Exclude people from your search based on any of the technologies their current employer uses. Apollo
+          supports filtering by 1,500+ technologies. Apollo calculates technologies data from multiple…
+      q_organization_job_titles[]:
+        type: array
+        about: 'The job titles that are listed in active job postings at the person''s current employer. Examples:
+          sales manager; research analyst'
+      organization_job_locations[]:
+        type: array
+        about: 'The locations of the jobs being actively recruited by the person''s employer. Examples: atlanta;
+          japan'
+      organization_num_jobs_range[min]:
+        type: integer
+        about: 'The minimum number of job postings active at the person''s current employer. Use this parameter
+          in combination with organization_num_jobs_range[max] to set a job postings range. Examples: 50; 500'
+      organization_num_jobs_range[max]:
+        type: integer
+        about: 'The maximum number of job postings active at the person''s current employer. Use this parameter
+          in combination with organization_num_jobs_range[min] to set a job postings range. Examples: 50; 500'
+      organization_job_posted_at_range[min]:
+        about: The earliest date when jobs were posted by the person's current employer. Use this parameter in combination
+          with organization_job_posted_at_range[max] to set a date range for when jobs posted.…
+      organization_job_posted_at_range[max]:
+        about: The latest date when jobs were posted by the person's current employer. Use this parameter in combination
+          with organization_job_posted_at_range[min] to set a date range for when jobs posted. Example:…
+      organization_headcount_growth_past_n_months:
+        type: integer
+        choices:
+        - 6
+        - 12
+        - 24
+        about: The trailing window, in months, used to measure the headcount growth of the person's current employer.
+          Only 6, 12, and 24 are accepted. Any other value is ignored. This parameter has no effect on its…
+      organization_headcount_growth_range[min]:
+        type: integer
+        about: The minimum headcount growth at the person's current employer, as a percentage, over the window set
+          by organization_headcount_growth_past_n_months. Enter the percentage as a whole number, without a…
+      organization_headcount_growth_range[max]:
+        type: integer
+        about: The maximum headcount growth at the person's current employer, as a percentage, over the window set
+          by organization_headcount_growth_past_n_months. Enter the percentage as a whole number, without a…
+      lookalike_organization_ids[]:
+        type: array
+        about: The Apollo IDs of the companies you want to use as lookalike seeds. Results are narrowed to people
+          who work at companies similar to the ones you pass, and people at the seed companies themselves are…
+      not_organization_websites_list[]:
+        type: array
+        about: Exclude people whose current employer matches any of these company domains. This is the counterpart
+          to q_organization_domains_list[]. Matching covers every domain Apollo holds for a company, not just…
+      page:
+        type: integer
+        about: The page number of the Apollo data that you want to retrieve. Use this parameter in combination with
+          the per_page parameter to make search results for navigable and improve the performance of the…
+      per_page:
+        type: integer
+        about: The number of search results that should be returned for each page. Limiting the number of results
+          per page improves the endpoint's performance. Use the page parameter to search the different pages…
+    price:
+      usd: 0
+      per: call
+    jobs:
+      find_people:
+        needs:
+        - - title
+        - - company_domain
+        - - query
+        - - keywords
+        send:
+          title: person_titles[]
+          company_domain: q_organization_domains_list[]
+          location: person_locations[]
+          seniority: person_seniorities[]
+          query: q_keywords
+          keywords: q_keywords
+        limit: per_page
+        result: people
+        fields:
+          name: join(' ', [first_name, last_name_obfuscated][?@])
+          first_name: first_name
+          title: title
+          company: organization.name
+  organization-search:
+    title: Organization search
+    about: Companies by name, domain, headcount, location, industry, technology or revenue.
+    request: POST /mixed_companies/search
+    docs: https://docs.apollo.io/reference/organization-search
+    params:
+      q_organization_domains_list[]:
+        type: array
+        about: The domain name for the person's employer. This can be the current employer or a previous employer.
+          Do not include www., the @ symbol, or similar. This parameter accepts up to 1,000 domains in a…
+      organization_num_employees_ranges[]:
+        type: array
+        about: The number range of employees working for the company. This enables you to find companies based on
+          headcount. You can add multiple ranges to expand your search results. Each range you add needs to be…
+      organization_locations[]:
+        type: array
+        about: The location of the company headquarters. You can search across cities, US states, countries, and
+          postal codes (ZIP codes). Postal codes are supported for the United States, Germany, and the United…
+      organization_not_locations[]:
+        type: array
+        about: Exclude companies from search results based on the location of the company headquarters. You can
+          use cities, US states, countries, and postal codes (ZIP codes) as locations to exclude. Postal codes…
+      organization_industry_tag_ids[]:
+        type: array
+        about: The Apollo IDs for the industries of the companies you want to find. For a company to be included
+          in search results, it only needs to match one of the industries you add. Each industry in the Apollo…
+      organization_not_industry_tag_ids[]:
+        type: array
+        about: Exclude companies that belong to any of these industries, identified by Apollo industry ID. This
+          is the counterpart to organization_industry_tag_ids[]. To find industry IDs, refer to the…
+      organization_industries[]:
+        type: array
+        about: The industry names for the companies you want to find. For a company to be included in search results,
+          it only needs to match one of the industries you add. Values must exactly match an Apollo…
+      organization_naics_codes[]:
+        type: array
+        about: The North American Industry Classification System (NAICS) codes for the companies you want to find.
+          For a company to be included in search results, it only needs to match one of the codes you add.…
+      not_organization_naics_codes[]:
+        type: array
+        about: 'Exclude companies that match any of these NAICS codes. This is the counterpart to organization_naics_codes[],
+          and uses the same prefix and range matching. Examples: 92; 31-33'
+      organization_sic_codes[]:
+        type: array
+        about: The Standard Industrial Classification (SIC) codes for the companies you want to find. For a company
+          to be included in search results, it only needs to match one of the codes you add. Codes match by…
+      not_organization_sic_codes[]:
+        type: array
+        about: 'Exclude companies that match any of these SIC codes. This is the counterpart to organization_sic_codes[],
+          and uses the same prefix matching. Examples: 91; 7372'
+      revenue_range[min]:
+        type: integer
+        about: Search for organizations based on their revenue. Use this parameter to set the lower range of organization
+          revenue. Use the revenue_range[max] parameter to set the upper range of revenue. Do not…
+      revenue_range[max]:
+        type: integer
+        about: Search for organizations based on their revenue. Use this parameter to set the upper range of organization
+          revenue. Use the revenue_range[min] parameter to set the lower range of revenue. Do not…
+      currently_using_any_of_technology_uids[]:
+        type: array
+        about: Find organizations based on the technologies they currently use. Apollo supports filtering by 1,500+
+          technologies. Apollo calculates technologies data from multiple sources. This data is updated…
+      q_organization_keyword_tags[]:
+        type: array
+        about: Filter search results based on keywords associated with companies. For example, you can enter mining
+          as a value to return only companies that have an association with the mining industry. Examples:…
+      q_not_organization_keyword_tags[]:
+        type: array
+        about: Exclude companies associated with any of these keywords. This is the counterpart to q_organization_keyword_tags[].
+          Each value is matched as an exact phrase against a company's keywords, name, and…
+      q_organization_name:
+        about: Filter search results to include a specific company name. If the value you enter for this parameter
+          does not match with a company's name, the company will not appear in search results, even if it…
+      organization_ids[]:
+        type: array
+        about: The Apollo IDs for the companies you want to include in your search results. Each company in the
+          Apollo database is assigned a unique ID. To find IDs, identify the values for organization_id when you…
+      latest_funding_amount_range[min]:
+        type: integer
+        about: The minimum amount the company received with its most recent funding round. Use this parameter in
+          combination with latest_funding_amount_range[max] to set a monetary range for the company's most…
+      latest_funding_amount_range[max]:
+        type: integer
+        about: The maximium amount the company received with its most recent funding round. Use this parameter in
+          combination with latest_funding_amount_range[min] to set a monetary range for the company's most…
+      total_funding_range[min]:
+        type: integer
+        about: The minimum amount the company received during all of its funding rounds combined. Use this parameter
+          in combination with total_funding_range[max] to set a monetary range for all of the company's…
+      total_funding_range[max]:
+        type: integer
+        about: The maximum amount the company received during all of its funding rounds combined. Use this parameter
+          in combination with total_funding_range[min] to set a monetary range for all of the company's…
+      latest_funding_date_range[min]:
+        about: The earliest date when the company received its most recent funding round. Use this parameter in
+          combination with latest_funding_date_range[max] to set a date range for when the company received its…
+      latest_funding_date_range[max]:
+        about: The latest date when the company received its most recent funding round. Use this parameter in combination
+          with latest_funding_date_range[min] to set a date range for when the company received its…
+      q_organization_job_titles[]:
+        type: array
+        about: 'The job titles that are listed in active job postings at the company. Examples: sales manager; research
+          analyst'
+      organization_job_locations[]:
+        type: array
+        about: 'The locations of the jobs being actively recruited by the company. Examples: atlanta; japan'
+      organization_num_jobs_range[min]:
+        type: integer
+        about: 'The minimum number of job postings active at the company. Use this parameter in combination with
+          organization_num_jobs_range[max] to set a job postings range. Examples: 50; 500'
+      organization_num_jobs_range[max]:
+        type: integer
+        about: 'The maximum number of job postings active at the company. Use this parameter in combination with
+          organization_num_jobs_range[min] to set a job postings range. Examples: 50; 500'
+      organization_job_posted_at_range[min]:
+        about: 'The earliest date when jobs were posted by the company. Use this parameter in combination with organization_job_posted_at_range[max]
+          to set a date range for when jobs posted. Example: 2025-07-25'
+      organization_job_posted_at_range[max]:
+        about: 'The latest date when jobs were posted by the company. Use this parameter in combination with organization_job_posted_at_range[min]
+          to set a date range for when jobs posted. Example: 2025-09-25'
+      organization_headcount_growth_past_n_months:
+        type: integer
+        choices:
+        - 6
+        - 12
+        - 24
+        about: The trailing window, in months, used to measure company headcount growth. Only 6, 12, and 24 are
+          accepted. Any other value is ignored. This parameter has no effect on its own. To filter by headcount…
+      organization_headcount_growth_range[min]:
+        type: integer
+        about: The minimum company headcount growth, as a percentage, over the window set by organization_headcount_growth_past_n_months.
+          Enter the percentage as a whole number, without a percent sign or decimal…
+      organization_headcount_growth_range[max]:
+        type: integer
+        about: The maximum company headcount growth, as a percentage, over the window set by organization_headcount_growth_past_n_months.
+          Enter the percentage as a whole number, without a percent sign or decimal…
+      lookalike_organization_ids[]:
+        type: array
+        about: The Apollo IDs of the companies you want to use as lookalike seeds. Results are narrowed and ranked
+          by similarity to the companies you pass, and the seed companies themselves are excluded from…
+      not_organization_websites_list[]:
+        type: array
+        about: Exclude companies that match any of these domains. This is the counterpart to q_organization_domains_list[].
+          Matching covers every domain Apollo holds for a company, not just the one you send, so…
+      page:
+        type: integer
+        about: The page number of the Apollo data that you want to retrieve. Use this parameter in combination with
+          the per_page parameter to make search results for navigable and improve the performance of the…
+      per_page:
+        type: integer
+        about: The number of search results that should be returned for each page. Limiting the number of results
+          per page improves the endpoint's performance. Use the page parameter to search the different pages…
+    price:
+      credits: 1
+      per: call
+      note: one credit per page of up to 100
+    jobs:
+      find_companies:
+        needs:
+        - - query
+        - - location
+        - - industry
+        send:
+          query: q_organization_name
+          location: organization_locations[]
+          industry: q_organization_keyword_tags[]
+        limit: per_page
+        result: organizations
+        fields:
+          name: name
+          domain: primary_domain
+          website: website_url
+          founded: founded_year
+          linkedin_url: linkedin_url
+          logo: logo_url
+  organization-jobs-postings:
+    title: Organization job postings
+    about: A company's open roles, by Apollo organization id.
+    request: GET /organizations/{organization_id}/job_postings
+    params:
+      organization_id:
+        in: path
+        required: true
+        about: The organization ID of the company for which you want to find job postings.Each company in the Apollo
+          database is assigned a unique ID. To find IDs, call the organization search endpoint and identify…
+      page:
+        type: integer
+        about: The page number of the Apollo data that you want to retrieve. Use this parameter in combination with
+          the per_page parameter to make search results for navigable and improve the performance of the…
+      per_page:
+        type: integer
+        about: The number of search results that should be returned for each page. Limiting the number of results
+          per page improves the endpoint's performance. Use the page parameter to search the different pages…
+    price:
+      credits: 1
+      per: call
+  get-organizations-id:
+    title: Get complete organization info
+    about: Everything Apollo holds on one company, by Apollo id.
+    request: GET /organizations/{id}
+    params:
+      id:
+        in: path
+        required: true
+        about: The Apollo ID for the organization that you want to research. To find organization IDs, call the
+          organization search endpoint and identify the organizaton_id value for the organization. Example:…
+    price:
+      credits: 1
+      per: call
+  get-people-id:
+    title: Get complete person info
+    about: Everything Apollo holds on one person, by Apollo id.
+    request: GET /people/{id}
+    params:
+      id:
+        in: path
+        required: true
+        about: 'The Apollo ID for the person that you want to research. To find person IDs, call the people search
+          endpoint and identify the id value for the person. Example: 65f0a1b2c3d4e5f600012345'
+    price:
+      credits: 1
+      per: success
+  view-credit-usage-stats:
+    title: View credit usage stats
+    about: Credits used and left on your plan.
+    request: POST /usage_stats/credit_usage_stats
+    price:
+      usd: 0
+      per: call
+  news-articles-search:
+    title: News articles search
+    about: News about companies, by Apollo organization ids.
+    request: POST /news_articles/search
+    params:
+      organization_ids[]:
+        type: array
+        required: true
+        about: The Apollo IDs for the companies you want to include in your search results. Each company in the
+          Apollo database is assigned a unique ID. To find IDs, call the organization search endpoint and…
+      categories[]:
+        type: array
+        about: Filter your search to include only certain categories or sub-categories of news. Use the News search
+          filter for companies within Apollo to uncover all possible categories and sub-categories.…
+      published_at[min]:
+        about: Set the lower bound of the date range you want to search. Use this parameter in combination with
+          the published_at[max] parameter. This date should fall before the published_at[max] date. The date…
+      published_at[max]:
+        about: Set the upper bound of the date range you want to search. Use this parameter in combination with
+          the published_at[min] parameter. This date should fall after the published_at[min] date. The date…
+      page:
+        type: integer
+        about: The page number of the Apollo data that you want to retrieve. Use this parameter in combination with
+          the per_page parameter to make search results for navigable and improve the performance of the…
+      per_page:
+        type: integer
+        about: The number of search results that should be returned for each page. Limiting the number of results
+          per page improves the endpoint's performance. Use the page parameter to search the different pages…
+    price:
+      credits: 1
+      per: call

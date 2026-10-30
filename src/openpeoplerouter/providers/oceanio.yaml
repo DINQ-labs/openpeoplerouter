@@ -1,0 +1,567 @@
+id: oceanio
+title: Ocean.io
+about: Lookalike company and people search from seed companies, plus enrichment and email and phone reveals.
+site: https://www.ocean.io
+docs: https://docs.ocean.io
+pricing: https://www.ocean.io/pricing
+api: https://api.ocean.io
+key:
+  env: OCEANIO_API_TOKEN
+  header: x-api-token
+operations:
+  auto-complete-company:
+    title: Autocomplete companies
+    about: Auto complete the name search
+    request: POST /v2/autocomplete/companies
+    params:
+      name:
+        in: body
+        required: true
+        about: Beginning of the name or the domain of a company
+      countryFilters:
+        in: body
+        type: array
+        about: List of countries to filter for the autocompletion
+      excludeDomains:
+        in: body
+        type: array
+        about: List of domains to exclude from the results
+      forLookalikeSearch:
+        in: body
+        type: boolean
+        about: 'When false, returns all matching companies without domain validation or status filters. WARNING:
+          Do not set this parameter to false if the autocomplete results will be used as input for a lookalike…'
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  auto-complete-keywords:
+    title: Autocomplete keywords
+    about: Auto complete the keyword search.
+    request: POST /v2/autocomplete/keywords
+    params:
+      query:
+        in: body
+        required: true
+        about: Beginning of the keyword
+      limit:
+        in: body
+        type: integer
+        about: Number of keywords to return. Default is 5 if not specified, maximum is 15.
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  auto-complete-job-titles:
+    title: Autocomplete job titles
+    about: Auto complete the job title search.
+    request: POST /v2/autocomplete/job-titles
+    params:
+      query:
+        in: body
+        required: true
+        about: Beginning of the job title
+      limit:
+        in: body
+        type: integer
+        about: Number of job titles to return. Default is 5 if not specified, maximum is 15.
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  auto-complete-locations:
+    title: Autocomplete locations
+    about: Auto complete the location search
+    request: POST /v2/autocomplete/locations
+    params:
+      query:
+        in: body
+        required: true
+        about: Beginning of the location
+      limit:
+        in: body
+        type: integer
+        about: Number of locations to return. Default is 5 if not specified, maximum is 15.
+      locationType:
+        in: body
+        choices:
+        - companies
+        - people
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  auto-complete-skills:
+    title: Autocomplete skills
+    about: Auto complete the skill search.
+    request: POST /v2/autocomplete/skills
+    params:
+      query:
+        in: body
+        required: true
+        about: Beginning of the skill name
+      limit:
+        in: body
+        type: integer
+        about: Number of skills to return. Default is 5 if not specified, maximum is 15.
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  search-companies:
+    title: Lookalike companies search
+    about: Search companies using filters.
+    request: POST /v3/search/companies
+    params:
+      size:
+        in: body
+        type: integer
+        about: Number of companies to return. The maximum value is 10,000. To get more than 10,000 results, use
+          searchAfter.
+      searchAfter:
+        in: body
+        about: Use searchAfter returned by the previous request to get the next page
+      companiesFilters:
+        in: body
+        type: object
+      peopleFilters:
+        in: body
+        type: object
+      fields:
+        in: body
+        type: array
+        about: Fields to return in the Company objects. Only requesting the fields that are needed will use less
+          bandwidth and result in faster responses. If not specified, all fields are returned that can be seen…
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  enrich-company:
+    title: Enrich company
+    about: 'Match a company with our database and enrich it with additional information. Webhook result: Documentation'
+    request: POST /v2/enrich/company
+    params:
+      company:
+        in: body
+        type: object
+      people:
+        in: body
+        type: array
+        about: The people to match company with
+      fields:
+        in: body
+        type: array
+        about: Fields to return in the Company objects. Only requesting the fields that are needed will use less
+          bandwidth and result in faster responses. If not specified, all fields are returned that can be seen…
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+    jobs:
+      enrich_company:
+        needs:
+        - - domain
+        - - linkedin_url
+        - - name
+        send:
+          domain: company.domain
+          linkedin_url: company.linkedin
+          name: company.name
+        result: '@'
+        fields:
+          name: name
+          domain: domain
+          description: description
+          industry: industries[0]
+          employees: employeeCountLinkedin || companySize
+          founded: yearFounded
+          country: primaryCountry
+          linkedin_url: medias.linkedin.url
+          logo: logo
+          technologies: technologies
+          revenue: revenue
+  enrich-person:
+    title: Enrich person
+    about: 'Match a person with our database and enrich it with additional information. Webhook result: Documentation'
+    request: POST /v2/enrich/person
+    params:
+      person:
+        in: body
+        type: object
+        required: true
+      company:
+        in: body
+        type: object
+      revealEmails:
+        in: body
+        type: object
+      revealPhones:
+        in: body
+        type: object
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+    jobs:
+      enrich_person:
+        needs:
+        - - linkedin_url
+        - - email
+        - - full_name
+          - company_domain
+        send:
+          linkedin_url: person.linkedin
+          email: person.email
+          full_name: person.name
+          company_domain: company.domain
+        result: '@'
+        fields:
+          name: name
+          first_name: firstName
+          last_name: lastName
+          title: jobTitle
+          headline: headline
+          company_domain: domain
+          location: location
+          country: country
+          linkedin_url: linkedinUrl
+          email: email.address
+          image: photo
+          skills: skills
+          experience: experiences
+  get-data-fields-public:
+    title: Get data fields
+    about: Provides a list of all industries and industry categories, technologies and regions searchable by Ocean.io.
+      Calling this endpoint does not consume any credits.
+    request: GET /v2/data-fields
+    price:
+      usd: 0
+      per: call
+  search-people:
+    title: Lookalike people search
+    about: 'Search people using filters and/or people Ids Webhook result: Email results Phone results'
+    request: POST /v3/search/people
+    params:
+      size:
+        in: body
+        type: integer
+        about: Number of people to return. The maximum value is 10,000.
+      peopleFilters:
+        in: body
+        type: object
+      companiesFilters:
+        in: body
+        type: object
+      peoplePerCompany:
+        in: body
+        type: integer
+        about: Number of people to return per company. If you want to return all people from a company, don't set
+          this value.
+      jobTitleThreshold:
+        in: body
+        type: number
+        about: Threshold for job title similarity. The value must be between 0 and 1. Default is 0.8
+      searchAfter:
+        in: body
+        about: Use searchAfter returned by the previous request to get the next page.
+      fields:
+        in: body
+        type: array
+        about: Fields to return in the Person objects. Only requesting the fields that are needed will use less
+          bandwidth and result in faster responses. If not specified, the following default fields are returned:…
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  search-people-v3-preview:
+    title: Preview - Lookalike people
+    about: Preview search people with company information. Only available for enterprise API customers.
+    request: POST /v3/search/people/preview
+    params:
+      size:
+        in: body
+        type: integer
+        about: Number of people to return
+      peopleFilters:
+        in: body
+        type: object
+      companiesFilters:
+        in: body
+        type: object
+      peoplePerCompany:
+        in: body
+        type: integer
+        about: Number of people to return per company. If you want to return all people from a company, don't set
+          this value.
+      jobTitleThreshold:
+        in: body
+        type: number
+        about: Threshold for job title similarity. The value must be between 0 and 1. Default is 0.8
+      searchAfter:
+        in: body
+        about: Use searchAfter returned by the previous request to get the next page.
+      fields:
+        in: body
+        type: array
+        about: Fields to return in the Person objects. Only requesting the fields that are needed will use less
+          bandwidth and result in faster responses. If not specified, the following default fields are returned:…
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  get-credit-balance:
+    title: Get credit balance
+    request: GET /v2/credits/balance
+    price:
+      usd: 0
+      per: call
+  lookup-companies:
+    title: Lookup multiple companies by domain
+    about: 'Lookup and enrich multiple companies by domain (max 1000). This endpoint provides simple, per-result
+      pricing. Key features: - Batch lookup up to 1000 company domains - Domain redirections are handled…'
+    request: POST /v2/lookup/companies
+    params:
+      domains:
+        in: body
+        type: array
+        required: true
+        about: List of company domains to lookup (max 1000). Domain redirections are handled automatically.
+      fields:
+        in: body
+        type: array
+        about: Fields to return in the Company objects. Only requesting the fields that are needed will use less
+          bandwidth and result in faster responses. If not specified, all fields are returned that can be seen…
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  lookup-people:
+    title: Lookup multiple people by LinkedIn handle or Ocean ID
+    about: 'Lookup and enrich multiple people by LinkedIn handles and/or Ocean.io IDs (max 1000 total). This endpoint
+      provides simple, per-result pricing. Key features: - Batch lookup up to 1000 people (combined…'
+    request: POST /v2/lookup/people
+    params:
+      linkedinHandles:
+        in: body
+        type: array
+        about: List of LinkedIn profile handles to lookup (e.g., ['john-doe', 'jane-smith'])
+      oceanIds:
+        in: body
+        type: array
+        about: List of Ocean.io person IDs to lookup (e.g., ['abc123', 'def456'])
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  reveal-emails:
+    title: Reveal emails
+    about: 'Get emails and email statuses for people. Webhook result: Documentation'
+    request: POST /v2/reveal/emails
+    params:
+      personIds:
+        in: body
+        type: array
+        required: true
+        about: List of Ocean person ids to fetch the email data for. One email credit will be charged for every
+          verified email found.
+      webhookUrl:
+        in: body
+        required: true
+        about: Url of the webhook the email data should be sent to, when completed.
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  reveal-phones:
+    title: Reveal phones
+    about: 'Get phones and phone statuses for people. Webhook result: Documentation'
+    request: POST /v2/reveal/phones
+    params:
+      personIds:
+        in: body
+        type: array
+        required: true
+        about: List of Ocean person ids to fetch the phone data for. One phone credit will be charged for every
+          verified phone found.
+      webhookUrl:
+        in: body
+        required: true
+        about: Url of the webhook the phone data should be sent to, when completed.
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  preview-search-companies:
+    title: Preview - Lookalike companies
+    about: Preview search companies using filters. Only available for enterprise API customers.
+    request: POST /v3/search/companies/preview
+    params:
+      size:
+        in: body
+        type: integer
+        about: Number of companies to return. The maximum value is 50 and the minimum is 5
+      companiesFilters:
+        in: body
+        type: object
+      peopleFilters:
+        in: body
+        type: object
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  enrich-companies:
+    title: Enrich companies
+    about: 'Match companies with our database and enrich it with additional information. Webhook result: Documentation'
+    request: POST /v2/enrich/companies
+    params:
+      companyDataMapping:
+        in: body
+        type: object
+        required: true
+        about: A dictionary where each key is unique user-defined ID for a company, and each value is the data for
+          that company to be enriched. This ID will be included in the webhook response together with the…
+      webhookUrl:
+        in: body
+        required: true
+        about: Url of the webhook the enriched companies should be sent to, when completed.
+      fields:
+        in: body
+        type: array
+        about: Fields to return in the Company objects. Only requesting the fields that are needed will use less
+          bandwidth and result in faster responses. If not specified, all fields are returned that can be seen…
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  enrich-people:
+    title: Enrich people
+    about: 'Match people with our database and enrich it with additional information. Webhook result: Documentation'
+    request: POST /v2/enrich/people
+    params:
+      peopleDataMapping:
+        in: body
+        type: object
+        required: true
+        about: A dictionary where each key is a unique user-defined ID for a person, and each value is the data
+          for that person to be enriched. This ID will be included in the webhook response together with the…
+      webhookUrl:
+        in: body
+        required: true
+        about: Url of the webhook the enriched people should be sent to, when completed.
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  get-company-posts:
+    title: Get company posts
+    about: Get posts from a company's LinkedIn page. Provide either linkedinNumID or linkedinID. A valid empty result
+      is not charged.
+    request: GET /v2/social/company/posts
+    params:
+      linkedinNumID:
+        about: LinkedIn numeric company ID (e.g. "35625249"). The preferred, faster identifier.
+      linkedinID:
+        about: LinkedIn vanity ID (e.g. "google"). Slower and less preferred than linkedinNumID.
+      page:
+        type: integer
+        about: Page number (1-indexed)
+      perPage:
+        type: integer
+        about: Number of items per page
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  get-person-posts:
+    title: Get person posts
+    about: Get posts from a person's LinkedIn profile. Provide either linkedinEntityID or linkedinID. A valid empty
+      result is not charged.
+    request: GET /v2/social/person/posts
+    params:
+      linkedinEntityID:
+        about: LinkedIn entity ID for the person. The preferred, faster identifier.
+      linkedinID:
+        about: LinkedIn ID for the person. Slower and less preferred than linkedinEntityID.
+      perPage:
+        type: integer
+        about: Number of items per page
+      paginationToken:
+        about: Token for pagination, required to return results beyond the first page.
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  get-post-reactions:
+    title: Get post reactions
+    about: Get reactions for a LinkedIn post. A valid empty result is not charged.
+    request: GET /v2/social/post/reactions
+    params:
+      postUrn:
+        required: true
+        about: LinkedIn post URN
+      page:
+        type: integer
+        about: Page number (1-indexed). Increment together with paginationToken.
+      paginationToken:
+        about: Omit on page 1. For each next page, increment page and pass the returned token with other parameters
+          unchanged.
+      perPage:
+        type: integer
+        about: Number of items per page
+      reactionType:
+        about: Type of reaction to filter, if not supplied returns all reactions
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  get-post-reshares:
+    title: Get post reshares
+    about: Get reshares for a LinkedIn post. A valid empty result is not charged.
+    request: GET /v2/social/post/reshares
+    params:
+      postUrn:
+        required: true
+        about: LinkedIn post URN
+      page:
+        type: integer
+        about: Page number (1-indexed)
+      perPage:
+        type: integer
+        about: Number of items per page
+      paginationToken:
+        about: Token required for pagination, returned on the first request.
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more
+  get-post-comments:
+    title: Get post comments
+    about: Get comments for a LinkedIn post. A valid empty result is not charged.
+    request: GET /v2/social/post/comments
+    params:
+      postUrn:
+        required: true
+        about: LinkedIn post URN
+      page:
+        type: integer
+        about: Page number (1-indexed). Increment together with paginationToken.
+      paginationToken:
+        about: Omit on page 1. For each next page, increment page and pass the returned token with other parameters
+          unchanged.
+      perPage:
+        type: integer
+        about: Number of items per page
+      numReplies:
+        type: integer
+        about: Number of replies to include per comment
+      sortOrder:
+        choices:
+        - CHRONOLOGICAL
+        - RELEVANCE
+        about: CHRONOLOGICAL returns the complete top-level comment page; RELEVANCE may return only LinkedIn's curated
+          subset.
+    price:
+      credits: 1
+      per: success
+      note: credits per record; reveals cost more

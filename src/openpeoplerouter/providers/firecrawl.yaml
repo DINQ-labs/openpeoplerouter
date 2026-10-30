@@ -1,0 +1,1079 @@
+id: firecrawl
+title: Firecrawl
+about: Search, scrape, crawl and extract structured data from any website, including team, about and contact pages.
+site: https://www.firecrawl.dev
+docs: https://docs.firecrawl.dev
+pricing: https://www.firecrawl.dev/pricing
+api: https://api.firecrawl.dev/v2
+key:
+  env: FIRECRAWL_API_KEY
+  bearer: true
+operations:
+  scrape:
+    title: Scrape a single URL and optionally extract information using an LLM
+    request: POST /scrape
+    params:
+      url:
+        in: body
+        required: true
+        about: The URL to scrape
+      formats:
+        in: body
+        type: array
+        about: 'Output formats to include in the response. You can specify one or more formats, either as strings
+          (e.g., ''markdown'') or as objects with additional options (e.g., { type: ''json'', schema: {...} }).…'
+      onlyMainContent:
+        in: body
+        type: boolean
+        about: Only return the main content of the page excluding headers, navs, footers, etc. This is a deterministic
+          HTML-level filter applied before markdown is generated; no LLM is involved.
+      onlyCleanContent:
+        in: body
+        type: boolean
+        about: Beta. Run an additional LLM-based pass over the generated markdown to remove residual boilerplate
+          that onlyMainContent can miss (cookie banners, ad blocks, social share widgets, breadcrumbs,…
+      includeTags:
+        in: body
+        type: array
+        about: Tags to include in the output.
+      excludeTags:
+        in: body
+        type: array
+        about: Tags to exclude from the output.
+      maxAge:
+        in: body
+        type: integer
+        about: Returns a cached version of the page if it is younger than this age in milliseconds. If a cached
+          version of the page is older than this value, the page will be scraped. If you do not need extremely…
+      minAge:
+        in: body
+        type: integer
+        about: When set, the request only checks the cache and never triggers a fresh scrape. The value is in milliseconds
+          and specifies the minimum age the cached data must be. If matching cached data exists, it…
+      headers:
+        in: body
+        type: object
+        about: Headers to send with the request. Can be used to send cookies, user-agent, etc.
+      waitFor:
+        in: body
+        type: integer
+        about: Specify a delay in milliseconds before fetching the content, allowing the page sufficient time to
+          load. This waiting time is in addition to Firecrawl's smart wait feature.
+      mobile:
+        in: body
+        type: boolean
+        about: Set to true if you want to emulate scraping from a mobile device. Useful for testing responsive pages
+          and taking mobile screenshots.
+      skipTlsVerification:
+        in: body
+        type: boolean
+        about: Skip TLS certificate verification when making requests.
+      timeout:
+        in: body
+        type: integer
+        about: Timeout in milliseconds for the request. Minimum is 1000 (1 second). Default is 60000 (60 seconds).
+          Maximum is 300000 (300 seconds).
+      parsers:
+        in: body
+        type: array
+        about: 'Controls how files are processed during scraping. Each item is a parser name ("pdf" or "image")
+          or a parser object. Both parsers are on by default. - pdf: PDF content is extracted and converted to…'
+      actions:
+        in: body
+        type: array
+        about: Actions to perform on the page before grabbing the content
+      location:
+        in: body
+        type: object
+        about: Location settings for the request. When specified, this will use an appropriate proxy if available
+          and emulate the corresponding language and timezone settings. Defaults to 'US' if not specified.
+      removeBase64Images:
+        in: body
+        type: boolean
+        about: Removes all base 64 images from the markdown output, which may be overwhelmingly long. This does
+          not affect html or rawHtml formats. The image's alt text remains in the output, but the URL is…
+      blockAds:
+        in: body
+        type: boolean
+        about: Enables ad-blocking and cookie popup blocking.
+      proxy:
+        in: body
+        choices:
+        - basic
+        - enhanced
+        - auto
+        about: 'Specifies the type of proxy to use. - basic: Proxies for scraping sites with none to basic anti-bot
+          solutions. Fast and usually works. - enhanced: Enhanced proxies for scraping sites with advanced…'
+      storeInCache:
+        in: body
+        type: boolean
+        about: If true, the page will be stored in the Firecrawl index and cache. Setting this to false is useful
+          if your scraping activity may have data protection concerns. Using some parameters associated with…
+      lockdown:
+        in: body
+        type: boolean
+        about: If true, serves the request from Firecrawl's cache only and never makes an outbound request to the
+          target URL. Designed for compliance-constrained or air-gapped environments where the scrape request…
+      checkPromptInjection:
+        in: body
+        type: boolean
+        about: When enabled, scans the page content for prompt injection attempts before any LLM-backed format (such
+          as json, summary or question) runs. Works with any format except rawBase64. If an injection is…
+      redactPII:
+        in: body
+        type: boolean
+        about: Redact personally identifiable information from returned markdown. Pass true to use defaults, or
+          an object to tune mode, entities, and replacement style.
+      profile:
+        in: body
+        type: object
+        about: Enable persistent browser storage across scrape and interact sessions. Pass a profile when scraping
+          to preserve cookies, localStorage, and session data. Sessions with the same profile name share…
+      threatProtection:
+        in: body
+        type: object
+        about: Per-request Threat Protection override. Fields you provide replace the corresponding fields of your
+          organization's policy for this request only; omitted fields keep their organization-level values.…
+      auditMetadata:
+        in: body
+        type: object
+        about: User attribution included with SIEM logging events when SIEM Logging is enabled for the organization.
+      zeroDataRetention:
+        in: body
+        type: boolean
+        about: If true, this will enable zero data retention for this scrape. To enable this feature, please contact
+          help@firecrawl.dev
+      alexandria:
+        in: body
+        type: object
+        about: Execute one or more catalogued provider tools instead of scraping a URL. Cannot be combined with
+          url, formats, or other scrape options (400); the only allowed sibling keys are timeout, origin, and…
+      domainTools:
+        in: body
+        type: boolean
+        about: When true on an ordinary URL scrape, data.tools lists tool contracts matched to the scraped page's
+          domain (same DiscoveredTool shape as search). Requires the team's Alexandria access to be enabled…
+      toolDetail:
+        in: body
+        choices:
+        - compact
+        - summary
+        - full
+        about: How much of each tool contract to return in data.tools when domainTools is true. compact returns
+          only provider, capability, and description. summary returns the full tool entry without options and…
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  batch-scrape:
+    title: Scrape multiple URLs and optionally extract information using an LLM
+    request: POST /batch/scrape
+    params:
+      urls:
+        in: body
+        type: array
+        required: true
+      webhook:
+        in: body
+        type: object
+        about: A webhook specification object.
+      maxConcurrency:
+        in: body
+        type: integer
+        about: Maximum number of concurrent scrapes. This parameter allows you to set a concurrency limit for this
+          batch scrape. If not specified, the batch scrape adheres to your team's concurrency limit.
+      ignoreInvalidURLs:
+        in: body
+        type: boolean
+        about: If invalid URLs are specified in the urls array, they will be ignored. Instead of them failing the
+          entire request, a batch scrape using the remaining valid URLs will be created, and the invalid URLs…
+      formats:
+        in: body
+        type: array
+        about: 'Output formats to include in the response. You can specify one or more formats, either as strings
+          (e.g., ''markdown'') or as objects with additional options (e.g., { type: ''json'', schema: {...} }).…'
+      onlyMainContent:
+        in: body
+        type: boolean
+        about: Only return the main content of the page excluding headers, navs, footers, etc. This is a deterministic
+          HTML-level filter applied before markdown is generated; no LLM is involved.
+      onlyCleanContent:
+        in: body
+        type: boolean
+        about: Beta. Run an additional LLM-based pass over the generated markdown to remove residual boilerplate
+          that onlyMainContent can miss (cookie banners, ad blocks, social share widgets, breadcrumbs,…
+      includeTags:
+        in: body
+        type: array
+        about: Tags to include in the output.
+      excludeTags:
+        in: body
+        type: array
+        about: Tags to exclude from the output.
+      maxAge:
+        in: body
+        type: integer
+        about: Returns a cached version of the page if it is younger than this age in milliseconds. If a cached
+          version of the page is older than this value, the page will be scraped. If you do not need extremely…
+      minAge:
+        in: body
+        type: integer
+        about: When set, the request only checks the cache and never triggers a fresh scrape. The value is in milliseconds
+          and specifies the minimum age the cached data must be. If matching cached data exists, it…
+      headers:
+        in: body
+        type: object
+        about: Headers to send with the request. Can be used to send cookies, user-agent, etc.
+      waitFor:
+        in: body
+        type: integer
+        about: Specify a delay in milliseconds before fetching the content, allowing the page sufficient time to
+          load. This waiting time is in addition to Firecrawl's smart wait feature.
+      mobile:
+        in: body
+        type: boolean
+        about: Set to true if you want to emulate scraping from a mobile device. Useful for testing responsive pages
+          and taking mobile screenshots.
+      skipTlsVerification:
+        in: body
+        type: boolean
+        about: Skip TLS certificate verification when making requests.
+      timeout:
+        in: body
+        type: integer
+        about: Timeout in milliseconds for the request. Minimum is 1000 (1 second). Default is 60000 (60 seconds).
+          Maximum is 300000 (300 seconds).
+      parsers:
+        in: body
+        type: array
+        about: 'Controls how files are processed during scraping. Each item is a parser name ("pdf" or "image")
+          or a parser object. Both parsers are on by default. - pdf: PDF content is extracted and converted to…'
+      actions:
+        in: body
+        type: array
+        about: Actions to perform on the page before grabbing the content
+      location:
+        in: body
+        type: object
+        about: Location settings for the request. When specified, this will use an appropriate proxy if available
+          and emulate the corresponding language and timezone settings. Defaults to 'US' if not specified.
+      removeBase64Images:
+        in: body
+        type: boolean
+        about: Removes all base 64 images from the markdown output, which may be overwhelmingly long. This does
+          not affect html or rawHtml formats. The image's alt text remains in the output, but the URL is…
+      blockAds:
+        in: body
+        type: boolean
+        about: Enables ad-blocking and cookie popup blocking.
+      proxy:
+        in: body
+        choices:
+        - basic
+        - enhanced
+        - auto
+        about: 'Specifies the type of proxy to use. - basic: Proxies for scraping sites with none to basic anti-bot
+          solutions. Fast and usually works. - enhanced: Enhanced proxies for scraping sites with advanced…'
+      storeInCache:
+        in: body
+        type: boolean
+        about: If true, the page will be stored in the Firecrawl index and cache. Setting this to false is useful
+          if your scraping activity may have data protection concerns. Using some parameters associated with…
+      lockdown:
+        in: body
+        type: boolean
+        about: If true, serves the request from Firecrawl's cache only and never makes an outbound request to the
+          target URL. Designed for compliance-constrained or air-gapped environments where the scrape request…
+      checkPromptInjection:
+        in: body
+        type: boolean
+        about: When enabled, scans the page content for prompt injection attempts before any LLM-backed format (such
+          as json, summary or question) runs. Works with any format except rawBase64. If an injection is…
+      redactPII:
+        in: body
+        type: boolean
+        about: Redact personally identifiable information from returned markdown. Pass true to use defaults, or
+          an object to tune mode, entities, and replacement style.
+      profile:
+        in: body
+        type: object
+        about: Enable persistent browser storage across scrape and interact sessions. Pass a profile when scraping
+          to preserve cookies, localStorage, and session data. Sessions with the same profile name share…
+      threatProtection:
+        in: body
+        type: object
+        about: Per-request Threat Protection override. Fields you provide replace the corresponding fields of your
+          organization's policy for this request only; omitted fields keep their organization-level values.…
+      auditMetadata:
+        in: body
+        type: object
+        about: User attribution included with SIEM logging events when SIEM Logging is enabled for the organization.
+      zeroDataRetention:
+        in: body
+        type: boolean
+        about: If true, this will enable zero data retention for this batch scrape. To enable this feature, please
+          contact help@firecrawl.dev
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  get-batch-scrape-status:
+    title: Get the status of a batch scrape job
+    request: GET /batch/scrape/{id}
+    params:
+      id:
+        in: path
+        required: true
+        about: The ID of the batch scrape job
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  cancel-batch-scrape:
+    title: Cancel a batch scrape job
+    request: DELETE /batch/scrape/{id}
+    params:
+      id:
+        in: path
+        required: true
+        about: The ID of the batch scrape job
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  get-batch-scrape-errors:
+    title: Get the errors of a batch scrape job
+    request: GET /batch/scrape/{id}/errors
+    params:
+      id:
+        in: path
+        required: true
+        about: The ID of the batch scrape job
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  get-crawl-status:
+    title: Get the status of a crawl job
+    request: GET /crawl/{id}
+    params:
+      id:
+        in: path
+        required: true
+        about: The ID of the crawl job
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  cancel-crawl:
+    title: Cancel a crawl job
+    request: DELETE /crawl/{id}
+    params:
+      id:
+        in: path
+        required: true
+        about: The ID of the crawl job
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  get-crawl-errors:
+    title: Get the errors of a crawl job
+    request: GET /crawl/{id}/errors
+    params:
+      id:
+        in: path
+        required: true
+        about: The ID of the crawl job
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  crawl:
+    title: Crawl multiple URLs based on options
+    request: POST /crawl
+    params:
+      url:
+        in: body
+        required: true
+        about: The base URL to start crawling from
+      prompt:
+        in: body
+        about: A prompt to use to generate the crawler options (all the parameters below) from natural language.
+          Explicitly set parameters will override the generated equivalents.
+      excludePaths:
+        in: body
+        type: array
+        about: 'URL pathname regex patterns that exclude matching URLs from the crawl. For example, if you set "excludePaths":
+          ["blog/.*"] for the base URL firecrawl.dev, any results matching that pattern will be…'
+      includePaths:
+        in: body
+        type: array
+        about: 'URL pathname regex patterns that include matching URLs in the crawl. Only the paths that match the
+          specified patterns will be included in the response. Note: the starting URL is also checked against…'
+      maxDiscoveryDepth:
+        in: body
+        type: integer
+        about: 'Maximum depth to crawl based on discovery order. The root site and sitemapped pages has a discovery
+          depth of 0. For example, if you set it to 1, and you set sitemap: ''skip'', you will only crawl the…'
+      sitemap:
+        in: body
+        choices:
+        - skip
+        - include
+        - only
+        about: Sitemap mode when crawling. If you set it to 'skip', the crawler will ignore the website sitemap
+          and only crawl the entered URL and discover pages from there onwards. If you set it to 'only', the…
+      ignoreQueryParameters:
+        in: body
+        type: boolean
+        about: Do not re-scrape the same path with different (or none) query parameters
+      regexOnFullURL:
+        in: body
+        type: boolean
+        about: When true, includePaths and excludePaths regex patterns are matched against the full URL (including
+          query parameters) instead of just the URL pathname. Useful when you need to filter URLs based on…
+      limit:
+        in: body
+        type: integer
+        about: Maximum number of pages to crawl. Default limit is 10000.
+      crawlEntireDomain:
+        in: body
+        type: boolean
+        about: 'Allows the crawler to follow internal links to sibling or parent URLs, not just child paths. false:
+          Only crawls deeper (child) URLs. → e.g. /features/feature-1 → /features/feature-1/tips ✅ → Won''t…'
+      allowExternalLinks:
+        in: body
+        type: boolean
+        about: Allows the crawler to follow links to external websites. External links are followed one hop (the
+          links found on those external pages are not crawled). Links pointing to an external site's homepage…
+      allowSubdomains:
+        in: body
+        type: boolean
+        about: Allows the crawler to follow links to subdomains of the main domain.
+      ignoreRobotsTxt:
+        in: body
+        type: boolean
+        about: Ignore the website's robots.txt rules. Enterprise only — contact support@firecrawl.com to enable.
+      robotsUserAgent:
+        in: body
+        about: Custom User-Agent string for robots.txt evaluation. When set, robots.txt is fetched with this User-Agent
+          and allow/disallow rules are matched against it instead of the default. Enterprise only —…
+      delay:
+        in: body
+        type: number
+        about: Delay in seconds between scrapes. This helps respect website rate limits. Setting this forces concurrency
+          to 1.
+      maxConcurrency:
+        in: body
+        type: integer
+        about: Maximum number of concurrent scrapes. This parameter allows you to set a concurrency limit for this
+          crawl. If not specified, the crawl adheres to your team's concurrency limit.
+      webhook:
+        in: body
+        type: object
+        about: A webhook specification object.
+      scrapeOptions:
+        in: body
+        type: object
+      zeroDataRetention:
+        in: body
+        type: boolean
+        about: If true, this will enable zero data retention for this crawl. To enable this feature, please contact
+          help@firecrawl.dev
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  crawl-params-preview:
+    title: Preview crawl parameters generated from natural language prompt
+    request: POST /crawl/params-preview
+    params:
+      url:
+        in: body
+        required: true
+        about: The URL to crawl
+      prompt:
+        in: body
+        required: true
+        about: Natural language prompt describing what you want to crawl
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  map:
+    title: Map multiple URLs based on options
+    request: POST /map
+    params:
+      url:
+        in: body
+        required: true
+        about: The base URL to start crawling from
+      search:
+        in: body
+        about: 'Specify a search query to order the results by relevance. Example: ''blog'' will return URLs that
+          contain the word ''blog'' in the URL ordered by relevance.'
+      sitemap:
+        in: body
+        choices:
+        - skip
+        - include
+        - only
+        about: Sitemap mode when mapping. If you set it to skip, the sitemap won't be used to find URLs. If you
+          set it to only, only URLs that are in the sitemap will be returned. By default (include), the sitemap…
+      includeSubdomains:
+        in: body
+        type: boolean
+        about: Include subdomains of the website
+      ignoreQueryParameters:
+        in: body
+        type: boolean
+        about: Do not return URLs with query parameters
+      ignoreCache:
+        in: body
+        type: boolean
+        about: Bypass the sitemap cache to retrieve fresh URLs. Sitemap data is cached for up to 7 days; use this
+          parameter when your sitemap has been recently updated.
+      limit:
+        in: body
+        type: integer
+        about: Maximum number of links to return
+      timeout:
+        in: body
+        type: integer
+        about: Timeout in milliseconds. There is no timeout by default.
+      location:
+        in: body
+        type: object
+        about: Location settings for the request. When specified, this will use an appropriate proxy if available
+          and emulate the corresponding language and timezone settings. Defaults to 'US' if not specified.
+      auditMetadata:
+        in: body
+        type: object
+        about: User attribution included with SIEM logging events when SIEM Logging is enabled for the organization.
+      threatProtection:
+        in: body
+        type: object
+        about: Per-request Threat Protection override. Fields you provide replace the corresponding fields of your
+          organization's policy for this request only; omitted fields keep their organization-level values.…
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  extract:
+    title: Extract structured data from pages using LLMs
+    request: POST /extract
+    params:
+      urls:
+        in: body
+        type: array
+        required: true
+      prompt:
+        in: body
+        about: Prompt to guide the extraction process
+      schema:
+        in: body
+        type: object
+        about: Schema to define the structure of the extracted data. Must conform to JSON Schema.
+      enableWebSearch:
+        in: body
+        type: boolean
+        about: When true, the extraction will use web search to find additional data
+      ignoreSitemap:
+        in: body
+        type: boolean
+        about: When true, sitemap.xml files will be ignored during website scanning
+      includeSubdomains:
+        in: body
+        type: boolean
+        about: When true, subdomains of the provided URLs will also be scanned
+      showSources:
+        in: body
+        type: boolean
+        about: When true, the sources used to extract the data will be included in the response as sources key
+      scrapeOptions:
+        in: body
+        type: object
+      ignoreInvalidURLs:
+        in: body
+        type: boolean
+        about: If invalid URLs are specified in the urls array, they will be ignored. Instead of them failing the
+          entire request, an extract using the remaining valid URLs will be performed, and the invalid URLs…
+      threatProtection:
+        in: body
+        type: object
+        about: Per-request Threat Protection override. Fields you provide replace the corresponding fields of your
+          organization's policy for this request only; omitted fields keep their organization-level values.…
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  get-extract-status:
+    title: Get the status of an extract job
+    request: GET /extract/{id}
+    params:
+      id:
+        in: path
+        required: true
+        about: The ID of the extract job
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  list-agents:
+    title: List agent runs
+    request: GET /agent
+    params:
+      before:
+        type: integer
+        about: Only return agent runs created before this unix millisecond timestamp. Pages are fixed at 20 runs;
+          use the before value from the previous page's next URL to fetch the next page.
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  start-agent:
+    title: Start an agent task for agentic data extraction
+    request: POST /agent
+    params:
+      urls:
+        in: body
+        type: array
+        about: Optional list of URLs to constrain the agent to
+      prompt:
+        in: body
+        required: true
+        about: The prompt describing what data to extract
+      schema:
+        in: body
+        type: object
+        about: Optional JSON schema to structure the extracted data
+      maxCredits:
+        in: body
+        type: number
+        about: Maximum credits to spend on this agent task. Defaults to 2500 if not set. Values above 2,500 are
+          always billed as paid requests.
+      strictConstrainToURLs:
+        in: body
+        type: boolean
+        about: If true, agent will only visit URLs provided in the urls array
+      model:
+        in: body
+        choices:
+        - spark-2
+        - spark-1-mini
+        - spark-1-pro
+        about: The model to use for the agent task. spark-2 is the default and the model every run executes on.
+          The Spark 1 model names remain accepted for backwards compatibility but are deprecated and route to…
+      effort:
+        in: body
+        choices:
+        - low
+        - medium
+        - high
+        about: Reasoning budget for the agent task. Every run executes on spark-2, so effort can be sent with or
+          without model.
+      webhook:
+        in: body
+        type: object
+        about: A webhook specification object. Subscribes to agent lifecycle events (agent.started, agent.action,
+          agent.completed, agent.failed, agent.cancelled).
+      auditMetadata:
+        in: body
+        type: object
+        about: User attribution included with SIEM logging events when SIEM Logging is enabled for the organization.
+      threatProtection:
+        in: body
+        type: object
+        about: Per-request Threat Protection override. Fields you provide replace the corresponding fields of your
+          organization's policy for this request only; omitted fields keep their organization-level values.…
+      threadId:
+        in: body
+        about: 'Continue an existing thread: pass the threadId an earlier run returned, and this request runs as
+          that thread''s next turn. Omitted urls, schema, effort, mode and exchange settings carry over from the…'
+      mode:
+        in: body
+        choices:
+        - extract
+        - chat
+        about: extract returns the complete structured result in data every turn. chat lets a follow-up that asks
+          for no new data get a short reply in message instead of a re-run. exchange.requireApproval needs…
+      zeroDataRetention:
+        in: body
+        type: boolean
+        about: 'Run the agent with Zero Data Retention: Firecrawl keeps no prompt, result or step content in logs
+          or storage, only billing and status metadata. The result is kept for 24 hours for retrieval, then…'
+      location:
+        in: body
+        type: object
+        about: 'Proxy country for every request the agent makes during the run: scrapes, batch scrapes and browser
+          sessions go out from this country, and the agent cannot change it. Search results are localized to…'
+      safe:
+        in: body
+        type: boolean
+        about: When true, every web search the agent makes during the run filters explicit content, the same filter
+          as the search endpoint's safe option. Pages the agent scrapes or opens in a browser are not…
+      exchange:
+        in: body
+        type: object
+        about: Let the agent call your team's Alexandria data providers during the run. Without this object the
+          run uses the web only (a follow-up turn inherits the previous turn's settings). See Use your connected…
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  get-agent-status:
+    title: Get the status of an agent job
+    request: GET /agent/{jobId}
+    params:
+      jobId:
+        in: path
+        required: true
+        about: The ID of the agent job
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  cancel-agent:
+    title: Cancel an agent job
+    request: DELETE /agent/{jobId}
+    params:
+      jobId:
+        in: path
+        required: true
+        about: The ID of the agent job
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  get-agent-trace:
+    title: Get the execution trace of an agent job
+    request: GET /agent/{jobId}/trace
+    params:
+      jobId:
+        in: path
+        required: true
+        about: The ID of the agent job
+      liveView:
+        choices:
+        - 'true'
+        - 'false'
+        about: If "true", include the currently active browser sessions with live view URLs.
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  get-agent-snapshot:
+    title: Get an output snapshot of an agent job
+    request: GET /agent/{jobId}/snapshots/{snapshotId}
+    params:
+      jobId:
+        in: path
+        required: true
+        about: The ID of the agent job
+      snapshotId:
+        in: path
+        required: true
+        about: The ID of the snapshot, from an artifact.updated trace event
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  get-active-crawls:
+    title: Get all active crawls for the authenticated team
+    request: GET /crawl/active
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  credits:
+    title: Get remaining credits for the authenticated team
+    request: GET /team/credit-usage
+    price:
+      usd: 0
+      per: call
+  get-historical-credit-usage:
+    title: Get historical credit usage for the authenticated team
+    request: GET /team/credit-usage/historical
+    price:
+      usd: 0
+      per: call
+  get-queue-status:
+    title: Metrics about your team's scrape queue
+    request: GET /team/queue-status
+    price:
+      usd: 0
+      per: call
+  get-activity:
+    title: List recent API activity
+    about: Lists your team's recent API activity from the last 24 hours. Returns metadata about each job including
+      the job ID, which can be used with the corresponding GET endpoint (e.g. GET /crawl/{id}) to…
+    request: GET /team/activity
+    params:
+      endpoint:
+        choices:
+        - scrape
+        - crawl
+        - batch_scrape
+        - search
+        - extract
+        - llmstxt
+        - deep_research
+        - map
+        - agent
+        - browser
+        - interact
+        about: Filter by endpoint
+      limit:
+        type: integer
+        about: Maximum number of results per page
+      cursor:
+        about: Cursor for pagination. Use the cursor value from the previous response.
+    price:
+      usd: 0
+      per: call
+  search:
+    title: Search and optionally scrape search results
+    request: POST /search
+    params:
+      query:
+        in: body
+        required: true
+        about: The search query
+      limit:
+        in: body
+        type: integer
+        about: Maximum number of results to return (per source type when using multiple sources)
+      sources:
+        in: body
+        type: array
+        about: Sources to search. Will determine the arrays available in the response. Defaults to ['web']. The
+          plain string form (e.g. ["web", "alexandria"]) is also accepted. The alexandria source returns tool…
+      domainTools:
+        in: body
+        type: boolean
+        about: Include tool contracts whose provider matches the domains of the returned web results. Defaults to
+          on when alexandria is among the sources; set false to disable, or true alone to add domain-matched…
+      toolDetail:
+        in: body
+        choices:
+        - compact
+        - summary
+        - full
+        about: How much of each tool contract to return in data.tools. compact returns only provider, capability,
+          and description. summary returns the full tool entry without options and response. full also returns…
+      categories:
+        in: body
+        type: array
+        about: Categories to filter results by. Defaults to [], which means results will not be filtered by any
+          categories.
+      includeDomains:
+        in: body
+        type: array
+        about: Restricts search results to the specified domains. Domains should be hostnames only, without protocol
+          or path. Cannot be used with excludeDomains.
+      excludeDomains:
+        in: body
+        type: array
+        about: Excludes search results from the specified domains. Domains should be hostnames only, without protocol
+          or path. Cannot be used with includeDomains.
+      tbs:
+        in: body
+        about: Time-based search parameter. Supports predefined time ranges (qdr:h, qdr:d, qdr:w, qdr:m, qdr:y),
+          custom date ranges (cdr:1,cd_min:MM/DD/YYYY,cd_max:MM/DD/YYYY), and sort by date (sbd:1). Values can…
+      location:
+        in: body
+        about: Location parameter for search results (e.g. San Francisco,California,United States). For best results,
+          set both this and the country parameter.
+      country:
+        in: body
+        about: ISO country code for geo-targeting search results (e.g. US). For best results, set both this and
+          the location parameter.
+      safe:
+        in: body
+        type: boolean
+        about: When true, filters explicit content from search results (SafeSearch). Omit to keep the default behavior,
+          which does not apply the filter.
+      timeout:
+        in: body
+        type: integer
+        about: Timeout in milliseconds
+      ignoreInvalidURLs:
+        in: body
+        type: boolean
+        about: Excludes URLs from the search results that are invalid for other Firecrawl endpoints. This helps
+          reduce errors if you are piping data from search into other Firecrawl API endpoints.
+      highlights:
+        in: body
+        type: boolean
+        about: Generate query-relevant highlights for search results. Set to false to return provider descriptions
+          or snippets without highlighting.
+      enterprise:
+        in: body
+        type: array
+        about: Enterprise search options for Zero Data Retention (ZDR). Use ["zdr"] for end-to-end ZDR (10 credits
+          / 10 results) or ["anon"] for anonymized ZDR (2 credits / 10 results). Must be enabled for your…
+      scrapeOptions:
+        in: body
+        type: object
+        about: Options for scraping search results
+      threatProtection:
+        in: body
+        type: object
+        about: Per-request Threat Protection override. Fields you provide replace the corresponding fields of your
+          organization's policy for this request only; omitted fields keep their organization-level values.…
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  get-scrape-status:
+    title: Get the status of a scrape job
+    request: GET /scrape/{jobId}
+    params:
+      jobId:
+        in: path
+        required: true
+        about: The ID of the job
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  research-search-papers:
+    title: Search papers
+    request: GET /search/research/papers
+    params:
+      query:
+        required: true
+        about: Natural-language paper search query.
+      k:
+        type: integer
+        about: Maximum number of ranked papers to return.
+      authors:
+        about: Author substring filter. Repeat or pass a comma-separated value; all filters must match.
+      categories:
+        about: Paper category filter. Repeat or pass a comma-separated value; all filters must match.
+      from:
+        about: Inclusive lower bound on created/updated date.
+      to:
+        about: Inclusive upper bound on created/updated date.
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  research-get-paper:
+    title: Inspect or read a paper
+    request: GET /search/research/papers/{id}
+    params:
+      id:
+        in: path
+        required: true
+        about: 'Paper reference: a canonical paperId or source-specific primaryId.'
+      query:
+        about: When present, returns the top matching full-text passages for this question. Omit it to inspect metadata
+          only.
+      k:
+        type: integer
+        about: Passage count for read mode. Only valid when query is present.
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  research-related-papers:
+    title: Find related papers
+    request: GET /search/research/papers/{id}/similar
+    params:
+      id:
+        in: path
+        required: true
+        about: Primary seed paper reference.
+      intent:
+        required: true
+        about: Natural-language ranking/filtering intent used for semantic ranking.
+      mode:
+        choices:
+        - similar
+        - citers
+        - references
+        about: Structural expansion mode.
+      k:
+        type: integer
+        about: Maximum number of related papers to return.
+      rerank:
+        type: boolean
+        about: Apply an additional rerank over fused candidates.
+      anchor:
+        about: Additional seed paper reference. Repeat this parameter for multiple anchors.
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  developer-search:
+    title: Search the developer index
+    request: GET /search/developer
+    params:
+      query:
+        required: true
+        about: Natural-language question or search phrase.
+      k:
+        type: integer
+        about: Number of ranked results to return.
+      types:
+        type: array
+        about: Result kinds to search. Defaults to all four. Accepts a repeated parameter (types=issue&types=pull_request)
+          or one comma-separated value (types=issue,pull_request).
+      repos:
+        type: array
+        about: Repository slugs to scope the repository half of the index to, such as firecrawl/firecrawl. Applies
+          to the issue, pull_request, and readme types only. Sent together with sources, the two halves are…
+      sources:
+        type: array
+        about: 'Documentation source ids to scope the documentation half to, at most 20. Applies to the doc type
+          only. Not a fixed enum: ids reflect the documentation sites in the index and the set grows over time,…'
+      skills:
+        choices:
+        - only
+        about: Set to only to limit the search to indexed agent-skill files.
+      passages:
+        type: integer
+        about: Matched passages to return per result.
+      language:
+        about: Repository primary language, such as Rust. Applies to repository results only; sending it with no
+          sources scope returns no doc results. See how the repository filters scope a search.
+      topic:
+        about: Repository topic, such as async. Applies to repository results only; sending it with no sources scope
+          returns no doc results.
+      license:
+        about: Repository license, such as MIT. Applies to repository results only; sending it with no sources scope
+          returns no doc results.
+      min_stars:
+        type: integer
+        about: Lower bound on repository stars. Applies to repository results only; sending it with no sources scope
+          returns no doc results.
+      max_stars:
+        type: integer
+        about: Upper bound on repository stars. Applies to repository results only; sending it with no sources scope
+          returns no doc results.
+      archived:
+        type: boolean
+        about: Include or exclude archived repositories. Applies to repository results only; sending it with no
+          sources scope returns no doc results.
+      fork:
+        type: boolean
+        about: Include or exclude forks. Applies to repository results only; sending it with no sources scope returns
+          no doc results.
+    price:
+      per: call
+      note: credits per page; see the pricing page
+  gov-search:
+    title: Search the Government Index
+    request: GET /search/gov
+    params:
+      query:
+        required: true
+        about: Natural-language question or search phrase.
+      k:
+        type: integer
+        about: Number of results to return.
+      jurisdiction:
+        about: 'Keep only pages of one jurisdiction: us for federal, or us- plus a two-letter state or territory
+          code, such as us-ca or us-dc.'
+      court:
+        about: Keep only pages labeled for one court, by CourtListener court id, such as scotus, ca9 or nysd.
+      courtType:
+        choices:
+        - federal-supreme
+        - federal-appellate
+        - federal-district
+        - federal-bankruptcy
+        - federal-special
+        - military
+        - state-supreme
+        - state-appellate
+        - state-trial
+        - state-special
+        - state-attorney-general
+        about: 'Keep only pages from one type of court: federal-supreme, federal-appellate, federal-district, federal-bankruptcy,
+          federal-special, military, state-supreme, state-appellate, state-trial,…'
+      cites:
+        about: Keep only pages that cite one law or case, as a printed citation such as 42 U.S.C. § 1983 or 5 U.S.
+          137, or a citation id such as us:usc:42:1983.
+      domain:
+        about: Keep only pages from one site, such as irs.gov.
+    price:
+      per: call
+      note: credits per page; see the pricing page

@@ -1,0 +1,553 @@
+id: fullenrich
+title: FullEnrich
+about: Waterfall enrichment across many contact providers for work emails, personal emails and mobiles, plus people
+  and company search.
+site: https://fullenrich.com
+docs: https://docs.fullenrich.com/api/v2/general/introduction
+pricing: https://fullenrich.com/pricing
+api: https://app.fullenrich.com/api/v2
+key:
+  env: FULLENRICH_API_KEY
+  bearer: true
+operations:
+  credits:
+    title: Get Current Balance
+    about: This endpoint returns the number of credits you can currently spend with the API key used for the request.
+      If a consumption limit is set on that key, the balance is capped by the credits remaining…
+    request: GET /account/credits
+    price:
+      usd: 0
+      per: call
+  key-check:
+    title: Check If API Key Is Valid
+    about: This endpoint checks if your API key is valid.
+    request: GET /account/keys/verify
+    price:
+      usd: 0
+      per: call
+  company-lookup:
+    title: Look up company
+    about: Look up a single company using its identifiers (domain, or professional network URL/ID). Returns the
+      best matching company.
+    request: POST /company/lookup
+    params:
+      domain:
+        in: body
+        about: Company domain to look up.
+      professional_network_url:
+        in: body
+        about: Professional network URL of the company.
+      professional_network_id:
+        in: body
+        type: integer
+        about: Professional network ID of the company.
+    price:
+      credits: 0.25
+      per: result
+    jobs:
+      enrich_company:
+        needs:
+        - - domain
+        - - linkedin_url
+        send:
+          domain: domain
+          linkedin_url: professional_network_url
+        result: companies[0]
+        fields:
+          name: name
+          domain: domain
+          website: website
+          description: description
+          industry: industry.main_industry
+          employees: headcount || headcount_range
+          founded: year_founded
+          location: locations.headquarters.city
+          country: locations.headquarters.country_code
+          linkedin_url: social_profiles.professional_network.url
+          logo: logo_url
+          technologies: technologies[].name
+  company-search:
+    title: Search company
+    about: Search for companies based on various filters. Multiple filters within the same field are combined with
+      AND logic.
+    request: POST /company/search
+    params:
+      offset:
+        in: body
+        type: integer
+        about: Number of companies to skip (use this for pagination). Maximum value is 10,000. To paginate beyond
+          10,000 results, use search_after instead.
+      limit:
+        in: body
+        type: integer
+        about: 'Number of companies to return (default: 10, max: 100)'
+      search_after:
+        in: body
+        about: Cursor-based pagination. Pass the search_after value from the previous response to get the next page.
+          Works at any point in the result set, but is required to access results beyond the 10,000 offset…
+      names:
+        in: body
+        type: array
+        about: Filter by company names. Use exact_match for precise company name matching.
+      domains:
+        in: body
+        type: array
+        about: Filter by company domains (e.g., 'google.com', 'microsoft.com'). Exact match recommended.
+      professional_network_ids:
+        in: body
+        type: array
+        about: Filter by professional network IDs.
+      professional_network_urls:
+        in: body
+        type: array
+        about: Filter by professional network URLs.
+      keywords:
+        in: body
+        type: array
+        about: Filter by description of company
+      specialties:
+        in: body
+        type: array
+        about: Filter by specialties of company
+      technologies:
+        in: body
+        type: array
+        about: Filter by technologies used by the company (e.g., 'Notion', 'Fullenrich', 'AWS').
+      industries:
+        in: body
+        type: array
+        about: Filter by company industries (e.g., 'Software Development', 'Computer Hardware Manufacturing', 'Housing
+          and Community Development', 'Warehousing', 'Financial Services'). See Industries for the full…
+      types:
+        in: body
+        type: array
+        about: Filter by company types (e.g., 'Public Company', 'Privately Held', 'Nonprofit', 'Self-Employed',
+          'Partnership', 'Educational', 'Government Agency'). See Company Types for the full list.
+      headquarters_locations:
+        in: body
+        type: array
+        about: Filter by headquarters locations (city names, regions, or countries)
+      founded_years:
+        in: body
+        type: array
+        about: Filter by founding years. Useful for targeting startups (recent years) or established companies.
+      headcounts:
+        in: body
+        type: array
+        about: 'Filter by company headcounts (number of employees). Use ranges to target specific company sizes
+          (e.g., startups: 1-50, mid-size: 50-500, enterprise: 1000+).'
+      company_ids:
+        in: body
+        type: array
+        about: Filter by specific company IDs
+    price:
+      credits: 0.25
+      per: result
+    jobs:
+      find_companies:
+        needs:
+        - - query
+        - - industry
+        - - location
+        - - technology
+        - - employees
+        send:
+          query:
+            to: keywords
+            as:
+            - value: $
+          industry:
+            to: industries
+            as:
+            - value: $
+          location:
+            to: headquarters_locations
+            as:
+            - value: $
+          technology:
+            to: technologies
+            as:
+            - value: $
+          employees:
+            to: headcounts
+            as:
+            - value: $
+        limit: limit
+        result: companies
+        fields:
+          name: name
+          domain: domain
+          website: website
+          description: description
+          industry: industry.main_industry
+          employees: headcount || headcount_range
+          founded: year_founded
+          country: locations.headquarters.country_code
+          linkedin_url: social_profiles.professional_network.url
+          logo: logo_url
+  enrich-result:
+    title: Get Bulk Enrich Results
+    about: Use this endpoint to retrieve the result from an enrich.
+    request: GET /contact/enrich/bulk/{enrichment_id}
+    params:
+      enrichment_id:
+        in: path
+        required: true
+        about: The unique identifier returned when the enrichment was started
+      forceResults:
+        type: boolean
+        about: Default = False. This parameter forces the API to return what has been found so far, even if the
+          enrichment is not finished. This may result in missing information and is not recommended for regular…
+    price:
+      usd: 0
+      per: call
+  enrich:
+    title: Enrich Contacts In Bulk
+    request: POST /contact/enrich/bulk
+    params:
+      silentFail:
+        type: boolean
+        about: Default = False. When true, a contact with invalid or missing input data (professional network URL,
+          domain, name) is skipped instead of failing the whole request. Skipped contacts are returned in the…
+      name:
+        in: body
+        required: true
+        about: A readable name for this enrichment (visible in your dashboard)
+      webhook_url:
+        in: body
+        about: URL that will receive a POST request when the entire enrichment is finished (all contacts processed).
+      webhook_events:
+        in: body
+        type: object
+        about: Optional webhook URLs for specific events during enrichment
+      data:
+        in: body
+        type: array
+        required: true
+    price:
+      credits: 1
+      per: success
+      note: 1 per work email
+      3 per personal email: null
+      10 per mobile found: null
+    jobs:
+      find_contact:
+        needs:
+        - - first_name
+          - last_name
+          - company_domain
+        - - first_name
+          - last_name
+          - company
+        - - linkedin_url
+        send:
+          first_name: data.0.first_name
+          last_name: data.0.last_name
+          company_domain: data.0.domain
+          company: data.0.company_name
+          linkedin_url: data.0.linkedin_url
+        fixed:
+          name: openpeoplerouter
+          data.0.enrich_fields:
+          - contact.work_emails
+          - contact.phones
+        poll:
+          operation: enrich-result
+          send:
+            enrichment_id: enrichment_id
+          until: status == 'FINISHED'
+          every: 5
+          within: 180
+        result: data[0].contact_info
+        fields:
+          email: most_probable_work_email.email
+          email_status: most_probable_work_email.status
+          phone: most_probable_phone.number
+  reverse-email-result:
+    title: Get Bulk Reverse Email Results
+    about: Use this endpoint to retrieve the result from a reverse email lookup.
+    request: GET /contact/reverse/email/bulk/{enrichment_id}
+    params:
+      enrichment_id:
+        in: path
+        required: true
+        about: The unique identifier returned when the reverse lookup was started
+    price:
+      usd: 0
+      per: call
+  reverse-email:
+    title: Reverse Contact Lookup In Bulk
+    request: POST /contact/reverse/email/bulk
+    params:
+      silentFail:
+        type: boolean
+        about: Default = False. When true, a contact with an empty or invalid email is skipped instead of failing
+          the whole request. Skipped contacts are returned in the results without a profile.
+      name:
+        in: body
+        required: true
+        about: A readable name for this reverse lookup (visible in your dashboard)
+      webhook_url:
+        in: body
+        about: URL that will receive a POST request when the entire reverse lookup is finished (all emails processed).
+      webhook_events:
+        in: body
+        type: object
+        about: Optional webhook URLs for specific events during reverse lookup
+      data:
+        in: body
+        type: array
+        required: true
+    price:
+      credits: 1
+      per: success
+  people-lookup:
+    title: Look up people
+    about: Look up a single person using their identifiers (professional network URL/ID, or full name combined with
+      a company identifier). Returns the best matching person.
+    request: POST /people/lookup
+    params:
+      person_name:
+        in: body
+        about: Full name of the person to look up.
+      person_professional_network_url:
+        in: body
+        about: Professional network profile URL of the person.
+      person_professional_network_id:
+        in: body
+        type: integer
+        about: Professional network profile ID of the person.
+      company_professional_network_url:
+        in: body
+        about: Professional network URL of the company the person works for. Used to disambiguate when looking up
+          by name.
+      company_professional_network_id:
+        in: body
+        type: integer
+        about: Professional network ID of the company the person works for. Used to disambiguate when looking up
+          by name.
+      company_domain:
+        in: body
+        about: Domain of the company the person works for. Used to disambiguate when looking up by name.
+    price:
+      credits: 0.25
+      per: result
+    jobs:
+      enrich_person:
+        needs:
+        - - linkedin_url
+        - - full_name
+          - company_domain
+        send:
+          linkedin_url: person_professional_network_url
+          full_name: person_name
+          company_domain: company_domain
+        result: people[0]
+        fields:
+          name: full_name
+          first_name: first_name
+          last_name: last_name
+          headline: headline
+          title: employment.current.title
+          company: employment.current.company.name
+          company_domain: employment.current.company.domain
+          location: join(', ', [location.city, location.country][?@])
+          country: location.country_code
+          linkedin_url: social_profiles.professional_network.url
+          skills: skills
+          experience: employment.all
+          education: educations
+  people-search:
+    title: Search people
+    about: Search for people based on various filters. Multiple filters within the same field are combined with
+      AND logic.
+    request: POST /people/search
+    params:
+      offset:
+        in: body
+        type: integer
+        about: Number of people to skip (use this for pagination). Maximum value is 10,000. To paginate beyond 10,000
+          results, use search_after instead.
+      limit:
+        in: body
+        type: integer
+        about: 'Number of people to return (default: 10, max: 100)'
+      search_after:
+        in: body
+        about: Cursor-based pagination. Pass the search_after value from the previous response to get the next page.
+          Works at any point in the result set, but is required to access results beyond the 10,000 offset…
+      current_company_names:
+        in: body
+        type: array
+        about: Filter by current company names. Use exact_match for precise company name matching.
+      current_company_domains:
+        in: body
+        type: array
+        about: Filter by current company domains (e.g., 'google.com', 'microsoft.com'). Exact match recommended
+          for domains.
+      current_company_professional_network_ids:
+        in: body
+        type: array
+        about: Filter by current company professional network IDs.
+      current_company_professional_network_urls:
+        in: body
+        type: array
+        about: Filter by current company professional network URLs.
+      current_company_specialties:
+        in: body
+        type: array
+        about: Filter by current company specialties.
+      current_company_industries:
+        in: body
+        type: array
+        about: Filter by company industries (e.g., 'Software Development', 'Computer Hardware Manufacturing', 'Housing
+          and Community Development', 'Warehousing'). See Industries for the full list.
+      current_company_technologies:
+        in: body
+        type: array
+        about: Filter by technologies used by the current company (e.g., 'Notion', 'Salesforce', 'AWS').
+      past_company_names:
+        in: body
+        type: array
+        about: Filter by past company names. Useful for finding people with specific work history.
+      past_company_domains:
+        in: body
+        type: array
+        about: Filter by past company domains
+      current_company_types:
+        in: body
+        type: array
+        about: Filter by company types (e.g., 'Public Company', 'Privately Held', 'Nonprofit', 'Self-Employed',
+          'Partnership', 'Educational', 'Government Agency'). See Company Types for the full list.
+      current_company_headquarters:
+        in: body
+        type: array
+        about: Filter by company headquarters locations (city names, regions, or countries)
+      current_company_headcounts:
+        in: body
+        type: array
+        about: Filter by company size (number of employees). Use ranges to target specific company sizes.
+      current_company_founded_years:
+        in: body
+        type: array
+        about: Filter by company founding year. Useful for targeting startups or established companies.
+      current_company_ids:
+        in: body
+        type: array
+        about: Filter by specific company IDs
+      person_ids:
+        in: body
+        type: array
+        about: Filter by specific person IDs
+      person_names:
+        in: body
+        type: array
+        about: Filter by person names (first name, last name, or full name)
+      person_professional_network_ids:
+        in: body
+        type: array
+        about: Filter by person professional network IDs.
+      person_professional_network_urls:
+        in: body
+        type: array
+        about: Filter by person professional network URLs.
+      person_locations:
+        in: body
+        type: array
+        about: Filter by person locations (city, region, or country)
+      person_languages:
+        in: body
+        type: array
+        about: Filter by languages spoken by the person
+      person_skills:
+        in: body
+        type: array
+        about: Filter by skills (e.g., 'JavaScript', 'Python', 'Project Management')
+      current_position_seniority_level:
+        in: body
+        type: array
+        about: Filter by person seniority levels (e.g., 'Owner', 'Founder', 'C-level', 'Partner', 'VP', 'Head',
+          'Director', 'Senior', 'Manager'). See Seniority Levels for the full list.
+      current_position_job_functions:
+        in: body
+        type: array
+        about: Filter by current job functions (e.g., 'Administrative', 'Agriculture & Environment', 'Construction
+          & Trades', ...). See Functions & Subfunctions for the full list.
+      current_position_sub_functions:
+        in: body
+        type: array
+        about: Filter by current sub functions (e.g., 'Data Entry', 'Agriculture/Landscaping', 'Carpenter'). See
+          Functions & Subfunctions for the full list.
+      current_position_titles:
+        in: body
+        type: array
+        about: Filter by current job titles (e.g., 'Software Engineer', 'Product Manager', 'CEO')
+      past_position_titles:
+        in: body
+        type: array
+        about: Filter by past job titles. Useful for finding people who held specific roles.
+      current_position_years_in:
+        in: body
+        type: array
+        about: Filter by years spent in current position. Useful for targeting people new in role or experienced.
+      current_company_years_at:
+        in: body
+        type: array
+        about: Filter by years at current company (tenure). Useful for targeting new hires or long-term employees.
+      person_universities:
+        in: body
+        type: array
+        about: Filter by universities attended (e.g., 'Stanford University', 'MIT', 'Harvard')
+      current_company_days_since_last_job_change:
+        in: body
+        type: array
+        about: Filter by days since last job change. Useful for finding people who recently changed jobs.
+    price:
+      credits: 0.25
+      per: result
+    jobs:
+      find_people:
+        needs:
+        - - title
+        - - company
+        - - company_domain
+        - - location
+        - - keywords
+        send:
+          title:
+            to: current_position_titles
+            as:
+            - value: $
+          company:
+            to: current_company_names
+            as:
+            - value: $
+          company_domain:
+            to: current_company_domains
+            as:
+            - value: $
+          location:
+            to: person_locations
+            as:
+            - value: $
+          keywords:
+            to: person_skills
+            as:
+            - value: $
+          seniority:
+            to: current_position_seniority_level
+            as:
+            - value: $
+        limit: limit
+        result: people
+        fields:
+          name: full_name
+          first_name: first_name
+          last_name: last_name
+          headline: headline
+          title: employment.current.title
+          company: employment.current.company.name
+          company_domain: employment.current.company.domain
+          location: join(', ', [location.city, location.country][?@])
+          country: location.country_code
+          linkedin_url: social_profiles.professional_network.url

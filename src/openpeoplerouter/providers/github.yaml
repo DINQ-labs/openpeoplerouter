@@ -1,0 +1,97 @@
+id: github
+title: GitHub
+about: Developers, their repositories, organizations and contributors.
+site: https://github.com
+docs: https://docs.github.com/en/rest
+pricing: https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api
+api: https://api.github.com
+key:
+  env: GITHUB_TOKEN
+  bearer: true
+  optional: true
+operations:
+  search-users:
+    title: Developers by name, location, language, followers or repositories
+    about: "q uses GitHub search qualifiers: location:berlin language:rust followers:>100 repos:>10 type:user"
+    request: GET /search/users
+    docs: https://docs.github.com/en/rest/search/search#search-users
+    params:
+      q: {required: true}
+      sort: {choices: [followers, repositories, joined]}
+      order: {choices: [desc, asc]}
+      per_page: {type: integer, about: up to 100}
+      page: {type: integer}
+    price: {usd: 0, per: call, note: 10 searches a minute without a token, 30 with one}
+    jobs:
+      find_people:
+        audience: developers
+        needs: [[query], [location], [keywords]]
+        send:
+          query: q
+          location: {to: q, as: "location:$"}
+          keywords: {to: q, as: "language:$"}
+        fixed: {sort: followers}
+        limit: per_page
+        result: items
+        fields: {name: login, url: html_url, image: avatar_url}
+  get-user:
+    title: A developer's public profile
+    request: GET /users/{username}
+    docs: https://docs.github.com/en/rest/users/users#get-a-user
+    params:
+      username: {in: path, required: true}
+    not_found: 404
+    price: {usd: 0, per: call}
+    jobs:
+      read_profile:
+        platform: github
+        needs: [[handle]]
+        send: {handle: username}
+        result: '@'
+        fields: {name: name || login, handle: login, bio: bio, followers: followers, following: following, posts: public_repos,
+                 location: location, website: blog, url: html_url, image: avatar_url}
+  user-social-accounts:
+    title: The other accounts a developer lists on their profile
+    request: GET /users/{username}/social_accounts
+    params:
+      username: {in: path, required: true}
+    price: {usd: 0, per: call}
+  user-repos:
+    title: A developer's public repositories
+    request: GET /users/{username}/repos
+    params:
+      username: {in: path, required: true}
+      sort: {choices: [created, updated, pushed, full_name]}
+      per_page: {type: integer}
+    price: {usd: 0, per: call}
+  repo-contributors:
+    title: Who contributed to a repository, by commits
+    request: GET /repos/{owner}/{repo}/contributors
+    params:
+      owner: {in: path, required: true}
+      repo: {in: path, required: true}
+      per_page: {type: integer}
+      page: {type: integer}
+    price: {usd: 0, per: call}
+  org-members:
+    title: An organization's public members
+    request: GET /orgs/{org}/public_members
+    params:
+      org: {in: path, required: true}
+      per_page: {type: integer}
+    price: {usd: 0, per: call}
+  search-repositories:
+    title: Repositories by topic, language, stars
+    request: GET /search/repositories
+    params:
+      q: {required: true, about: "e.g. topic:llm language:python stars:>1000"}
+      sort: {choices: [stars, forks, updated]}
+      per_page: {type: integer}
+    price: {usd: 0, per: call}
+  search-commits:
+    title: Commits by message, author or repository
+    request: GET /search/commits
+    params:
+      q: {required: true, about: "e.g. author-email:jane@acme.com or repo:owner/name fix"}
+      per_page: {type: integer}
+    price: {usd: 0, per: call}

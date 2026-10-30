@@ -1,0 +1,892 @@
+id: leadmagic
+title: LeadMagic
+about: Email and mobile finding, email validation, B2B profiles, company data, people search and job postings.
+site: https://leadmagic.io
+docs: https://docs.leadmagic.io
+pricing: https://leadmagic.io/pricing
+api: https://api.leadmagic.io
+key:
+  env: LEADMAGIC_API_KEY
+  header: X-API-Key
+operations:
+  check-credits:
+    title: Check Credits
+    about: Check your current credit balance.
+    request: GET /v1/credits
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  email-validation:
+    title: Email Validation
+    about: Validate an email address for deliverability and get company enrichment data.
+    request: POST /v1/people/email-validation
+    params:
+      email:
+        in: body
+        required: true
+        about: Email address to validate
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+    jobs:
+      verify_email:
+        needs:
+        - - email
+        send:
+          email: email
+        result: '@'
+        fields:
+          email: email
+          status: email_status
+          deliverable: email_status == 'valid'
+  email-finder:
+    title: Email Finder
+    about: Find a person's work email address using their name and company information.
+    request: POST /v1/people/email-finder
+    params:
+      first_name:
+        in: body
+        about: First name of the person (optional if full_name provided). A single initial (J) is accepted when
+          last_name is a full surname.
+      last_name:
+        in: body
+        about: Last name of the person (optional)
+      full_name:
+        in: body
+        about: Full name of the person (alternative to first_name + last_name). An initial plus a surname (J Orjuela)
+          is accepted.
+      domain:
+        in: body
+        about: Company domain name (required if company_name not provided; aliases company_domain, website, url
+          accepted)
+      company_name:
+        in: body
+        about: Company name (required if domain not provided; aliases company, organization, employer accepted)
+      profile_url:
+        in: body
+        about: B2B profile URL or username. Identifies the person and their company on its own, then the email is
+          validated the same way as a name plus domain.
+      allow_domain_mismatch:
+        in: body
+        type: boolean
+        about: 'By default, an email found on a domain unrelated to the requested one is returned as a free not-found
+          (domain_mismatch: true, credits_consumed: 0). Set to true to return that email instead, flagged…'
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+    jobs:
+      find_contact:
+        needs:
+        - - full_name
+          - company_domain
+        - - full_name
+          - company
+        - - linkedin_url
+        send:
+          full_name: full_name
+          company_domain: domain
+          company: company_name
+          linkedin_url: profile_url
+        result: '@'
+        fields:
+          email: email
+          email_status: status
+          name: join(' ', [first_name, last_name][?@])
+          company_domain: domain
+  personal-email-finder:
+    title: Personal Email Finder
+    about: Provide a B2B Profile URL and get back the personal emails of the person.
+    request: POST /v1/people/personal-email-finder
+    params:
+      profile_url:
+        in: body
+        required: true
+        about: Professional profile URL or identifier
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  b2b-profile-email:
+    title: B2B Person Profile to Email
+    about: Provide a B2B person profile and get back the work email of the person.
+    request: POST /v1/people/b2b-profile-email
+    params:
+      profile_url:
+        in: body
+        required: true
+        about: B2B person profile URL or slug
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  profile-search:
+    title: B2B Person Profile
+    about: Retrieve comprehensive B2B person profile information including work history, education, certifications,
+      and more.
+    request: POST /v1/people/profile-search
+    params:
+      profile_url:
+        in: body
+        required: true
+        about: B2B person profile URL or slug
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+    jobs:
+      enrich_person:
+        needs:
+        - - linkedin_url
+        send:
+          linkedin_url: profile_url
+        result: '@'
+        fields:
+          name: full_name
+          first_name: first_name
+          last_name: last_name
+          title: professional_title
+          headline: bio
+          company: company_name
+          company_domain: company_website
+          location: location
+          country: country
+          linkedin_url: profile_url
+          experience: work_experience
+          education: education
+  email-to-b2b-profile:
+    title: Email Address to B2B Person Profile
+    about: Use this endpoint to find a B2B person profile based on the provided email.
+    request: POST /v1/people/b2b-profile
+    params:
+      work_email:
+        in: body
+        about: Provide the Work Email of the person
+      personal_email:
+        in: body
+        about: Provide the Personal Email of the person
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  mobile-finder:
+    title: Mobile Finder
+    about: Find a person's mobile phone number using their profile URL or email address.
+    request: POST /v1/people/mobile-finder
+    params:
+      profile_url:
+        in: body
+        about: Provide their Social Media URL
+      work_email:
+        in: body
+        about: Provide the Work Email of the person
+      personal_email:
+        in: body
+        about: Provide the Personal Email of the person
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+    jobs:
+      find_contact:
+        needs:
+        - - linkedin_url
+        send:
+          linkedin_url: profile_url
+        result: '@'
+        fields:
+          phone: mobile_number
+          email: email
+  job-change-detector:
+    title: Job Change Detector
+    about: Monitor employee transitions and detect when someone has changed jobs. Costs 3 credits per check. The
+      submitted company_name is authoritative; a company_domain lookup only adds matcher aliases.…
+    request: POST /v1/people/job-change-detector
+    params:
+      profile_url:
+        in: body
+        required: true
+        about: Professional profile URL or identifier
+      company_name:
+        in: body
+        about: Expected company name (either company_name or company_domain is required)
+      company_domain:
+        in: body
+        about: Expected company domain (either company_name or company_domain is required)
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  company-search:
+    title: Company Search
+    about: Search for companies and retrieve comprehensive company intelligence including funding, employees, industry,
+      and more.
+    request: POST /v1/companies/company-search
+    params:
+      profile_url:
+        in: body
+        about: Business company profile URL or identifier
+      company_domain:
+        in: body
+        about: Provide Company Domain
+      company_name:
+        in: body
+        about: Provide Company Name
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+    jobs:
+      enrich_company:
+        needs:
+        - - domain
+        - - linkedin_url
+        - - name
+        send:
+          domain: company_domain
+          linkedin_url: profile_url
+          name: company_name
+        result: '@'
+        fields:
+          name: companyName
+          website: websiteUrl
+          description: description
+          industry: industry
+          employees: employeeCount
+          location: join(', ', [headquarter.city, headquarter.country][?@])
+          country: headquarter.country
+  company-funding:
+    title: Company Funding
+    about: Provide the Company Domain or Company Name and get back the complete funding details of the company.
+    request: POST /v1/companies/company-funding
+    params:
+      company_name:
+        in: body
+        about: Provide Company Name
+      company_domain:
+        in: body
+        about: Provide Company Domain
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  competitors-search:
+    title: Competitors Search
+    about: Find competitors of a company by analyzing market position and industry data.
+    request: POST /v1/companies/competitors-search
+    params:
+      company_domain:
+        in: body
+        about: Company website domain
+      company_url:
+        in: body
+        about: Company profile URL or identifier (optional)
+      company_name:
+        in: body
+        about: Company name
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  technographics:
+    title: Company Technographics
+    about: Get detailed technology stack information for any company by providing their domain.
+    request: POST /v1/companies/technographics
+    params:
+      company_domain:
+        in: body
+        required: true
+        about: The domain of the company to analyze
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  role-finder:
+    title: Role Finder
+    about: Provide the company name or domain and the required job title, and retrieve the corresponding person.
+    request: POST /v1/people/role-finder
+    params:
+      company_name:
+        in: body
+        about: Business Profile URL (with url or public_identifier)
+      company_domain:
+        in: body
+        about: Company domain
+      job_title:
+        in: body
+        about: Enter the job title you want to find in the company.
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  employee-finder:
+    title: Employee Finder
+    about: 'Find employees at a company. Returns a list of employees with their profiles, titles, and locations.
+      Costs 0.05 credits per employee returned: free when no employees are found.'
+    request: POST /v1/people/employee-finder
+    params:
+      company_domain:
+        in: body
+        about: 'Company website domain (preferred: more accurate than company_name)'
+      company_name:
+        in: body
+        about: Company name. Use if domain is not available.
+      limit:
+        in: body
+        type: integer
+        about: Maximum number of employees to return
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  people-search:
+    title: People Search
+    about: Find professional profiles by company, title, role, seniority, and recorded profile attributes. Choose
+      a person before requesting Email Finder or Mobile Finder separately. Search does not expose…
+    request: POST /v3/people/search
+    params:
+      company_domain:
+        in: body
+      company_name:
+        in: body
+      linkedin_url:
+        in: body
+        about: B2B company profile URL or slug.
+      company_filters:
+        in: body
+        type: object
+        about: 'Employer criteria supported by People Search: identity, industry, classification, headcount, revenue,
+          founding year, headquarters, funding, and technology. tech_stack and each *_tech criterion accept…'
+      people_filters:
+        in: body
+        type: object
+        about: Current professional-profile filters for name, title/function/level, persona, residence and job geography,
+          profile identity, headline/about-me/description, recorded industry, language, seniority, job…
+      title:
+        in: body
+      job_title:
+        in: body
+      titles:
+        in: body
+        type: array
+      roles:
+        in: body
+        type: array
+      query:
+        in: body
+        about: Free-text people/title query.
+      include_company:
+        in: body
+        type: boolean
+      confirm_credit_charge:
+        in: body
+        type: boolean
+        about: Accepted for backwards compatibility; not required and does not enable contact values in search.
+      limit:
+        in: body
+        type: integer
+        about: Offset requests allow up to 10000 rows; cursor-based pages are capped at 50.
+      cursor:
+        in: body
+        about: Opaque signed next_cursor from the previous page. Send unchanged with the same filters, a limit no
+          greater than 50, and offset 0.
+      offset:
+        in: body
+        type: integer
+        about: Legacy offset pagination; prefer cursor. Unstable ordering, uncached. Restart at offset 0 to obtain
+          a cursor.
+    price:
+      credits: 1
+      per: result
+    jobs:
+      find_people:
+        needs:
+        - - title
+        - - company_domain
+        - - query
+        - - company
+        send:
+          title: job_title
+          company_domain: company_domain
+          company: company_name
+          query: query
+        limit: limit
+        result: people
+        fields:
+          name: contact_full_name
+          first_name: contact_first_name
+          last_name: contact_last_name
+          title: contact_job_title
+          headline: contact_linkedin_headline
+          company: contact_company_name
+          company_domain: company_domain
+          location: join(', ', [contact_city, contact_country][?@])
+          country: contact_country_code
+          linkedin_url: contact_linkedin_url
+  company-search-2:
+    title: Company Search
+    about: Canonical V3 company identity lookup and discovery using the documented supported criteria. Check ignored_filters
+      and warnings for selected criteria that were not applied.
+    request: POST /v3/companies/search
+    params:
+      company_domain:
+        in: body
+        about: Direct one-company lookup input. Returns one rich company row plus legacy-friendly aliases when no
+          broad filters or explicit limit are supplied.
+      domain:
+        in: body
+        about: Alias for company_domain.
+      website:
+        in: body
+        about: Company website URL or domain.
+      company_name:
+        in: body
+        about: Company name lookup input.
+      profile_url:
+        in: body
+        about: Company profile URL.
+      linkedin_url:
+        in: body
+        about: Company profile URL.
+      company_filters:
+        in: body
+        type: object
+        about: Supported discovery criteria include identity, headquarters, industry/classification, headcount,
+          revenue, founding year, funding, profile counts, recorded flags, company text, and technology.…
+      query:
+        in: body
+      limit:
+        in: body
+        type: integer
+      cursor:
+        in: body
+        about: Opaque next_cursor from the previous page. Send unchanged with the same filters and limit.
+      offset:
+        in: body
+        type: integer
+        about: Legacy offset pagination; prefer cursor. Unstable ordering, uncached. Restart at offset 0 to obtain
+          a cursor.
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  company-lookalike:
+    title: Company Lookalike
+    about: Find similar companies from a seed domain or description using company context and recorded attributes.
+      Similarity scores describe ranking closeness, not a buying-fit probability. Costs 5 credits…
+    request: POST /v3/companies/lookalike
+    params:
+      company_domain:
+        in: body
+        about: Seed company domain. Aliases include domain, website, company_website, seed.domain. Typos like companny_domain
+          are remapped.
+      domain:
+        in: body
+        about: Alias for company_domain.
+      website:
+        in: body
+        about: Seed website URL or domain.
+      company_website:
+        in: body
+        about: Alias for website.
+      company_name:
+        in: body
+        about: Seed company name used as text intent when no domain is supplied.
+      name:
+        in: body
+        about: Alias for company_name.
+      description:
+        in: body
+        about: Free-text seed description.
+      company_description:
+        in: body
+        about: Alias for description.
+      seed:
+        in: body
+        type: object
+        about: Optional seed object. Prefer seed.domain.
+      company_filters:
+        in: body
+        type: object
+        about: 'Subset of the Company Search filters: HQ country_codes, employee_ranges, min/max_employees, revenue_ranges,
+          min/max_revenue, industries, sic_codes, naics_codes, founded_after/before, has_funding,…'
+      filters:
+        in: body
+        type: object
+        about: Alias for company_filters.
+      preview:
+        in: body
+        type: boolean
+        about: 'Free preview: chatbot UI only. API/MCP clients receive 400.'
+      limit:
+        in: body
+        type: integer
+        about: 'Page size. Pages hold at most 100 companies: values 101-2000 are clamped to 100 (metadata.limit_clamped,
+          requested_limit, applied_limit, and a Warning header); values above 2000 return 400. Page with…'
+      offset:
+        in: body
+        type: integer
+        about: Offset into the similarity ranking (100, 200, …). Lookalike has no cursor. Deeper pages take longer.
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  jobs-finder:
+    title: Jobs Finder
+    about: LeadMagic's Jobs Finder
+    request: POST /v1/jobs/jobs-finder
+    params:
+      company_name:
+        in: body
+        about: Provide the Company Name. (Optional)
+      company_website:
+        in: body
+        about: Provide the Company Website. (Optional)
+      job_title:
+        in: body
+        about: Provide the Job Title.
+      location:
+        in: body
+        about: Location of the job
+      experience_level:
+        in: body
+        about: Indicates the required experience level for the job. Choose "entry" for Entry Level, "mid" for Mid
+          Level, "senior" for Senior Level, or "executive" for Executive Level. If not specified, jobs from…
+      job_description:
+        in: body
+        about: Filters jobs based on specific keywords or phrases found in the job description.
+      city_name:
+        in: body
+        about: Filter jobs by city name. Pair with country_id to disambiguate cities that share a name.
+      country_id:
+        in: body
+        about: Filter jobs by country code, such as US or GB. Use the country helper for supported values.
+      region_id:
+        in: body
+        type: integer
+        about: Filter jobs by region ID.
+      job_type_id:
+        in: body
+        type: integer
+        about: Filter jobs by job type ID.
+      company_type_id:
+        in: body
+        type: integer
+        about: Filter jobs by company type ID.
+      company_industry_id:
+        in: body
+        type: integer
+        about: Filter jobs by company industry ID.
+      min_employees:
+        in: body
+        type: integer
+        about: Minimum number of employees
+      max_employees:
+        in: body
+        type: integer
+        about: Maximum number of employees
+      has_remote:
+        in: body
+        type: boolean
+        about: Determines whether the jobs offer remote work options. Set to true to include remote-only listings,
+          or false to include non-remote listings.
+      posted_within:
+        in: body
+        type: integer
+        about: Specify the number of days within which the job was posted.
+      posted_after:
+        in: body
+        about: Filters jobs posted on or after a specific date. Use the format YYYY-MM-DD.
+      posted_before:
+        in: body
+        about: Filters jobs posted on or before a specific date. Use the format YYYY-MM-DD.
+      page:
+        in: body
+        type: integer
+        about: Page number
+      per_page:
+        in: body
+        type: integer
+        about: Provide number of results needed per page. (Maximum per_page can be 50)
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  job-search:
+    title: Job Search
+    about: Search jobs with title, occupation taxonomy, company, location, tag, salary, seniority, and date filters.
+      The endpoint resolves friendly values into normalized filter IDs before searching. Company…
+    request: POST /v3/jobs/search
+    params:
+      titles:
+        in: body
+        type: object
+      occupationTaxonomy:
+        in: body
+        type: object
+      companies:
+        in: body
+        type: object
+      location:
+        in: body
+        type: object
+      tags:
+        in: body
+        type: object
+      salary:
+        in: body
+        type: object
+      seniority:
+        in: body
+        type: array
+      postedAfter:
+        in: body
+      postedBefore:
+        in: body
+      postedWithin:
+        in: body
+        type: integer
+        about: Include jobs posted within the last N days.
+      languages:
+        in: body
+        type: array
+      hasRemote:
+        in: body
+        type: boolean
+      jobTypeIds:
+        in: body
+        type: array
+      industryIds:
+        in: body
+        type: array
+      companyTypeIds:
+        in: body
+        type: array
+      companySizeCodes:
+        in: body
+        type: array
+      limit:
+        in: body
+        type: integer
+      cursor:
+        in: body
+        about: Opaque cursor from pagination.next_cursor. Send unchanged with the same filters and limit.
+      includeDescription:
+        in: body
+        type: boolean
+        about: Include job description text. Enabling descriptions may increase response time.
+      includeFacets:
+        in: body
+        type: boolean
+        about: Include facet metadata. Enabling facets may increase response time.
+      totalMode:
+        in: body
+        choices:
+        - none
+        - capped
+        - exact
+      mode:
+        in: body
+        choices:
+        - fast
+        - deep
+        about: fast returns paginated browsing results when descriptions and facets are omitted; deep enables broader
+          text matching.
+      autoResolve:
+        in: body
+        type: boolean
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  search-stats:
+    title: Search Stats
+    about: Free helper endpoint that returns cached professional-profile and company counts, technology coverage,
+      capabilities, and top dimensions for Jobs, Company, and People Search. Email and phone…
+    request: POST /v3/search/stats
+    params:
+      products:
+        in: body
+        type: array
+        about: 'Search products to include: jobs, company, and/or people stats.'
+      sections:
+        in: body
+        type: array
+        about: 'Stat sections to return: coverage counts, top dimensions, and/or filter capabilities.'
+      limit:
+        in: body
+        type: integer
+        about: Max top values per dimension. Defaults to 3.
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  job-search-resolve:
+    title: Resolve Job Search filters
+    about: Resolve friendly companies, countries, tags, occupation taxonomy values, and titles into canonical filter
+      IDs. This endpoint does not return job rows and is free.
+    request: POST /v3/jobs/search/resolve
+    params:
+      companies:
+        in: body
+        type: object
+      tags:
+        in: body
+        type: object
+      occupationTaxonomy:
+        in: body
+        type: object
+      location:
+        in: body
+        type: object
+      titles:
+        in: body
+        type: object
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  job-search-companies:
+    title: Job Search Companies Helper
+    about: Company autocomplete and cards for Job Search.
+    request: GET /v3/jobs/search/companies
+    params:
+      q: {}
+      domain: {}
+      limit:
+        type: integer
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  job-search-tags:
+    title: Job Search Tags Helper
+    about: Tag autocomplete with occupation taxonomy metadata.
+    request: GET /v3/jobs/search/tags
+    params:
+      q: {}
+      tag_type:
+        type: integer
+      limit:
+        type: integer
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  job-search-titles:
+    title: Job Search Titles Helper
+    about: Title autocomplete with occupation taxonomy metadata.
+    request: GET /v3/jobs/search/titles
+    params:
+      q: {}
+      limit:
+        type: integer
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  job-search-occupation-taxonomy:
+    title: Job Search Occupation Taxonomy Helper
+    about: Occupation taxonomy autocomplete with level1, level2, and level3 IDs and labels.
+    request: GET /v3/jobs/search/occupation-taxonomy
+    params:
+      q: {}
+      level:
+        choices:
+        - level1
+        - level2
+        - level3
+      limit:
+        type: integer
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  job-search-locations:
+    title: Job Search Locations Helper
+    about: Country, region, state, and city autocomplete for exact geo filters.
+    request: GET /v3/jobs/search/locations
+    params:
+      q: {}
+      type:
+        choices:
+        - country
+        - region
+        - state
+        - city
+      limit:
+        type: integer
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  job-search-catalogs:
+    title: Job Search Catalogs
+    about: Filter catalogs for countries, regions, job types, industries, company types, seniority, and public-safe
+      Jobs Search stats.
+    request: GET /v3/jobs/search/catalogs
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  job-search-roles:
+    title: Job Search Roles Helper
+    about: Role autocomplete for occupation-based filtering, mapped to occupation taxonomy IDs.
+    request: GET /v3/jobs/search/roles
+    params:
+      q: {}
+      limit:
+        type: integer
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  job-search-stats:
+    title: Job Search Dataset Stats
+    about: 'Public-safe dataset statistics for the Jobs Search index: totals and freshness. Free.'
+    request: GET /v3/jobs/search/stats
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  job-board-stats:
+    title: Job Board Stats
+    about: Alias of Job Search Dataset Stats for job-board integrations. Free.
+    request: GET /v3/jobs/search/job-board/stats
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  job-country:
+    title: Job Country
+    about: Use this API to retrieve the country ID, which can then be used in the Jobs Finder API to filter jobs
+      by country.
+    request: GET /v1/jobs/countries
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  job-regions:
+    title: Job Region
+    about: Use this API to retrieve the region ID, which can then be used in the Jobs Finder API to filter jobs
+      by region.
+    request: GET /v1/jobs/regions
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  job-types:
+    title: Job Type
+    about: Use this API to retrieve the Job Type ID, which can then be used in the Jobs Finder API to filter jobs
+      by Job Type.
+    request: GET /v1/jobs/job-types
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  job-company-types:
+    title: Job Company Type
+    about: Use this API to retrieve the Company Type ID, which can then be used in the Jobs Finder API to filter
+      jobs by Company Type.
+    request: GET /v1/jobs/company-types
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  job-industry:
+    title: Job Industry
+    about: Use this API to retrieve the Industry ID, which can then be used in the Jobs Finder API to filter jobs
+      by Industry.
+    request: GET /v1/jobs/industries
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response
+  batch:
+    title: Update Batch Metadata
+    about: Update batch metadata or its associated client within the mutable window.
+    request: PATCH /v1/{product}/batch/{batchId}
+    params:
+      product:
+        in: path
+        required: true
+        about: Enrichment product slug, e.g. email-finder. Hyphens and underscores are both accepted.
+      batchId:
+        in: path
+        required: true
+        about: Identifier of the batch returned when it was submitted.
+      metadata:
+        in: body
+        type: object
+      client_id:
+        in: body
+    price:
+      per: call
+      note: credits reported in credits_consumed on each response

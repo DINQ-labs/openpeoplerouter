@@ -1,0 +1,64 @@
+id: semanticscholar
+title: Semantic Scholar
+about: Authors and papers across science, with citation counts and h-index.
+site: https://www.semanticscholar.org
+docs: https://api.semanticscholar.org/api-docs/graph
+pricing: https://www.semanticscholar.org/product/api
+api: https://api.semanticscholar.org/graph/v1
+key:
+  env: SEMANTIC_SCHOLAR_API_KEY
+  header: x-api-key
+  optional: true
+operations:
+  author-search:
+    title: Researchers by name
+    request: GET /author/search
+    params:
+      query: {required: true}
+      fields: {default: "name,affiliations,homepage,url,hIndex,citationCount,paperCount,externalIds"}
+      limit: {type: integer, about: up to 1000}
+      offset: {type: integer}
+    price: {usd: 0, per: call, note: shared rate limit without a key}
+    jobs:
+      find_people:
+        audience: researchers
+        needs: [[query]]
+        send: {query: query}
+        limit: limit
+        result: data
+        fields:
+          name: name
+          company: affiliations[0]
+          url: url
+  author:
+    title: One researcher, by Semantic Scholar id
+    request: GET /author/{author_id}
+    params:
+      author_id: {in: path, required: true}
+      fields: {default: "name,affiliations,homepage,url,hIndex,citationCount,paperCount,externalIds"}
+    not_found: 404
+    price: {usd: 0, per: call}
+  author-papers:
+    title: A researcher's papers
+    request: GET /author/{author_id}/papers
+    params:
+      author_id: {in: path, required: true}
+      fields: {default: "title,year,venue,citationCount,authors"}
+      limit: {type: integer}
+    price: {usd: 0, per: call}
+  paper-search:
+    title: Papers by keywords, with their authors
+    request: GET /paper/search
+    params:
+      query: {required: true}
+      fields: {default: "title,year,venue,citationCount,authors"}
+      year: {about: "e.g. 2022-"}
+      limit: {type: integer}
+    price: {usd: 0, per: call}
+  paper-authors:
+    title: The authors of one paper, by paper id, DOI or arXiv id
+    request: GET /paper/{paper_id}/authors
+    params:
+      paper_id: {in: path, required: true, about: "an S2 id, DOI:10.x/..., ARXIV:2106.15928"}
+      fields: {default: "name,affiliations,homepage,hIndex,citationCount"}
+    price: {usd: 0, per: call}

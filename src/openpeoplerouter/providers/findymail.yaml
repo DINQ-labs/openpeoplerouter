@@ -1,0 +1,117 @@
+id: findymail
+title: Findymail
+about: Verified work emails from a name and company or a LinkedIn profile, phones, reverse lookups and employee search.
+site: https://www.findymail.com
+docs: https://app.findymail.com/docs/
+pricing: https://www.findymail.com/pricing/
+api: https://app.findymail.com/api
+key:
+  env: FINDYMAIL_API_KEY
+  bearer: true
+operations:
+  find-by-name:
+    title: Work email from a name and company
+    request: POST /search/name
+    params:
+      name: {in: body, required: true, about: full name}
+      domain: {in: body, required: true, about: company domain, or company name}
+      webhook_url: {in: body, about: to get the answer later instead of waiting}
+    price: {credits: 1, per: success}
+    jobs:
+      find_contact:
+        needs: [[full_name, company_domain], [full_name, company]]
+        send: {full_name: name, company_domain: domain, company: domain}
+        result: contact
+        fields: {email: email, name: name, company_domain: domain}
+  find-by-profile:
+    title: Work email from a LinkedIn profile
+    request: POST /search/business-profile
+    params:
+      linkedin_url: {in: body, required: true}
+      webhook_url: {in: body}
+    price: {credits: 1, per: success}
+    jobs:
+      find_contact:
+        needs: [[linkedin_url]]
+        send: {linkedin_url: linkedin_url}
+        result: contact
+        fields: {email: email, name: name, company_domain: domain}
+  verify:
+    title: Whether an address accepts mail
+    request: POST /verify
+    params:
+      email: {in: body, required: true}
+    price: {credits: 1, per: call, note: verifier credits}
+    jobs:
+      verify_email:
+        needs: [[email]]
+        send: {email: email}
+        result: '@'
+        fields: {email: email, deliverable: verified}
+  phone:
+    title: Mobile number from a LinkedIn profile (US numbers)
+    request: POST /search/phone
+    params:
+      linkedin_url: {in: body, required: true}
+    price: {credits: 10, per: success}
+    jobs:
+      find_contact:
+        needs: [[linkedin_url]]
+        send: {linkedin_url: linkedin_url}
+        result: '@'
+        fields: {phone: phone}
+  reverse-email:
+    title: The LinkedIn profile behind an email
+    request: POST /search/reverse-email
+    params:
+      email: {in: body, required: true}
+      with_profile: {in: body, type: boolean, about: return the whole profile, one more credit}
+    price: {credits: 1, per: success}
+  company:
+    title: A company from its domain, name or LinkedIn page
+    request: POST /search/company
+    params:
+      domain: {in: body}
+      name: {in: body}
+      linkedin_url: {in: body}
+    price: {credits: 1, per: success}
+    jobs:
+      enrich_company:
+        needs: [[domain], [name], [linkedin_url]]
+        send: {domain: domain, name: name, linkedin_url: linkedin_url}
+        result: '@'
+        fields: {name: name, domain: domain, employees: company_size, industry: industry, linkedin_url: linkedin_url,
+                 description: description}
+  employees:
+    title: People in given roles at a company (no emails)
+    request: POST /search/employees
+    params:
+      website: {in: body, required: true, about: company domain}
+      job_titles: {in: body, type: array, required: true, about: up to 10}
+      count: {in: body, type: integer, about: up to 3}
+    price: {credits: 1, per: result}
+    jobs:
+      find_people:
+        needs: [[company_domain, title]]
+        send: {company_domain: website, title: job_titles}
+        result: '@'
+        fields: {name: name, title: jobTitle, company: companyName, company_domain: companyWebsite, linkedin_url: linkedinUrl}
+  lookalike:
+    title: Companies similar to a seed company
+    request: POST /lookalike/search
+    params:
+      seed: {in: body, required: true, about: domain of the seed company}
+      same_country: {in: body, type: boolean}
+      same_size: {in: body, type: boolean}
+      limit: {in: body, type: integer}
+    price: {credits: 1, per: call, note: one credit per 10 companies}
+  technologies:
+    title: Technologies a company uses
+    request: POST /technologies
+    params:
+      domain: {in: body, required: true}
+    price: {usd: 0, per: call}
+  credits:
+    title: Credits left
+    request: GET /credits
+    price: {usd: 0, per: call}

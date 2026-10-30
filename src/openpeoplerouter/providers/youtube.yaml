@@ -1,0 +1,87 @@
+id: youtube
+title: YouTube Data API
+about: The official YouTube API — channels, their statistics, videos and channel search. A Google Cloud API key with the YouTube Data API enabled.
+site: https://developers.google.com/youtube/v3
+docs: https://developers.google.com/youtube/v3/docs
+pricing: https://developers.google.com/youtube/v3/determine_quota_cost
+api: https://www.googleapis.com/youtube/v3
+key:
+  env: YOUTUBE_API_KEY
+  query: key
+operations:
+  channels:
+    title: Channels by handle, id or username, with statistics
+    request: GET /channels
+    docs: https://developers.google.com/youtube/v3/docs/channels/list
+    params:
+      part: {default: "snippet,statistics,brandingSettings"}
+      forHandle: {about: "@handle or handle"}
+      id: {about: comma-separated channel ids}
+      forUsername: {}
+      maxResults: {type: integer}
+    price: {usd: 0, per: call, note: 1 quota unit of 10,000 free a day}
+    jobs:
+      read_profile:
+        platform: youtube
+        needs: [[handle]]
+        send: {handle: forHandle}
+        result: items[0]
+        fields:
+          name: snippet.title
+          handle: snippet.customUrl
+          bio: snippet.description
+          followers: to_number(statistics.subscriberCount)
+          posts: to_number(statistics.videoCount)
+          location: snippet.country
+          image: snippet.thumbnails.high.url
+          url: "join('', ['https://www.youtube.com/channel/', id])"
+  search:
+    title: Channels, videos or playlists by words
+    request: GET /search
+    docs: https://developers.google.com/youtube/v3/docs/search/list
+    params:
+      part: {default: snippet}
+      q: {required: true}
+      type: {choices: [channel, video, playlist], default: channel}
+      regionCode: {}
+      relevanceLanguage: {}
+      maxResults: {type: integer, about: up to 50}
+      pageToken: {}
+    price: {usd: 0, per: call, note: 100 quota units}
+    jobs:
+      find_people:
+        audience: [creators]
+        needs: [[query]]
+        send: {query: q, country: regionCode}
+        fixed: {type: channel}
+        limit: maxResults
+        result: items
+        fields:
+          name: snippet.channelTitle
+          headline: snippet.description
+          image: snippet.thumbnails.high.url
+          url: "join('', ['https://www.youtube.com/channel/', snippet.channelId])"
+  videos:
+    title: Videos by id, with statistics
+    request: GET /videos
+    params:
+      part: {default: "snippet,statistics"}
+      id: {required: true}
+    price: {usd: 0, per: call, note: 1 quota unit}
+  playlist-items:
+    title: A playlist's videos, such as a channel's uploads
+    request: GET /playlistItems
+    params:
+      part: {default: snippet}
+      playlistId: {required: true}
+      maxResults: {type: integer}
+      pageToken: {}
+    price: {usd: 0, per: call, note: 1 quota unit}
+  comment-threads:
+    title: Comments on a video
+    request: GET /commentThreads
+    params:
+      part: {default: snippet}
+      videoId: {required: true}
+      maxResults: {type: integer}
+    price: {usd: 0, per: call, note: 1 quota unit}

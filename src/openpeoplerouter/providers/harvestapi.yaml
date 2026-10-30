@@ -1,0 +1,656 @@
+id: harvestapi
+title: HarvestAPI
+about: LinkedIn data without your own LinkedIn account — profiles, companies, lead and company search, posts and
+  jobs.
+site: https://harvest-api.com
+docs: https://docs.harvest-api.com
+pricing: https://harvest-api.com/pricing
+api: https://api.harvestapi.io
+key:
+  env: HARVESTAPI_API_KEY
+  header: X-API-Key
+operations:
+  linkedin-account-insights:
+    title: Get LinkedIn account insights of a company
+    about: 'Get in-depth insights about a LinkedIn company: company profile and revenue, AI-generated summaries
+      (business model, strategic priorities, challenges, competitors), key people, headcount and hiring…'
+    request: GET /linkedin/account-insights
+    params:
+      query:
+        about: URL or universal name or company ID of the LinkedIn company. A company ID skips the company lookup
+          and answers faster
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-account-search:
+    title: Search LinkedIn accounts
+    about: Search LinkedIn companies by advanced filters (headcount and its growth, revenue, department headcount,
+      hiring, recent activities, Fortune lists) with inclusion and exclusion criteria
+    request: GET /linkedin/account-search
+    params:
+      search:
+        about: Search query. Fuzzy search, supports LinkedIn's search operators
+      headquarterLocations:
+        about: Filter by headquarters location text. Comma-separated (max 70)
+      headquarterGeoIds:
+        about: Filter by headquarters LinkedIn Geo ID. Comma-separated (max 70). Use /linkedin/geo-id-search to
+          find IDs
+      industryIds:
+        about: 'Filter by industry IDs. Comma-separated (max 70). Full list: https://github.com/HarvestAPI/linkedin-industry-codes-v2/blob/main/linkedin_industry_code_v2_all_eng_with_header.csv'
+      companyHeadcount:
+        about: 'Filter by company headcount. Comma-separated. Available values: 1-10, 11-50, 51-200, 201-500, 501-1000,
+          1001-5000, 5001-10000, 10001+'
+      companyHeadcountGrowth:
+        about: 'Filter by company headcount growth in percent, as min-max. Example: 1-100'
+      annualRevenue:
+        about: 'Filter by annual revenue in millions, as min-max;currency (USD by default). Examples: 1-10;USD,
+          0.5-1000'
+      numOfFollowers:
+        about: 'Filter by number of followers. Comma-separated. Available values: 1-50, 51-100, 101-1000, 1001-5000,
+          5001+'
+      departmentHeadcount:
+        about: 'Filter by the headcount of a department, as min-max;department. Example: 10-100;Engineering. Departments:
+          Accounting, Administrative, Arts and Design, Business Development, Community and Social…'
+      departmentHeadcountGrowth:
+        about: 'Filter by the headcount growth of a department in percent, as min-max;department. Example: 5-50;Sales.
+          Same departments as departmentHeadcount'
+      jobOpportunities:
+        about: Set to HIRING_ON_LINKEDIN to find companies that are hiring on LinkedIn
+      accountActivities:
+        about: 'Filter by recent company activities. Comma-separated. Available values: SENIOR_LEADERSHIP_CHANGES_LAST_3_MONTHS,
+          FUNDING_EVENTS_PAST_12_MONTHS'
+      fortune:
+        about: 'Filter by Fortune 500 rank. Comma-separated. Available values: 50 (Fortune 50), 51_100, 101_250,
+          251_500'
+      excludeHeadquarterLocations:
+        about: Headquarters locations to exclude. Comma-separated (max 70)
+      excludeHeadquarterGeoIds:
+        about: Headquarters Geo IDs to exclude. Comma-separated (max 70)
+      excludeIndustryIds:
+        about: Industry IDs to exclude. Comma-separated (max 70)
+      excludeCompanyHeadcount:
+        about: Company headcounts to exclude. Comma-separated. Same values as companyHeadcount
+      page:
+        type: integer
+        about: Page number for pagination (clamped at 100). 25 results per page
+      sessionId:
+        about: Session ID to use for the search. See https://docs.harvestapi.io/linkedin-api-reference/leads/search-leads#session-id
+          for details.
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-ad-search:
+    title: Search LinkedIn Ad Library
+    about: Retrieve a list of LinkedIn Ads matching the specified search criteria.
+    request: GET /linkedin/ad-search
+    params:
+      searchUrl:
+        about: 'Scrape Ad Library search URL, for example: https://www.linkedin.com/ad-library/search?accountOwner=test&keyword=test&dateOption=custom-date-range&startdate=2025-07-07&enddate=2025-08-21'
+      keyword:
+        about: Search by keyword
+      accountOwner:
+        about: Search by company or advertiser name
+      countries:
+        about: One or comma separated list of country codes to filter ads by country. Eg. 'US,GB,FR'. Supports "ALL"
+          value to search in all countries.
+      dateOption:
+        about: 'One of the following options to filter ads by date: ''last-30-days'', ''current-month'', ''current-year'',
+          ''last-year'', ''custom-date-range'''
+      startdate:
+        about: Start date for 'custom-date-range' filter in 'YYYY-MM-DD' format
+      enddate:
+        about: End date for 'custom-date-range' filter in 'YYYY-MM-DD' format
+      paginationToken:
+        about: Pagination token from the previous response for fetching the next page
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-ad:
+    title: Get LinkedIn Ad by ID
+    about: Retrieve detailed information about a specific LinkedIn Ad using its unique ID.
+    request: GET /linkedin/ad
+    params:
+      adId:
+        about: The unique identifier of the LinkedIn Ad.
+      url:
+        about: The URL of the LinkedIn Ad.
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-company-posts:
+    title: Get LinkedIn company posts
+    about: Get LinkedIn company posts by company URL, ID, or universal name.
+    request: GET /linkedin/company-posts
+    params:
+      company:
+        about: Filter posts by this company URL or universal name or company ID
+      postedLimit:
+        about: 'Filter posts by maximum posted date. Supported values: ''24h'', ''week'', ''month''. Since LinkedIn
+          doesn''t offer a way to filter by date, the filtering will be done on our side, due to that the pagination…'
+      scrapePostedLimit:
+        about: 'Post-Filter posts by maximum posted date. Supported values: ''1h'', ''24h'', ''week'',''month'',
+          ''3months'', ''6months'', ''year''. This parameter will be applied after receiving results from LinkedIn,
+          the…'
+      page:
+        type: integer
+        about: Page number for pagination
+      paginationToken:
+        about: Required if it was returned by the previous page. Otherwise the page will always be 1 (on LinkedIn
+          side). Doesn't apply for all queries, usually profile posts return this token
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-company:
+    title: Get the LinkedIn company
+    about: Get the LinkedIn company. Required at least one of the query parameters
+    request: GET /linkedin/company
+    params:
+      query:
+        about: URL or universal name or company ID of the LinkedIn company
+    price:
+      per: call
+      note: billed per request; see pricing
+    jobs:
+      enrich_company:
+        needs:
+        - - linkedin_url
+        - - domain
+        - - name
+        send:
+          linkedin_url: query
+          domain: query
+          name: query
+        result: element
+        fields:
+          name: name
+          website: website
+          description: description
+          employees: employeeCount
+          founded: foundedOn.year
+          location: locations[?headquarter] | [0].parsed.text
+          country: locations[?headquarter] | [0].parsed.countryCode
+          linkedin_url: linkedinUrl
+          logo: logo
+  linkedin-company-people-stats:
+    title: Get the LinkedIn company people stats
+    about: 'Get the People statistics of a LinkedIn company page: where the employees are located, where they studied,
+      etc.'
+    request: GET /linkedin/company-people-stats
+    params:
+      query:
+        about: URL or universal name or company ID of the LinkedIn company. A company ID skips the company lookup
+          and answers faster
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-company-search:
+    title: Search LinkedIn companies
+    about: Retrieve a list of LinkedIn companies matching the specified search criteria.
+    request: GET /linkedin/company-search
+    params:
+      search:
+        about: Keywords to search for in company names.
+      location:
+        about: Filter companies by location.
+      geoId:
+        about: Filter by location as LinkedIn Geo ID. Overrides the location query param. Use the /linkedin/geo-id-search
+          endpoint to find the Geo ID
+      companySize:
+        about: 'Filter by company size. One value or multiple comma-separated. Supported values: ''1-10'', ''11-50'',
+          ''51-200'', ''201-500'', ''501-1000'', ''1001-5000'', ''5001-10000'', ''10001+'''
+      industryId:
+        about: 'Filter by industry ID. One value or multiple comma-separated industry IDs. Full list of IDs: https://github.com/HarvestAPI/linkedin-industry-codes-v2/blob/main/linkedin_industry_code_v2_all_eng.csv'
+      page:
+        type: integer
+        about: Page number for pagination.
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-geo-id-search:
+    title: Search LinkedIn Geo ID
+    about: Search LinkedIn Geo ID by location text
+    request: GET /linkedin/geo-id-search
+    params:
+      search:
+        about: Location text to search for Geo ID (required)
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-group:
+    title: Get the LinkedIn group
+    about: Get the LinkedIn group. Required at least one of the query parameters
+    request: GET /linkedin/group
+    params:
+      url:
+        about: URL of the LinkedIn group (optional)
+      groupId:
+        about: ID of the LinkedIn group (optional)
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-group-search:
+    title: Search LinkedIn Groups
+    about: Retrieve a list of LinkedIn Groups matching the specified search criteria.
+    request: GET /linkedin/group-search
+    params:
+      search:
+        about: Keywords to search for.
+      page:
+        type: integer
+        about: Page number for pagination.
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-job:
+    title: Get the LinkedIn job details
+    about: Get the LinkedIn job details by job ID or URL.
+    request: GET /linkedin/job
+    params:
+      jobId:
+        about: ID of the LinkedIn job (optional)
+      url:
+        about: URL of the LinkedIn job (optional)
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-job-search:
+    title: Search LinkedIn jobs
+    about: Search LinkedIn jobs by title, company, location, and more.
+    request: GET /linkedin/job-search
+    params:
+      search:
+        about: Search jobs by title
+      companyId:
+        about: Filter by company ID. One value or multiple comma-separated.
+      location:
+        about: Filter by location text
+      geoId:
+        about: Filter by location as LinkedIn Geo ID. Overrides the location query param. Use the /linkedin/geo-id-search
+          endpoint to find the Geo ID
+      sortBy:
+        about: 'Sort by field. Supported values: ''relevance'', ''date'''
+      workplaceType:
+        about: 'Filter by workplace type. One or multiple values comma-separated. Supported values: ''office'',
+          ''hybrid'', ''remote'''
+      employmentType:
+        about: 'Filter by employment type. One or multiple values comma-separated. Supported values: ''full-time'',
+          ''part-time'', ''contract'', ''temporary'', ''internship'''
+      salary:
+        about: 'Filter by salary range. Supported values: ''40k+'', ''60k+'', ''80k+'', ''100k+'', ''120k+'', ''140k+'',
+          ''160k+'', ''180k+'', ''200k+'''
+      postedLimit:
+        about: 'Filter posts by maximum posted date. Supported values: ''24h'', ''week'', ''month'''
+      experienceLevel:
+        about: 'Filter by experience level. One or multiple values comma-separated. Supported values: ''internship'',
+          ''entry'', ''associate'', ''mid-senior'', ''director'', ''executive'''
+      industryId:
+        about: 'Filter by industry ID. One value or multiple comma-separated industry IDs. Full list of IDs: https://github.com/HarvestAPI/linkedin-industry-codes-v2/blob/main/linkedin_industry_code_v2_all_eng.csv'
+      functionId:
+        about: 'Filter by job function ID. One value or multiple comma-separated function IDs. Full list of IDs:
+          https://github.com/HarvestAPI/apify-linkedin-profile-search/blob/main/.actor/input_schema.json#L142'
+      under10Applicants:
+        about: Include this parameter to filter jobs with under 10 applicants
+      easyApply:
+        about: Set this parameter to 'true' filter jobs with Easy Apply option or 'false' to exclude. Values can
+          be 'true' or 'false'
+      page:
+        type: integer
+        about: Page number for pagination
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-lead-search:
+    title: Search LinkedIn leads
+    about: Search LinkedIn profile leads by filters with advanced inclusion and exclusion criteria
+    request: GET /linkedin/lead-search
+    params:
+      search:
+        about: Search query. Fuzzy search, supports LinkedIn's search operators
+      currentCompanies:
+        about: Filter by current company IDs or URLs. Comma-separated (max 50)
+      pastCompanies:
+        about: Filter by past company IDs or URLs. Comma-separated (max 50)
+      locations:
+        about: Filter by location text. Comma-separated (max 70)
+      geoIds:
+        about: Filter by LinkedIn Geo ID. Comma-separated. Overrides location param. Use /linkedin/geo-id-search
+          to find IDs
+      schools:
+        about: Filter by school IDs or URLs. Comma-separated (max 50)
+      currentJobTitles:
+        about: Filter by current job titles. Comma-separated (max 70)
+      pastJobTitles:
+        about: Filter by past job titles. Comma-separated (max 70)
+      firstNames:
+        about: Filter by first names. Comma-separated (max 70)
+      lastNames:
+        about: Filter by last names. Comma-separated (max 70)
+      industryIds:
+        about: 'Filter by industry IDs. Comma-separated (max 70). Full list: https://github.com/HarvestAPI/linkedin-industry-codes-v2/blob/main/linkedin_industry_code_v2_all_eng_with_header.csv'
+      yearsAtCurrentCompanyIds:
+        about: Filter by years at current company IDs. Comma-separated. https://github.com/HarvestAPI/harvestapi-sdk/blob/main/packages/scraper/README.md#yearsatcurrentcompanyids
+      yearsOfExperienceIds:
+        about: Filter by years of experience IDs. Comma-separated. https://github.com/HarvestAPI/harvestapi-sdk/blob/main/packages/scraper/README.md#yearsofexperienceids
+      seniorityLevelIds:
+        about: Filter by seniority level IDs. Comma-separated. https://github.com/HarvestAPI/harvestapi-sdk/blob/main/packages/scraper/README.md#senioritylevelids
+      functionIds:
+        about: Filter by job function IDs. Comma-separated. https://github.com/HarvestAPI/harvestapi-sdk/blob/main/packages/scraper/README.md#functionids
+      recentlyChangedJobs:
+        type: boolean
+        about: Filter leads who recently changed jobs in the last 90 days.
+      postedOnLinkedin:
+        type: boolean
+        about: Filter leads who posted on LinkedIn in the last 30 days
+      profileLanguages:
+        about: Filter by profile languages. Comma-separated. https://github.com/HarvestAPI/harvestapi-sdk/blob/main/packages/scraper/README.md#profilelanguages
+      companyHeadcount:
+        about: Filter by company headcount. Comma-separated. https://github.com/HarvestAPI/harvestapi-sdk/blob/main/packages/scraper/README.md#companyheadcount
+      companyHeadquarterLocations:
+        about: Filter by company headquarter location text. Comma-separated (max 70)
+      excludeLocations:
+        about: Locations to exclude from search. Comma-separated (max 70)
+      excludeGeoIds:
+        about: Geo IDs to exclude from search. Comma-separated (max 70)
+      excludeCurrentCompanies:
+        about: Current companies to exclude. Comma-separated (max 50)
+      excludePastCompanies:
+        about: Past companies to exclude. Comma-separated (max 50)
+      excludeSchools:
+        about: Schools to exclude. Comma-separated (max 50)
+      excludeCurrentJobTitles:
+        about: Current job titles to exclude. Comma-separated (max 70)
+      excludePastJobTitles:
+        about: Past job titles to exclude. Comma-separated (max 70)
+      excludeIndustryIds:
+        about: Industry IDs to exclude. Comma-separated (max 70)
+      excludeSeniorityLevelIds:
+        about: Seniority level IDs to exclude. Comma-separated (max 20)
+      excludeFunctionIds:
+        about: Function IDs to exclude. Comma-separated (max 30)
+      excludeCompanyHeadquarterLocations:
+        about: Company headquarter locations to exclude from search. Comma-separated (max 70)
+      salesNavUrl:
+        about: LinkedIn Sales Navigator search URL to use for the search. This will override all other search parameters,
+          except the page parameter. For pagination, please pass the page query parameter separately.…
+      page:
+        type: integer
+        about: Page number for pagination (clamped at 100)
+      sessionId:
+        about: Session ID to use for the search. See https://docs.harvestapi.io/linkedin-api-reference/leads/search-leads#session-id
+          for details.
+      usePrivatePool:
+        about: Set to true to use your private pool of resources (if available)
+      requiredAccountId:
+        about: If we provide you a private pool of accounts, you can use this parameter to specify which account
+          should be used for this request.
+    price:
+      per: call
+      note: billed per request; see pricing
+    jobs:
+      find_people:
+        needs:
+        - - title
+        - - company
+        - - query
+        send:
+          title: currentJobTitles
+          company: currentCompanies
+          location: locations
+          query: search
+        result: elements
+        fields:
+          name: join(' ', [firstName, lastName][?@])
+          first_name: firstName
+          last_name: lastName
+          title: currentPositions[0].title
+          company: currentPositions[0].companyName
+          location: location.linkedinText
+          linkedin_url: linkedinUrl
+          image: pictureUrl
+  linkedin-comment-reactions:
+    title: Get reactions of LinkedIn post comment
+    about: Get reactions of LinkedIn post comment by comment URL.
+    request: GET /linkedin/comment-reactions
+    params:
+      url:
+        about: URL of the LinkedIn comment (required)
+      page:
+        type: integer
+        about: Page number for pagination. Default is 1
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-post-comment-replies:
+    title: Get replies of LinkedIn post comment
+    about: Get replies of LinkedIn post comment by comment URL.
+    request: GET /linkedin/post-comment-replies
+    params:
+      url:
+        about: URL of the LinkedIn comment (required)
+      paginationToken:
+        about: Use this token from the previous page response.
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-post-search:
+    title: Search LinkedIn posts
+    about: Search LinkedIn posts by keywords, author, date range, and more.
+    request: GET /linkedin/post-search
+    params:
+      search:
+        about: Keywords to search for in posts
+      profile:
+        about: 'Filter posts by author''s profile URL(s) or public identifier(s) or profile ID(s) (comma-separated).
+          Note: LinkedIn returns fewer results per profile when using post search. To extract all posts by a…'
+      company:
+        about: 'Filter posts by this company URL(s) or company ID(s) (comma-separated). Note: LinkedIn returns fewer
+          results per company when using post search. To extract all posts by a company, use the…'
+      authorsCompany:
+        about: List of LinkedIn companies where authors of posts work (comma-separated). It supports company URLs
+          and IDs.
+      authorsIndustryId:
+        about: List of LinkedIn industry IDs of authors' companies (comma-separated). It supports industry IDs.
+          Full list of industry IDs:…
+      mentioningMember:
+        about: Filter posts mentioning this LinkedIn profile URL or ID (comma-separated). It supports profile URLs
+          and IDs.
+      mentioningCompany:
+        about: Filter posts mentioning this LinkedIn company URL or ID (comma-separated). It supports company URLs
+          and IDs.
+      contentType:
+        about: 'Filter by content type. Supported values: ''videos'', ''images'', ''live_videos'', ''documents'',
+          ''collaborative_articles'', ''jobs'''
+      authorKeywords:
+        about: Filter by keywords in authors' profiles
+      group:
+        about: Group LinkedIn URL or Group ID
+      postedLimit:
+        about: 'Filter posts by maximum posted date. Supported values: ''24h'', ''week'', ''month''. This parameter
+          will be sent to LinkedIn, the filtering will be done on their side'
+      scrapePostedLimit:
+        about: 'Post-Filter posts by maximum posted date. Supported values: ''1h'', ''24h'', ''week'',''month'',
+          ''3months'', ''6months'', ''year''. This parameter will be applied after receiving results from LinkedIn,
+          the…'
+      sortBy:
+        about: 'Sort by field. Supported values: ''relevance'', ''date'''
+      page:
+        type: integer
+        about: Page number for pagination
+      paginationToken:
+        about: Required if it was returned by the previous page. Otherwise the page will always be 1 (on LinkedIn
+          side). Doesn't apply for all queries, usually profile posts return this token
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-post:
+    title: Get LinkedIn post details
+    about: Get LinkedIn post details by post URL.
+    request: GET /linkedin/post
+    params:
+      url:
+        about: URL of the LinkedIn post (required)
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-post-comments:
+    title: Get comments of LinkedIn post
+    about: Get comments of LinkedIn post by post URL.
+    request: GET /linkedin/post-comments
+    params:
+      post:
+        about: URL of the LinkedIn post (required)
+      sortBy:
+        about: 'Sort comments by field. Supported values: ''relevance'', ''date'''
+      page:
+        type: integer
+        about: Page number for pagination. Default is 1
+      paginationToken:
+        about: Required only if sortBy is 'relevance' and page > 1. Use this token from the previous page response.
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-post-reactions:
+    title: Get reactions of LinkedIn post
+    about: Get reactions of LinkedIn post by post URL.
+    request: GET /linkedin/post-reactions
+    params:
+      post:
+        about: URL of the LinkedIn post (required)
+      sortBy:
+        about: 'Sort comments by field. Supported values: ''relevance'', ''date'''
+      page:
+        type: integer
+        about: Page number for pagination. Default is 1
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-profile:
+    title: Get the LinkedIn profile of the user
+    about: Get the LinkedIn profile of the user. Required at least one of the query parameters
+    request: GET /linkedin/profile
+    params:
+      query:
+        about: URL or public identifier or profile ID of the LinkedIn profile
+      main:
+        about: Set this parameter to 'true' to return only main version of the profile that you can see on LinkedIn
+          without expanding profile sections - up to 5 experiences, 2 educations, 2 skills, etc. This…
+      findEmail:
+        about: Include this parameter to find the email of the profile. It will perform SMTP verifications to ensure
+          deliverability. It will also output emails for catch-all domains and mark them as risky…
+    price:
+      per: call
+      note: billed per request; see pricing
+    jobs:
+      enrich_person:
+        needs:
+        - - linkedin_url
+        send:
+          linkedin_url: query
+        result: element
+        fields:
+          name: join(' ', [firstName, lastName][?@])
+          first_name: firstName
+          last_name: lastName
+          headline: headline
+          location: location.linkedinText
+          linkedin_url: linkedinUrl
+          email: emails[0].email
+          image: photo
+          skills: skills
+          experience: experience
+          education: education
+      read_profile:
+        platform: linkedin
+        needs:
+        - - url
+        send:
+          url: query
+        result: element
+        fields:
+          name: join(' ', [firstName, lastName][?@])
+          handle: publicIdentifier
+          bio: headline
+          followers: followerCount
+          location: location.linkedinText
+          url: linkedinUrl
+          image: photo
+  linkedin-profile-comments:
+    title: Get comments of LinkedIn profile
+    about: Get comments of LinkedIn profile by post URL.
+    request: GET /linkedin/profile-comments
+    params:
+      profile:
+        about: URL of the LinkedIn profile or public identifier or profile ID
+      postedLimit:
+        about: 'Filter posts by maximum posted date. Supported values: ''24h'', ''week'', ''month'''
+      page:
+        type: integer
+        about: Page number for pagination. Default is 1
+      paginationToken:
+        about: Required for pages > 1. Use this token from the previous page response.
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-profile-posts:
+    title: Get LinkedIn profile posts
+    about: Get LinkedIn profile posts by profile URL, ID, or public identifier.
+    request: GET /linkedin/profile-posts
+    params:
+      profile:
+        about: Filter posts by author's profile URL or public identifier or profile ID.
+      postedLimit:
+        about: 'Filter posts by maximum posted date. Supported values: ''24h'', ''week'', ''month''. Since LinkedIn
+          doesn''t offer a way to filter by date, the filtering will be done on our side, due to that the pagination…'
+      scrapePostedLimit:
+        about: 'Post-Filter posts by maximum posted date. Supported values: ''1h'', ''24h'', ''week'',''month'',
+          ''3months'', ''6months'', ''year''. This parameter will be applied after receiving results from LinkedIn,
+          the…'
+      page:
+        type: integer
+        about: Page number for pagination
+      paginationToken:
+        about: Required if it was returned by the previous page. Otherwise the page will always be 1 (on LinkedIn
+          side). Doesn't apply for all queries, usually profile posts return this token
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-profile-reactions:
+    title: Get reactions of LinkedIn profile
+    about: Get reactions of LinkedIn profile by profile URL.
+    request: GET /linkedin/profile-reactions
+    params:
+      profile:
+        about: URL of the LinkedIn profile or public identifier or profile ID.
+      page:
+        type: integer
+        about: Page number for pagination. Default is 1
+      paginationToken:
+        about: Required for pages > 1. Use this token from the previous page response.
+    price:
+      per: call
+      note: billed per request; see pricing
+  linkedin-service-search:
+    title: Search LinkedIn profile services
+    about: Search LinkedIn profile services by name keywords and location.
+    request: GET /linkedin/service-search
+    params:
+      search:
+        required: true
+        about: Search profiles by name
+      location:
+        about: Filter by location text
+      geoId:
+        about: Filter by location as LinkedIn Geo ID. Overrides the location query param. Use the /linkedin/geo-id-search
+          endpoint to find the Geo ID
+      page:
+        about: Page number, use for pagination
+    price:
+      per: call
+      note: billed per request; see pricing
+  users-my-api-user:
+    title: Get my API user details
+    about: Get details about the API user associated with the provided API key
+    request: GET /users/my-api-user
+    price:
+      per: call
+      note: billed per request; see pricing

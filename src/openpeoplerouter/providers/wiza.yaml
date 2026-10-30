@@ -1,0 +1,222 @@
+id: wiza
+title: Wiza
+about: Verified work emails, personal emails and phones from a LinkedIn URL or a name with company, prospect and
+  company search.
+site: https://wiza.co
+docs: https://docs.wiza.co
+pricing: https://wiza.co/pricing
+api: https://wiza.co
+key:
+  env: WIZA_API_KEY
+  bearer: true
+operations:
+  company-enrichment:
+    title: Company Enrichment
+    about: Enrich company data instantly. You can provide a company name, company domain, LinkedIn ID, or LinkedIn
+      slug to get comprehensive company information. This endpoint returns company data immediately,…
+    request: POST /api/company_enrichments
+    params:
+      company_name:
+        in: body
+        about: Company name to enrich (e.g., 'Wiza')
+      company_domain:
+        in: body
+        about: Company domain to enrich (e.g., 'wiza.co')
+      company_linkedin_id:
+        in: body
+        about: LinkedIn company ID
+      company_linkedin_slug:
+        in: body
+        about: LinkedIn company slug (from company URL)
+    price:
+      credits: 1
+      per: success
+      note: email credits and phone credits are separate; see pricing
+  get-credits:
+    title: Get Credits
+    about: Get the number of credits remaining in your account.
+    request: GET /api/meta/credits
+    price:
+      usd: 0
+      per: call
+  get-individual-reveal:
+    title: Get Individual Reveal
+    about: Get the individual reveal by id.
+    request: GET /api/individual_reveals/{id}
+    params:
+      id:
+        in: path
+        required: true
+        about: id
+    price:
+      usd: 0
+      per: call
+  start-individual-reveal:
+    title: Start Individual Reveal
+    about: Start an individual reveal. An individual reveal is a single contact enrichment. You can provide a name,
+      company, and domain, or an email, or a LinkedIn profile URL. Once the reveal is completed, an…
+    request: POST /api/individual_reveals
+    params:
+      individual_reveal:
+        in: body
+        type: object
+        required: true
+      enrichment_level:
+        in: body
+        required: true
+        choices:
+        - none
+        - partial
+        - phone
+        - full
+        about: Enrichment level of the list.
+      email_options:
+        in: body
+        type: object
+        about: Types of emails to return. If not provided, all emails will be returned.
+      callback_url:
+        in: body
+        about: URL to send the individual reveal update to. If not provided, the default webhook URL configured
+          in your account settings will be used.
+      reveal_options:
+        in: body
+        type: object
+        about: Optional advanced reveal options.
+    price:
+      credits: 1
+      per: success
+      note: email credits and phone credits are separate; see pricing
+    jobs:
+      find_contact:
+        needs:
+        - - linkedin_url
+        - - full_name
+          - company_domain
+        - - full_name
+          - company
+        send:
+          linkedin_url: individual_reveal.profile_url
+          full_name: individual_reveal.full_name
+          company_domain: individual_reveal.domain
+          company: individual_reveal.company
+        fixed:
+          enrichment_level: phone
+        poll:
+          operation: get-individual-reveal
+          send:
+            id: data.id
+          until: data.is_complete
+          every: 3
+          within: 180
+        result: data
+        fields:
+          email: email
+          email_status: email_status
+          phone: mobile_phone || phone_number
+          name: name
+          title: title
+          company_domain: company_domain
+      enrich_person:
+        needs:
+        - - linkedin_url
+        send:
+          linkedin_url: individual_reveal.profile_url
+        fixed:
+          enrichment_level: partial
+        poll:
+          operation: get-individual-reveal
+          send:
+            id: data.id
+          until: data.is_complete
+          every: 3
+          within: 180
+        result: data
+        fields:
+          name: name
+          title: title
+          company: company
+          company_domain: company_domain
+          location: location
+          country: country_code
+          linkedin_url: linkedin_profile_url
+          email: email
+  company-search:
+    title: Company search
+    about: Search for companies using firmographic, location, growth, and funding filters. Returned companies cost
+      0.5 API credits each.
+    request: POST /api/accounts/search
+    params:
+      size:
+        in: body
+        type: integer
+        about: Number of companies to return. Defaults to 0. The account-specific maximum is usually 30.
+      page_token:
+        in: body
+        about: Token from the previous response.
+      filters:
+        in: body
+        type: object
+        about: Company filters. At least one filter is required for a new search.
+    price:
+      credits: 1
+      per: success
+      note: email credits and phone credits are separate; see pricing
+  prospect-search:
+    title: Prospect search
+    about: Find the number of prospects that match your search filters
+    request: POST /api/prospects/search
+    params:
+      size:
+        in: body
+        type: integer
+        about: The number of results to return. Defaults to 0. Max is 30.
+      filters:
+        in: body
+        type: object
+        required: true
+    price:
+      per: call
+      note: search credits per profile returned
+    jobs:
+      find_people:
+        needs:
+        - - title
+        send:
+          title:
+            to: filters.job_title
+            as:
+            - v: $
+              s: i
+        limit: size
+        result: data.profiles
+        fields:
+          name: full_name
+          title: job_title
+          company: job_company_name
+          company_domain: job_company_website
+          location: location_name
+          linkedin_url: linkedin_url
+  location-autocomplete:
+    title: Search Locations
+    about: Search locations and regional groups accepted by the Prospect API location and company_location filters.
+    request: GET /api/meta/location_autocomplete
+    params:
+      query:
+        required: true
+        about: Location prefix. Must contain at least 3 characters.
+    price:
+      credits: 1
+      per: success
+      note: email credits and phone credits are separate; see pricing
+  technology-autocomplete:
+    title: Search Technologies
+    about: Search the technology catalog for names and slugs accepted by the Prospect API technologies filter.
+    request: GET /api/meta/technology_autocomplete
+    params:
+      query:
+        required: true
+        about: Technology name or slug prefix. Must be a non-blank string containing at least 3 characters.
+    price:
+      credits: 1
+      per: success
+      note: email credits and phone credits are separate; see pricing

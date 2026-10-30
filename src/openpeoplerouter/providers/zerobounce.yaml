@@ -1,0 +1,58 @@
+id: zerobounce
+title: ZeroBounce
+about: Email validation with spam-trap and abuse detection, plus email format guessing.
+site: https://www.zerobounce.net
+docs: https://www.zerobounce.net/docs/
+pricing: https://www.zerobounce.net/email-validation-pricing
+api: https://api.zerobounce.net/v2
+key:
+  env: ZEROBOUNCE_API_KEY
+  query: api_key
+operations:
+  validate:
+    title: Whether an address accepts mail
+    request: GET /validate
+    docs: https://www.zerobounce.net/docs/email-validation-api-quickstart/v2-validate-emails
+    params:
+      email: {required: true}
+      ip_address: {about: optional, for geolocation}
+      timeout: {type: integer, about: 3-60 seconds}
+    price: {credits: 1, per: call, note: unknown results are not charged}
+    jobs:
+      verify_email:
+        needs: [[email]]
+        send: {email: email}
+        fixed: {ip_address: ''}
+        result: '@'
+        fields:
+          email: address
+          status: status
+          deliverable: status == 'valid'
+          catch_all: status == 'catch-all'
+          disposable: sub_status == 'disposable'
+  guess-format:
+    title: A company's email format, or one person's likely address
+    request: GET /guessformat
+    docs: https://www.zerobounce.net/docs/email-finder-api/
+    params:
+      domain: {required: true}
+      first_name: {}
+      middle_name: {}
+      last_name: {}
+    price: {credits: 1, per: success}
+    jobs:
+      find_contact:
+        needs: [[first_name, last_name, company_domain]]
+        send: {first_name: first_name, last_name: last_name, company_domain: domain}
+        result: "[@][?email] | [0]"
+        fields: {email: email, email_status: status, confidence: email_confidence, company_domain: domain}
+  activity:
+    title: When an address last opened, clicked or replied
+    request: GET /activity
+    params:
+      email: {required: true}
+    price: {credits: 1, per: call}
+  credits:
+    title: Credits left
+    request: GET /getcredits
+    price: {usd: 0, per: call}

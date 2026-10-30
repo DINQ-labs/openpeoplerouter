@@ -1,0 +1,29 @@
+id: crossref
+title: Crossref
+about: Metadata for 160M+ scholarly works, searchable by author and affiliation.
+site: https://www.crossref.org
+docs: https://api.crossref.org/swagger-ui/index.html
+api: https://api.crossref.org
+key:
+  env: CROSSREF_MAILTO
+  query: mailto
+  optional: true
+operations:
+  works:
+    title: Papers by author name, affiliation or words, with their authors
+    request: GET /works
+    params:
+      query: {about: free text over the bibliographic record}
+      query.author: {}
+      query.affiliation: {}
+      filter: {about: "e.g. from-pub-date:2023,type:journal-article"}
+      rows: {type: integer, about: up to 1000}
+      select: {default: "DOI,title,author,published,container-title"}
+    price: {usd: 0, per: call, note: a mailto puts you in the faster polite pool}
+  work:
+    title: One paper by DOI
+    request: GET /works/{doi}
+    params:
+      doi: {in: path, required: true}
+    not_found: 404
+    price: {usd: 0, per: call}

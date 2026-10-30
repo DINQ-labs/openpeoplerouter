@@ -1,10 +1,17 @@
 [project]
 name = "openpeoplerouter"
-version = "0.1.0"
-description = "An open, bring-your-own-key people discovery router for AI agents"
+version = "0.2.0"
+description = "Open-source MCP server for finding people and companies through your own data provider keys"
 requires-python = ">=3.11"
 license = "Apache-2.0"
-dependencies = ["fastmcp>=3.0,<4", "httpx>=0.28,<1", "pydantic>=2.12,<3", "pyyaml>=6,<7", "python-dotenv>=1,<2"]
+dependencies = [
+    "fastmcp>=3.0,<4",
+    "httpx>=0.28,<1",
+    "pydantic>=2.12,<3",
+    "pyyaml>=6,<7",
+    "python-dotenv>=1,<2",
+    "jmespath>=1.0,<2",
+]
 
 [project.scripts]
 openpeoplerouter = "openpeoplerouter.__main__:main"

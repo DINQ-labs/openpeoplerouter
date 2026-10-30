@@ -1,0 +1,226 @@
+id: tinyfish
+title: TinyFish
+about: Web agents that browse a site and extract what you ask for in plain language — team pages, directories, listings.
+site: https://www.tinyfish.ai
+docs: https://docs.tinyfish.ai
+pricing: https://www.tinyfish.ai/pricing
+api: https://agent.tinyfish.ai
+key:
+  env: TINYFISH_API_KEY
+  header: X-API-Key
+operations:
+  run:
+    title: Run browser automation synchronously
+    about: Execute a browser automation task synchronously and wait for completion. Returns the final result once
+      the automation finishes (success or failure). Use this endpoint when you need the complete…
+    request: POST /v1/automation/run
+    params:
+      url:
+        in: body
+        required: true
+        about: Target website URL to automate
+      goal:
+        in: body
+        required: true
+        about: Natural language description of what to accomplish on the website
+      browser_profile:
+        in: body
+        choices:
+        - lite
+        - stealth
+        about: Browser profile for execution. LITE uses standard browser, STEALTH uses anti-detection browser.
+      api_integration:
+        in: body
+        about: Name of the integration making this API call (e.g., "dify", "zapier", "n8n"). Used for analytics.
+      agent_config:
+        in: body
+        type: object
+        about: Agent behavior configuration
+      capture_config:
+        in: body
+        type: object
+        about: Configure which data to capture during the run.
+      webhook_url:
+        in: body
+        about: HTTPS URL to receive webhook notifications for run lifecycle events. Must use HTTPS.
+      use_vault:
+        in: body
+        type: boolean
+        about: Opt-in to vault credentials for this run. When true, enabled vault items are included. Defaults to
+          false.
+      use_profile:
+        in: body
+        type: boolean
+        about: Opt-in to the default Browser Context Profile if Browser Context Profiles are enabled; legacy callers
+          are silently ignored when the profiles feature is disabled. Returns 400 when enabled but no…
+      profile_id:
+        in: body
+        about: Browser Context Profile ID to use when use_profile is true.
+      credential_item_ids:
+        in: body
+        type: array
+        about: 'Scope vault credentials to specific credential URIs. Requires use_vault to be true. If omitted with
+          use_vault: true, all enabled items are used.'
+      proxy_config:
+        in: body
+        type: object
+        about: Proxy configuration
+      output_schema:
+        in: body
+        type: object
+        about: Optional provider-supported structured-output schema subset for the run result. Unsupported fields
+          are rejected before the request is accepted.
+    price:
+      per: call
+      note: billed per agent step; see pricing
+  run-async:
+    title: Start automation asynchronously
+    about: Creates and enqueues an automation run, returning the run_id immediately without waiting for completion.
+      Use this for long-running automations where you want to poll for results separately.
+    request: POST /v1/automation/run-async
+    params:
+      url:
+        in: body
+        required: true
+        about: Target website URL to automate
+      goal:
+        in: body
+        required: true
+        about: Natural language description of what to accomplish on the website
+      browser_profile:
+        in: body
+        choices:
+        - lite
+        - stealth
+        about: Browser profile for execution. LITE uses standard browser, STEALTH uses anti-detection browser.
+      api_integration:
+        in: body
+        about: Name of the integration making this API call (e.g., "dify", "zapier", "n8n"). Used for analytics.
+      agent_config:
+        in: body
+        type: object
+        about: Agent behavior configuration
+      capture_config:
+        in: body
+        type: object
+        about: Configure which data to capture during the run.
+      webhook_url:
+        in: body
+        about: HTTPS URL to receive webhook notifications for run lifecycle events. Must use HTTPS.
+      use_vault:
+        in: body
+        type: boolean
+        about: Opt-in to vault credentials for this run. When true, enabled vault items are included. Defaults to
+          false.
+      use_profile:
+        in: body
+        type: boolean
+        about: Opt-in to the default Browser Context Profile if Browser Context Profiles are enabled; legacy callers
+          are silently ignored when the profiles feature is disabled. Returns 400 when enabled but no…
+      profile_id:
+        in: body
+        about: Browser Context Profile ID to use when use_profile is true.
+      credential_item_ids:
+        in: body
+        type: array
+        about: 'Scope vault credentials to specific credential URIs. Requires use_vault to be true. If omitted with
+          use_vault: true, all enabled items are used.'
+      proxy_config:
+        in: body
+        type: object
+        about: Proxy configuration
+      output_schema:
+        in: body
+        type: object
+        about: Optional provider-supported structured-output schema subset for the run result. Unsupported fields
+          are rejected before the request is accepted.
+    price:
+      per: call
+      note: billed per agent step; see pricing
+  run-batch:
+    title: Start multiple automations asynchronously
+    about: 'Creates and enqueues multiple automation runs in a single request, returning run_ids immediately without
+      waiting for completion. Maximum 100 runs per request. Atomic creation: Run creation is…'
+    request: POST /v1/automation/run-batch
+    params:
+      runs:
+        in: body
+        type: array
+        required: true
+        about: Array of run configurations (1-100)
+      profile_id:
+        in: body
+        about: Browser Context Profile ID to use when use_profile is true.
+      output_schema:
+        in: body
+        type: object
+        about: Optional provider-supported structured-output schema subset applied to every run in the batch. Unsupported
+          fields are rejected before the request is accepted.
+    price:
+      per: call
+      note: billed per agent step; see pricing
+  get-run-by-id:
+    title: Get run by ID
+    about: Get detailed information about a specific automation run by its ID. A workflow key reads only records
+      its team's workflow keys made, never its creator's own.
+    request: GET /v1/runs/{id}
+    params:
+      id:
+        in: path
+        required: true
+        about: Run ID
+      screenshots:
+        choices:
+        - base64
+        - url
+        - none
+        about: 'Screenshot delivery mode. url: absolute URLs to screenshot images. base64: inline data URIs. none:
+          omit screenshots. Defaults to url.'
+      html:
+        choices:
+        - url
+        - none
+        about: 'HTML snapshot delivery mode. url: absolute URLs to HTML snapshot pages (only non-null when capture_config.html
+          was enabled). none: omit HTML URLs. Defaults to url.'
+    price:
+      per: call
+      note: billed per agent step; see pricing
+  list-runs:
+    title: List and search runs
+    about: List automation runs with optional filtering by status, goal text, and date range. Returns paginated
+      results with total count. Default sort order is newest first. A workflow key reads only records…
+    request: GET /v1/runs
+    params:
+      status:
+        choices:
+        - PENDING
+        - RUNNING
+        - COMPLETED
+        - FAILED
+        - CANCELLED
+        about: Filter by run status
+      goal:
+        about: Filter runs by goal text (case-insensitive partial match)
+      created_after:
+        about: Filter runs created after this ISO 8601 timestamp
+      created_before:
+        about: Filter runs created before this ISO 8601 timestamp
+      sort_direction:
+        choices:
+        - asc
+        - desc
+        about: Sort order by created_at
+      cursor:
+        about: Cursor for pagination (from previous response)
+      limit:
+        type: integer
+        about: Maximum number of results to return (1-100)
+      owner:
+        choices:
+        - me
+        - team
+        about: 'Whose records: me (default for a personal key) or team, made by the team''s workflow keys (the only
+          choice for a workflow key)'
+    price:
+      per: call
+      note: billed per agent step; see pricing

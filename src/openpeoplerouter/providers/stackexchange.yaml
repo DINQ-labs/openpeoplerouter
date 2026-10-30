@@ -1,0 +1,51 @@
+id: stackexchange
+title: Stack Exchange
+about: Developers on Stack Overflow and the other Stack Exchange sites, with reputation and top tags.
+site: https://stackexchange.com
+docs: https://api.stackexchange.com/docs
+api: https://api.stackexchange.com/2.3
+key:
+  env: STACKEXCHANGE_KEY
+  query: key
+  optional: true
+operations:
+  users:
+    title: Users by name on one site
+    request: GET /users
+    params:
+      inname: {about: part of the display name}
+      site: {default: stackoverflow}
+      sort: {choices: [reputation, creation, name, modified]}
+      pagesize: {type: integer, about: up to 100}
+    price: {usd: 0, per: call, note: 300 requests a day without a key, 10000 with one}
+    jobs:
+      find_people:
+        audience: developers
+        needs: [[query]]
+        send: {query: inname}
+        fixed: {sort: reputation}
+        limit: pagesize
+        result: items
+        fields: {name: display_name, location: location, url: link, image: profile_image}
+  user:
+    title: One user by id
+    request: GET /users/{ids}
+    params:
+      ids: {in: path, required: true, about: up to 100 ids separated by ;}
+      site: {default: stackoverflow}
+    price: {usd: 0, per: call}
+  user-top-tags:
+    title: The tags a user answers most
+    request: GET /users/{ids}/top-tags
+    params:
+      ids: {in: path, required: true}
+      site: {default: stackoverflow}
+    price: {usd: 0, per: call}
+  tag-top-answerers:
+    title: The strongest answerers in a tag
+    request: GET /tags/{tag}/top-answerers/{period}
+    params:
+      tag: {in: path, required: true}
+      period: {in: path, required: true, choices: [all_time, month]}
+      site: {default: stackoverflow}
+    price: {usd: 0, per: call}

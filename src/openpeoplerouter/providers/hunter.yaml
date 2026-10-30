@@ -1,0 +1,184 @@
+id: hunter
+title: Hunter
+about: Work emails by company domain, email finding and verification, and person and company enrichment.
+site: https://hunter.io
+docs: https://hunter.io/api-documentation/v2
+pricing: https://hunter.io/pricing
+api: https://api.hunter.io/v2
+key:
+  env: HUNTER_API_KEY
+  header: X-API-KEY
+operations:
+  domain-search:
+    title: Everyone with a known email at a company
+    about: Emails Hunter has found or inferred for a domain, with name, position, seniority and department.
+    request: GET /domain-search
+    docs: https://hunter.io/api-documentation/v2#domain-search
+    params:
+      domain: {about: company domain; this or company is required}
+      company: {about: company name}
+      limit: {type: integer, about: 1-100, default: 10}
+      offset: {type: integer}
+      type: {choices: [personal, generic]}
+      seniority: {about: "junior, senior, executive; comma separated"}
+      department: {about: "executive, it, finance, management, sales, legal, support, hr, marketing, communication, education, design, health, operations"}
+      job_titles: {about: comma-separated job titles}
+      required_field: {choices: [full_name, position, phone_number]}
+      verification_status: {choices: [valid, accept_all, unknown]}
+    price: {credits: 1, per: success, note: one credit per 1-10 emails returned; nothing when empty}
+    jobs:
+      find_people:
+        needs: [[company_domain]]
+        send: {company_domain: domain, title: job_titles, seniority: seniority}
+        fixed: {type: personal}
+        limit: limit
+        result: data.emails
+        fields:
+          name: join(' ', [first_name, last_name][?@])
+          first_name: first_name
+          last_name: last_name
+          title: position
+          linkedin_url: linkedin
+          email: value
+          phone: phone_number
+  email-finder:
+    title: Work email from a name and company
+    request: GET /email-finder
+    docs: https://hunter.io/api-documentation/v2#email-finder
+    params:
+      domain: {about: company domain; preferred over company}
+      company: {about: company name}
+      linkedin_handle: {about: "the part after linkedin.com/in/; replaces the name"}
+      first_name: {}
+      last_name: {}
+      full_name: {}
+      max_duration: {type: integer, about: seconds to spend, 3-20}
+    price: {credits: 1, per: success}
+    jobs:
+      find_contact:
+        needs: [[full_name, company_domain], [linkedin_url, company_domain], [full_name, company]]
+        send: {full_name: full_name, company_domain: domain, company: company, linkedin_handle: linkedin_handle}
+        result: data
+        fields:
+          email: email
+          email_status: verification.status
+          confidence: score
+          phone: phone_number
+          name: join(' ', [first_name, last_name][?@])
+          title: position
+          company_domain: domain
+  email-verifier:
+    title: Whether an address accepts mail
+    about: A 202 means the check is still running; ask again.
+    request: GET /email-verifier
+    docs: https://hunter.io/api-documentation/v2#email-verifier
+    params:
+      email: {required: true}
+    price: {credits: 0.5, per: call}
+    jobs:
+      verify_email:
+        needs: [[email]]
+        send: {email: email}
+        result: data
+        fields:
+          email: email
+          status: status
+          deliverable: status == 'valid'
+          score: score
+          catch_all: accept_all
+          disposable: disposable
+  people-find:
+    title: A person from their email or LinkedIn handle
+    request: GET /people/find
+    docs: https://hunter.io/api-documentation/v2#email-enrichment
+    params:
+      email: {}
+      linkedin_handle: {}
+    not_found: [404, 451]
+    price: {credits: 0.2, per: success}
+    jobs:
+      enrich_person:
+        needs: [[email], [linkedin_url]]
+        send: {email: email, linkedin_handle: linkedin_handle}
+        result: data
+        fields:
+          name: name.fullName
+          first_name: name.givenName
+          last_name: name.familyName
+          title: employment.title
+          company: employment.name
+          company_domain: employment.domain
+          location: location
+          country: geo.countryCode
+          linkedin_url: "linkedin.handle && join('', ['https://www.linkedin.com/in/', linkedin.handle])"
+          email: email
+          image: avatar
+  companies-find:
+    title: A company from its domain
+    request: GET /companies/find
+    docs: https://hunter.io/api-documentation/v2#company-enrichment
+    params:
+      domain: {required: true}
+    not_found: 404
+    price: {credits: 0.2, per: success}
+    jobs:
+      enrich_company:
+        needs: [[domain]]
+        send: {domain: domain}
+        result: data
+        fields:
+          name: name
+          domain: domain
+          description: description
+          industry: category.industry
+          employees: metrics.employees
+          founded: foundedYear
+          location: location
+          country: geo.countryCode
+          linkedin_url: "linkedin.handle && join('', ['https://www.linkedin.com/', linkedin.handle])"
+          logo: logo
+          technologies: tech
+  combined-find:
+    title: A person and their company from an email
+    request: GET /combined/find
+    docs: https://hunter.io/api-documentation/v2#combined-enrichment
+    params:
+      email: {required: true}
+    not_found: 404
+    price: {credits: 0.2, per: success}
+  discover:
+    title: Companies from a description or filters
+    about: Natural-language query or filters (headquarters location, industry, headcount, technology, funding). Free.
+    request: POST /discover
+    docs: https://hunter.io/api-documentation/v2#discover
+    params:
+      query: {in: body, about: what you are looking for, in plain words}
+      organization: {in: body, type: object, about: "{domain: [..]} or {name: [..]}"}
+      headquarters_location: {in: body, type: object, about: "{include: [{country: US}], exclude: [...]}"}
+      industry: {in: body, type: object, about: "{include: [...], exclude: [...]}"}
+      headcount: {in: body, type: array, about: "e.g. [\"51-200\"]"}
+      technology: {in: body, type: object}
+      keywords: {in: body, type: object}
+      limit: {in: body, type: integer, default: 25}
+    price: {usd: 0, per: call}
+    jobs:
+      find_companies:
+        needs: [[query]]
+        send: {query: query}
+        limit: limit
+        result: data
+        fields:
+          name: organization
+          domain: domain
+  email-count:
+    title: How many emails Hunter has for a domain
+    request: GET /email-count
+    params:
+      domain: {}
+      company: {}
+      type: {choices: [personal, generic]}
+    price: {usd: 0, per: call}
+  account:
+    title: Your plan and remaining credits
+    request: GET /account
+    price: {usd: 0, per: call}

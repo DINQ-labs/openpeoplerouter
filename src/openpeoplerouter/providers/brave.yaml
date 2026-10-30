@@ -1,0 +1,44 @@
+id: brave
+title: Brave Search
+about: An independent web index — web, news and video results.
+site: https://brave.com/search/api/
+docs: https://api-dashboard.search.brave.com/app/documentation/web-search/get-started
+pricing: https://brave.com/search/api/
+api: https://api.search.brave.com/res/v1
+key:
+  env: BRAVE_SEARCH_API_KEY
+  header: X-Subscription-Token
+operations:
+  web-search:
+    title: Web results
+    request: GET /web/search
+    params:
+      q: {required: true}
+      country: {about: two-letter code}
+      search_lang: {}
+      count: {type: integer, about: up to 20}
+      offset: {type: integer}
+      freshness: {about: pd, pw, pm, py}
+    price: {usd: 0.005, per: call, note: base plan rate; see pricing}
+    jobs:
+      find_people:
+        audience: [professionals]
+        needs: [[title], [query]]
+        send:
+          query: q
+          title: {to: q, as: "\"$\""}
+          company: {to: q, as: "\"$\""}
+          location: {to: q, as: "\"$\""}
+        fixed: {q: site:linkedin.com/in}
+        limit: count
+        result: web.results
+        fields: {name: "split(title, ' - ')[0]", headline: description, linkedin_url: url, url: url}
+  news-search:
+    title: News results
+    request: GET /news/search
+    params:
+      q: {required: true}
+      country: {}
+      count: {type: integer}
+      freshness: {}
+    price: {usd: 0.005, per: call}

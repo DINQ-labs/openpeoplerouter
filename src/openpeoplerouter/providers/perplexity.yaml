@@ -1,0 +1,225 @@
+id: perplexity
+title: Perplexity
+about: Web search results and Sonar answers grounded in cited sources.
+site: https://www.perplexity.ai
+docs: https://docs.perplexity.ai
+pricing: https://docs.perplexity.ai/getting-started/pricing
+api: https://api.perplexity.ai
+key:
+  env: PERPLEXITY_API_KEY
+  bearer: true
+operations:
+  sonar:
+    title: Create Chat Completion
+    about: Generate a chat completion response for the given conversation.
+    request: POST /v1/sonar
+    params:
+      max_tokens:
+        in: body
+        type: integer
+        about: Maximum number of completion tokens to generate
+      model:
+        in: body
+        required: true
+        choices:
+        - sonar
+        - sonar-pro
+        - sonar-deep-research
+        - sonar-reasoning-pro
+        about: Model to use, for example, sonar-pro
+      stream:
+        in: body
+        type: boolean
+        about: If true, returns streaming SSE response
+      stop:
+        in: body
+        type: array
+        about: Stop sequences. Generation stops when one of these strings is produced
+      temperature:
+        in: body
+        type: number
+        about: 'Controls randomness in the response. Higher values make output more random. Range: 0-2'
+      top_p:
+        in: body
+        type: number
+        about: Nucleus sampling parameter. Controls diversity via nucleus sampling
+      response_format:
+        in: body
+        type: object
+        about: Optional. Controls the output format. Omit for default text output. Set type to json_schema for structured
+          output.
+      messages:
+        in: body
+        type: array
+        required: true
+        about: Array of messages forming the conversation history
+      web_search_options:
+        in: body
+        type: object
+        about: Configuration options for web search behavior
+      search_mode:
+        in: body
+        about: Source of search results (web, academic, or sec)
+      return_images:
+        in: body
+        type: boolean
+        about: When true, include image results in the response
+      return_related_questions:
+        in: body
+        type: boolean
+        about: When true, generates suggested follow-up queries based on the search results
+      enable_search_classifier:
+        in: body
+        type: boolean
+        about: When true, uses a classifier to determine if web search is needed for the query
+      disable_search:
+        in: body
+        type: boolean
+        about: When true, disables all web search capabilities. The model responds based solely on its training
+          data
+      search_domain_filter:
+        in: body
+        type: array
+        about: Limit search results to specific domains (e.g. github.com, wikipedia.org)
+      search_language_filter:
+        in: body
+        type: array
+        about: Filter results by language using ISO 639-1 codes (e.g. en, fr, de)
+      search_recency_filter:
+        in: body
+        about: Filter by publication recency (hour, day, week, month, or year)
+      search_after_date_filter:
+        in: body
+        about: Return results published after this date (MM/DD/YYYY)
+      search_before_date_filter:
+        in: body
+        about: Return results published before this date (MM/DD/YYYY)
+      last_updated_before_filter:
+        in: body
+        about: Return results last updated before this date (MM/DD/YYYY)
+      last_updated_after_filter:
+        in: body
+        about: Return results last updated after this date (MM/DD/YYYY)
+      image_format_filter:
+        in: body
+        type: array
+        about: Filter image results by format (e.g. png, jpg)
+      image_domain_filter:
+        in: body
+        type: array
+        about: Limit image results to specific domains
+      stream_mode:
+        in: body
+        choices:
+        - full
+        - concise
+        about: Controls the format of streaming events. 'full' suppresses reasoning events and includes metadata
+          inline; 'concise' emits reasoning events separately
+      reasoning_effort:
+        in: body
+        about: Controls how much effort the model spends on reasoning
+      language_preference:
+        in: body
+        about: ISO 639-1 language code for preferred response language
+    price:
+      per: call
+      note: per request plus tokens; see pricing
+  search:
+    title: Search the Web
+    about: Search the web and retrieve relevant web page contents.
+    request: POST /search
+    params:
+      country:
+        in: body
+        about: ISO 3166-1 alpha-2 country code
+      max_results:
+        in: body
+        type: integer
+        about: Maximum number of results. Values above 20 require search_type=people. Supports up to 20 for web
+          search and up to 50 for people search.
+      search_type:
+        in: body
+        choices:
+        - web
+        - fast
+        - people
+        about: Search type - "web" for general web search, "fast" for lower-latency, lower-cost web search, "people"
+          for people search. max_results above 20 is only supported for people search.
+      max_tokens:
+        in: body
+        type: integer
+        about: Maximum total webpage content tokens to return across all search results
+      max_tokens_per_page:
+        in: body
+        type: integer
+        about: Maximum webpage content tokens to extract from each result page
+      query:
+        in: body
+        type: array
+        required: true
+        about: Search query (required)
+      search_language_filter:
+        in: body
+        type: array
+        about: ISO 639-1 language codes (2-character max)
+      search_domain_filter:
+        in: body
+        type: array
+        about: Limit search results to specific domains (max 20)
+      last_updated_after_filter:
+        in: body
+        about: 'Input: MM/DD/YYYY, Output: YYYY-MM-DD'
+      last_updated_before_filter:
+        in: body
+        about: 'Input: MM/DD/YYYY, Output: YYYY-MM-DD'
+      search_after_date_filter:
+        in: body
+        about: 'Input: MM/DD/YYYY, Output: YYYY-MM-DD'
+      search_before_date_filter:
+        in: body
+        about: 'Input: MM/DD/YYYY, Output: YYYY-MM-DD'
+      search_recency_filter:
+        in: body
+        choices:
+        - hour
+        - day
+        - week
+        - month
+        - year
+        about: Time-based recency filter for search results
+    price:
+      per: call
+      note: per request plus tokens; see pricing
+  async-sonar:
+    title: Get Async Chat Completion
+    about: Retrieve the response for a given asynchronous chat completion request.
+    request: GET /v1/async/sonar/{api_request}
+    params:
+      api_request:
+        in: path
+        required: true
+    price:
+      per: call
+      note: per request plus tokens; see pricing
+  get-async-sonar:
+    title: List Async Chat Completions
+    about: Retrieve a list of all asynchronous chat completion requests for a given user.
+    request: GET /v1/async/sonar
+    price:
+      per: call
+      note: per request plus tokens; see pricing
+  post-async-sonar:
+    title: Create Async Chat Completion
+    about: Submit an asynchronous chat completion request.
+    request: POST /v1/async/sonar
+    params:
+      request:
+        in: body
+        type: object
+        required: true
+      idempotency_key:
+        in: body
+        about: Unique key to prevent duplicate requests
+    price:
+      per: call
+      note: per request plus tokens; see pricing

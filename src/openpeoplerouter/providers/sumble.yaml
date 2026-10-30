@@ -1,0 +1,412 @@
+id: sumble
+title: Sumble
+about: Account intelligence from job posts — companies, teams, people and the technologies they use.
+site: https://sumble.com
+docs: https://docs.sumble.com
+pricing: https://sumble.com/pricing
+api: https://api.sumble.com
+key:
+  env: SUMBLE_API_KEY
+  bearer: true
+operations:
+  organizations:
+    title: Unified organizations endpoint
+    request: POST /v9/organizations
+    params:
+      organizations:
+        in: body
+        type: array
+        about: List of organizations to resolve and enrich. Mutually exclusive with filter.
+      filter:
+        in: body
+        type: object
+        about: Advanced query selecting the organizations to return. Mutually exclusive with organizations.
+      include_closed:
+        in: body
+        type: boolean
+        about: 'Filter mode only: include organizations marked permanently closed (status = ''closed'') in the results
+          — they are excluded by default. Request the status / status_reason attributes to identify which…'
+      select:
+        in: body
+        type: object
+        required: true
+      limit:
+        in: body
+        type: integer
+        about: Maximum number of results to return.
+      offset:
+        in: body
+        type: integer
+        about: Number of results to skip.
+      file_name:
+        in: body
+        about: (v9 only) Return a downloadable file instead of inline organizations. Must end in .csv, .xlsx for
+          Excel, or .json.
+      order_by_column:
+        in: body
+        about: 'Column to order by (filter mode only). Parameterized sorts (this endpoint only): people_concentration
+          and people_count_growth_1y sort by the named job function''s people metrics — the all-time…'
+      order_by_direction:
+        in: body
+        about: Direction to order by (filter mode only).
+      order_by_job_function:
+        in: body
+        about: Job function whose people metrics drive the sort. Required with (and only valid with) order_by_column="people_concentration"
+          or order_by_column="people_count_growth_1y".
+      order_by_advanced_query:
+        in: body
+        about: 'Advanced query whose matching job posts form the sort numerator. Required with (and only valid with)
+          order_by_column="job_post_concentration". Allowed fields: technology, technology_category,…'
+      match_source:
+        in: body
+        choices:
+        - any
+        - job_post
+        about: 'Filter mode only. Which evidence an organization may match the filter on. any (default) matches
+          on either job posts or its employees'' LinkedIn/Coresignal profiles: the skills they list, and where…'
+    price:
+      credits: 1
+      per: result
+      note: credits_used is on each response
+    jobs:
+      enrich_company:
+        needs:
+        - - domain
+        - - name
+        send:
+          domain: organizations.0.url
+          name: organizations.0.name
+        fixed:
+          select.attributes:
+          - name
+          - url
+          - employee_count
+          - industry
+          - headquarters_country
+          - linkedin_url
+          - funding_total_raised
+        result: organizations[0].attributes
+        fields:
+          name: name
+          domain: url
+          industry: industry
+          employees: employee_count
+          country: headquarters_country
+          linkedin_url: linkedin_url
+          funding: funding_total_raised
+  organizations-intelligence-brief:
+    title: Retrieve the intelligence brief for an organization
+    request: GET /v9/organizations/{organization_id}/intelligence-brief
+    params:
+      organization_id:
+        in: path
+        type: integer
+        required: true
+    price:
+      credits: 1
+      per: result
+      note: credits_used is on each response
+  organizations-signals:
+    title: Get organization signals
+    request: GET /v9/organizations/{organization_id}/signals
+    params:
+      organization_id:
+        in: path
+        type: integer
+        required: true
+      file_name:
+        about: Return the signals as a downloadable file instead of including them inline. Use a filename ending
+          in .csv, .xlsx for Excel, or .json.
+      technology_slugs:
+        type: array
+        about: Technology slugs to filter signals by. Repeat this query parameter to filter by multiple technologies.
+          Use POST /technologies/lookup to resolve technology names, slugs, or aliases to canonical slugs;…
+    price:
+      credits: 1
+      per: result
+      note: credits_used is on each response
+  organizations-techs:
+    title: Get organization tech stack
+    request: GET /v9/organizations/{organization_id}/techs
+    params:
+      organization_id:
+        in: path
+        type: integer
+        required: true
+      file_name:
+        about: Return the tech stack as a downloadable file instead of including it inline. Use a filename ending
+          in .csv, .xlsx for Excel, or .json.
+    price:
+      credits: 1
+      per: result
+      note: credits_used is on each response
+  technologies-find:
+    title: Find technologies by name
+    request: POST /v9/technologies/find
+    params:
+      query:
+        in: body
+        required: true
+      file_name:
+        in: body
+        about: Return the matching technologies as a downloadable file instead of including them inline. Use a filename
+          ending in .csv, .xlsx for Excel, or .json.
+    price:
+      credits: 1
+      per: result
+      note: credits_used is on each response
+  technologies-lookup:
+    title: Look up technologies by name, slug, or alias
+    request: POST /v9/technologies/lookup
+    params:
+      technologies:
+        in: body
+        type: array
+        required: true
+        about: List of technology names, slugs, or aliases to look up
+      file_name:
+        in: body
+        about: Return the technology matches as a downloadable file instead of including them inline. Use a filename
+          ending in .csv, .xlsx for Excel, or .json.
+    price:
+      credits: 1
+      per: result
+      note: credits_used is on each response
+  technologies-categories-lookup:
+    title: Look up technology categories by slug or name
+    request: POST /v9/technologies/categories/lookup
+    params:
+      technology_categories:
+        in: body
+        type: array
+        required: true
+        about: List of technology category slugs or names to look up
+      file_name:
+        in: body
+        about: Return the category matches as a downloadable file instead of including them inline. Use a filename
+          ending in .csv, .xlsx for Excel, or .json.
+    price:
+      credits: 1
+      per: result
+      note: credits_used is on each response
+  people:
+    title: Unified people endpoint
+    about: Find, match, and enrich people. Provide a people list (list mode) or a filter (filter mode) and compose
+      the response with select. Use filter.query for an advanced query with structured criteria. Beta…
+    request: POST /v9/people
+    params:
+      people:
+        in: body
+        type: array
+        about: List of people to resolve and enrich. One result row per entry, in input order. Mutually exclusive
+          with filter.
+      filter:
+        in: body
+        type: object
+        about: Organization scope and an advanced query or plain-language search to select people. Scope is optional
+          with search. Mutually exclusive with people.
+      select:
+        in: body
+        type: object
+      limit:
+        in: body
+        type: integer
+        about: Maximum number of people to return (filter mode only; ignored when people is provided).
+      offset:
+        in: body
+        type: integer
+        about: Number of results to skip (filter mode only; ignored when people is provided).
+      requested_total:
+        in: body
+        type: integer
+        about: Maximum people for the whole search, across pages. Only available with filter.search; defaults to
+          limit. Set this before the first page and keep it unchanged when paging with limit and offset.
+      order_by_column:
+        in: body
+        about: 'Column to order by (filter mode only): start_date (current role start), job_level (seniority rank),
+          or person_score. person_score sorts people by how well they match your ideal customer profile (ICP)…'
+      order_by_direction:
+        in: body
+        about: Sort direction; DESC when omitted.
+      request_id:
+        in: body
+        about: (v8 only) Id of a previously started async request (returned by the kickoff call). Provide this alone
+          to poll for the status and result.
+      file_name:
+        in: body
+        about: (v9 only) Return the completed result as a downloadable file instead of inline people. Must be a
+          filename ending in .csv, .xlsx for Excel, or .json. Provide this only when starting a request, not…
+    price:
+      credits: 1
+      per: result
+      note: credits_used is on each response
+    jobs:
+      enrich_person:
+        needs:
+        - - linkedin_url
+        - - email
+        send:
+          linkedin_url: people.0.linkedin_url
+          email: people.0.email
+        result: people[0].attributes
+        fields:
+          name: name
+          title: job_title
+          company: current_employer
+          location: location
+          country: country
+          linkedin_url: linkedin_url
+          email: email
+          phone: phone
+          experience: experience
+  jobs-title-lookup:
+    title: Look up the function and level for job titles
+    request: POST /v9/jobs/title-lookup
+    params:
+      titles:
+        in: body
+        type: array
+        required: true
+        about: List of job titles to look up
+      file_name:
+        in: body
+        about: Return the classifications as a downloadable file instead of including the result rows inline. Use
+          a filename ending in .csv, .xlsx for Excel, or .json.
+    price:
+      credits: 1
+      per: result
+      note: credits_used is on each response
+  jobs:
+    title: Unified jobs endpoint
+    request: POST /v9/jobs
+    params:
+      jobs:
+        in: body
+        type: array
+        about: List of jobs to enrich by id. One result row per entry, in input order. Mutually exclusive with filter.
+      filter:
+        in: body
+        type: object
+        about: Query selecting the jobs to return. Mutually exclusive with jobs.
+      select:
+        in: body
+        type: object
+        required: true
+      limit:
+        in: body
+        type: integer
+        about: Maximum number of jobs to return (filter mode only; ignored when jobs is provided).
+      offset:
+        in: body
+        type: integer
+        about: Number of results to skip (filter mode only; ignored when jobs is provided).
+      file_name:
+        in: body
+        about: (v9 only) Return the result as a downloadable file instead of inline jobs. Must be a filename ending
+          in .csv, .xlsx for Excel, or .json. The file holds one row per job, including unmatched list-mode…
+    price:
+      credits: 1
+      per: result
+      note: credits_used is on each response
+  teams:
+    title: Unified teams endpoint
+    request: POST /v9/teams
+    params:
+      teams:
+        in: body
+        type: array
+        about: List of Sumble team ids to retrieve and enrich. One result row per entry, in input order. Mutually
+          exclusive with filter.
+      filter:
+        in: body
+        type: object
+        about: Query selecting the teams to return. Mutually exclusive with teams.
+      select:
+        in: body
+        type: object
+        required: true
+      limit:
+        in: body
+        type: integer
+        about: Maximum number of teams to return (filter mode only; ignored when teams is provided).
+      offset:
+        in: body
+        type: integer
+        about: Number of results to skip (filter mode only; ignored when teams is provided).
+      order_by_column:
+        in: body
+        about: 'Column to order by (filter mode only): jobs_count, first_activity or last_activity. Default: jobs_count.'
+      order_by_direction:
+        in: body
+        about: Sort direction; DESC when omitted.
+    price:
+      credits: 1
+      per: result
+      note: credits_used is on each response
+  locations-find:
+    title: Find location codes
+    about: Find codes for hq_location and country filters. Search names with query, list a location's children with
+      parent, or omit both fields to list top-level regions and countries. Passing both fields or a…
+    request: POST /v9/locations/find
+    params:
+      query:
+        in: body
+        about: Search country, state, and city names and aliases, such as 'austin'. Omit parent when using query.
+      parent:
+        in: body
+        about: List children of a region, country, or state code, such as 'EMEA', 'US', or 'US:Texas'. Omit query
+          when using parent. Omit both fields to list top-level regions and countries. Codes are…
+    price:
+      credits: 1
+      per: result
+      note: credits_used is on each response
+  signals:
+    title: Search signals
+    about: Signals are sales-relevant events such as champion job changes, recent hires and promotions, technology
+      and product mentions, projects and initiatives, and technology and job-function trends.…
+    request: POST /v9/signals
+    params:
+      filter:
+        in: body
+        type: object
+      limit:
+        in: body
+        type: integer
+        about: Maximum number of signals to return.
+      offset:
+        in: body
+        type: integer
+        about: Number of signals to skip.
+      file_name:
+        in: body
+        about: Return the signals as a downloadable file instead of including them inline. Use a filename ending
+          in .csv, .xlsx for Excel, or .json.
+    price:
+      credits: 1
+      per: result
+      note: credits_used is on each response
+  signals-priority:
+    title: Search priority signals
+    about: Priority signals are AI-generated digest items summarizing the most important signals in a user's account
+      feed. They optionally can be searched by signal, organization, person, or job post IDs…
+    request: POST /v9/signals/priority
+    params:
+      filter:
+        in: body
+        type: object
+      limit:
+        in: body
+        type: integer
+        about: Maximum number of priority signals to return.
+      offset:
+        in: body
+        type: integer
+        about: Number of priority signals to skip.
+      file_name:
+        in: body
+        about: Return the priority signals as a downloadable file instead of including them inline. Use a filename
+          ending in .csv, .xlsx for Excel, or .json.
+    price:
+      credits: 1
+      per: result
+      note: credits_used is on each response

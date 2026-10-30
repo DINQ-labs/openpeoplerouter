@@ -1,0 +1,726 @@
+id: lusha
+title: Lusha
+about: B2B contact and company data with verified work emails and direct phone numbers.
+site: https://www.lusha.com
+docs: https://docs.lusha.com
+pricing: https://www.lusha.com/pricing/
+api: https://api.lusha.com
+key:
+  env: LUSHA_API_KEY
+  header: api_key
+operations:
+  search-contacts:
+    title: Search Contacts
+    about: 'Look up contacts by identifier. Returns a non-PII preview of each profile - no emails or phone numbers.
+      Accepted identifiers (one required per contact): - Lusha contact id - linkedinUrl - email -…'
+    request: POST /v3/contacts/search
+    params:
+      contacts:
+        in: body
+        type: array
+        required: true
+      options:
+        in: body
+        type: object
+        about: Additional options for search requests
+      signals:
+        in: body
+        type: object
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  enrich-contacts:
+    title: Enrich Contacts
+    about: 'Reveal full contact data for contacts you''ve already found via Search Contacts. Pass up to 100 contact
+      ids (from the search response). Use the reveal field to control what gets unlocked: - emails -…'
+    request: POST /v3/contacts/enrich
+    params:
+      ids:
+        in: body
+        type: array
+        required: true
+      reveal:
+        in: body
+        type: array
+      waterfallEnabled:
+        in: body
+        type: boolean
+        about: Whether this call is allowed to fall through to your enabled third-party providers when Lusha's own
+          data has no match, for the fields requested via reveal. Defaults to true whenever Data Waterfall is…
+      tableId:
+        in: body
+        about: Optional. If provided, these contacts are also added to this table (if not already present) and the
+          revealed fields' columns are populated. See the Tables API.
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  search-and-enrich-contacts:
+    title: Search and Enrich Contacts
+    about: Find contacts and reveal their full data in a single call. Combines Search and Enrich into one request.
+      Provide contact identifiers the same way you would for Search Contacts. Use the reveal field to…
+    request: POST /v3/contacts/search-and-enrich
+    params:
+      contacts:
+        in: body
+        type: array
+        required: true
+      reveal:
+        in: body
+        type: array
+      options:
+        in: body
+        type: object
+        about: Additional options for search requests
+    price:
+      per: success
+      note: credits per revealed data point (email
+      phone): null
+    jobs:
+      enrich_person:
+        needs:
+        - - linkedin_url
+        - - email
+        - - first_name
+          - last_name
+          - company_domain
+        send:
+          linkedin_url: contacts.0.linkedinUrl
+          email: contacts.0.email
+          first_name: contacts.0.firstName
+          last_name: contacts.0.lastName
+          company_domain: contacts.0.companyDomain
+        result: results[0]
+        fields:
+          name: fullName || join(' ', [firstName, lastName])
+          first_name: firstName
+          last_name: lastName
+          title: jobTitle.title
+          company: company.name
+          company_domain: company.domain
+          location: join(', ', [location.city, location.country][?@])
+          country: location.countryIso2
+          linkedin_url: socialLinks.linkedin
+          email: emails[0].email
+          phone: phones[0].number
+          skills: profile.skills
+      find_contact:
+        needs:
+        - - linkedin_url
+        - - first_name
+          - last_name
+          - company_domain
+        send:
+          linkedin_url: contacts.0.linkedinUrl
+          first_name: contacts.0.firstName
+          last_name: contacts.0.lastName
+          company_domain: contacts.0.companyDomain
+        fixed:
+          reveal:
+          - emails
+          - phones
+        result: results[0]
+        fields:
+          email: emails[0].email
+          phone: phones[0].number
+          name: fullName
+          title: jobTitle.title
+          company_domain: company.domain
+  search-companies:
+    title: Search Companies
+    about: 'Look up companies by identifier. Returns a preview of each company profile. Accepted identifiers (at
+      least one required per company): - Lusha company id - name - domain Up to 100 companies per…'
+    request: POST /v3/companies/search
+    params:
+      companies:
+        in: body
+        type: array
+        required: true
+      options:
+        in: body
+        type: object
+        about: Additional options for search requests
+      signals:
+        in: body
+        type: object
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  enrich-companies:
+    title: Enrich Companies
+    about: 'Reveal full company data for companies you''ve already found via Search Companies. Pass up to 100 company
+      ids (from the search response). Each enriched result includes: - Firmographics: size, revenue…'
+    request: POST /v3/companies/enrich
+    params:
+      ids:
+        in: body
+        type: array
+        required: true
+        about: Company IDs from search results (strings)
+      reveal:
+        in: body
+        type: array
+        about: Additional data fields to reveal. Each field is charged separately per result. - employeesByDepartment
+          - breakdown of employees by department - employeesByLocation - breakdown of employees by…
+      tableId:
+        in: body
+        about: Optional. If provided, these companies are also added to this table (if not already present) and
+          the revealed fields' columns are populated. See the Tables API.
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  search-and-enrich-companies:
+    title: Search and Enrich Companies
+    about: Find companies and reveal their full data in a single call. Combines Search and Enrich into one request.
+      Provide company identifiers the same way you would for Search Companies. Up to 100 companies…
+    request: POST /v3/companies/search-and-enrich
+    params:
+      companies:
+        in: body
+        type: array
+        required: true
+      reveal:
+        in: body
+        type: array
+        about: Additional data fields to reveal, using the same tokens as Enrich Companies. Each field is charged
+          separately per result. Premium fields are returned only when named here - omitting reveal returns…
+      options:
+        in: body
+        type: object
+        about: Additional options for search requests
+    price:
+      per: success
+    jobs:
+      enrich_company:
+        needs:
+        - - domain
+        - - name
+        send:
+          domain: companies.0.domain
+          name: companies.0.name
+        result: results[0]
+        fields:
+          name: name
+          domain: domain
+          description: description
+          industry: industry
+          employees: employeeCount
+          founded: yearFounded
+          location: join(', ', [location.city, location.country][?@])
+          linkedin_url: socialLinks.linkedin
+          logo: logoUrl
+  prospecting-contacts:
+    title: Prospecting Contacts
+    about: 'Search for contacts that match your Ideal Customer Profile using rich filter criteria. Filter by contact
+      attributes: - Job title, seniority, department - Location (city, state, country, continent) -…'
+    request: POST /v3/contacts/prospecting
+    params:
+      pagination:
+        in: body
+        type: object
+        required: true
+      filters:
+        in: body
+        type: object
+        required: true
+      tableId:
+        in: body
+        about: Optional. If provided, results are also persisted to this table. See the Tables API.
+      options:
+        in: body
+        type: object
+    price:
+      per: call
+      note: one credit per page of up to 25 results
+    jobs:
+      find_people:
+        needs:
+        - - title
+        - - company_domain
+        - - query
+        - - keywords
+        send:
+          title: filters.contacts.include.jobTitles[]
+          query: filters.contacts.include.searchText
+          keywords: filters.contacts.include.skills[]
+          company_domain: filters.companies.include.domains[]
+        fixed:
+          pagination.page: 0
+          pagination.size: 25
+        result: results
+        fields:
+          name: join(' ', [firstName, lastName])
+          first_name: firstName
+          title: jobTitle.title
+          company: company.name
+          company_domain: company.domain
+          location: join(', ', [location.city, location.country][?@])
+          linkedin_url: socialLinks.linkedin
+  prospecting-companies:
+    title: Prospecting Companies
+    about: 'Search for companies that match your target market using rich filter criteria. Filter by: - Size, revenue
+      range, industry, sub-industry - Technologies in use - Locations (HQ country, state, city) -…'
+    request: POST /v3/companies/prospecting
+    params:
+      pagination:
+        in: body
+        type: object
+        required: true
+      filters:
+        in: body
+        type: object
+        required: true
+        about: filters.contacts cannot be combined with company searchText, signals, intent, or technologies on
+          the same request - doing so returns 400 (contact filters are never silently ignored).
+      tableId:
+        in: body
+        about: Optional. If provided, results are also persisted to this table. See the Tables API.
+      options:
+        in: body
+        type: object
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+    jobs:
+      find_companies:
+        needs:
+        - - query
+        - - technology
+        send:
+          query: filters.companies.include.searchText
+          technology: filters.companies.include.technologies[]
+        fixed:
+          pagination.page: 0
+          pagination.size: 25
+        result: results
+        fields:
+          name: name
+          domain: domain
+          industry: industry
+          location: join(', ', [location.city, location.country][?@])
+  get-contact-lookalikes:
+    title: Contact Lookalikes
+    about: Find contacts similar to a set of seed contacts using AI-powered recommendations. Provide seed contacts
+      via LinkedIn URLs, emails, Lusha IDs, or name + company. The API returns contacts who share…
+    request: POST /v3/contacts/lookalike
+    params:
+      dedupeSessionId:
+        in: body
+      seeds:
+        in: body
+        type: object
+        required: true
+        about: Required. Minimum 5, maximum 100 seed contacts in total, counted across all identifier types combined
+          (linkedinUrls + emails + ids + contactIds + contacts). Fewer than 5 total seeds is rejected with…
+      exclude:
+        in: body
+        type: object
+        about: Optional. Contacts to always filter out of the results (for example, existing customers). Omit the
+          field entirely if you have nothing to exclude. Subject to the same 100-per-identifier-type cap as…
+      limit:
+        in: body
+        type: integer
+      tableId:
+        in: body
+        about: Optional. If provided, results are also persisted to this table. See the Tables API.
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-company-lookalikes:
+    title: Company Lookalikes
+    about: Find companies similar to a set of seed companies using AI-powered recommendations. Provide seed companies
+      via domains or LinkedIn URLs. The API returns companies with similar size, industry, and…
+    request: POST /v3/companies/lookalike
+    params:
+      dedupeSessionId:
+        in: body
+      seeds:
+        in: body
+        type: object
+        required: true
+        about: Required. Minimum 5, maximum 100 seed companies in total, counted across all identifier types combined
+          (domains + linkedinUrls). Fewer than 5 total seeds is rejected with 400.
+      exclude:
+        in: body
+        type: object
+        about: Optional. Companies to always filter out of the results (for example, existing customers or competitors).
+          Omit the field entirely if you have nothing to exclude. Subject to the same…
+      limit:
+        in: body
+        type: integer
+      tableId:
+        in: body
+        about: Optional. If provided, results are also persisted to this table. See the Tables API.
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-contact-recommendations:
+    title: Contact Recommendations
+    about: Returns the recommended contacts for the calling user, ranked by Lusha against your Target Profiles and
+      recent signals. Each result is a contact preview (name, job title, company, location, LinkedIn…
+    request: POST /v3/contacts/recommendations
+    params:
+      pagination:
+        in: body
+        type: object
+      sort:
+        in: body
+        type: array
+        about: Sort keys, applied in order. Up to 4 entries, all with the same order. Defaults to leadScore descending.
+      filters:
+        in: body
+        type: object
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-company-recommendations:
+    title: Company Recommendations
+    about: Returns the recommended companies for the calling user, ranked by Lusha against your Target Profiles
+      and recent signals. Each result is a company preview (name, domain, size, industry, location,…
+    request: POST /v3/companies/recommendations
+    params:
+      pagination:
+        in: body
+        type: object
+      sort:
+        in: body
+        type: array
+        about: Sort keys, applied in order. Up to 4 entries, all with the same order. Defaults to leadScore descending.
+      filters:
+        in: body
+        type: object
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-contact-recommendation-filters:
+    title: Contact Recommendation Filters
+    about: Lists the Target Profiles and signal types that currently appear in your contact recommendations. Pass
+      these values to filters.targetIcp and filters.signals of Contact Recommendations.
+    request: GET /v3/contacts/recommendations/filters
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-company-recommendation-filters:
+    title: Company Recommendation Filters
+    about: Lists the Target Profiles and signal types that currently appear in your company recommendations. Pass
+      these values to filters.targetIcp and filters.signals of Company Recommendations.
+    request: GET /v3/companies/recommendations/filters
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-contacts-buying-group:
+    title: Get Buying Group Contacts
+    about: 'Identify the buying group within a set of target companies. Supply companies by domain or Lusha company
+      id - the model scores and labels each returned contact with a persona role. Personas: -…'
+    request: POST /v3/contacts/buying-group
+    params:
+      companies:
+        in: body
+        type: array
+        required: true
+      personas:
+        in: body
+        type: array
+        about: Filter results to specific persona roles. Omit to return all three.
+      contactsLimit:
+        in: body
+        type: integer
+        about: Maximum number of contacts returned per company.
+      pagination:
+        in: body
+        type: object
+        about: Optional. If omitted, defaults to page 0, size 100.
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-contact-signals:
+    title: Contact Signals
+    about: Retrieve signal events for a list of contacts - job changes and promotions. Pass up to 100 contact ids.
+      Use signalTypes to specify which events to return (promotion, companyChange, or allSignals).…
+    request: POST /v3/contacts/signals
+    params:
+      ids:
+        in: body
+        type: array
+        required: true
+      signalTypes:
+        in: body
+        type: array
+        required: true
+      startDate:
+        in: body
+      maxResultsPerSignal:
+        in: body
+        type: integer
+      tableId:
+        in: body
+        about: Optional. If provided, these contacts are also added to this table (if not already present) and the
+          Signals column is populated. See the Tables API.
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-company-signals:
+    title: Company Signals
+    about: Retrieve signal events for a list of companies - hiring activity, headcount changes, web traffic, IT
+      spend, news, and intent. Pass up to 100 company ids. Use signalTypes to specify which signals to…
+    request: POST /v3/companies/signals
+    params:
+      ids:
+        in: body
+        type: array
+        required: true
+      signalTypes:
+        in: body
+        type: array
+        required: true
+        about: Signal types to retrieve. allSignals returns every company signal type except the four intent types
+          (newIntentTopic, intentScoreIncrease, intentScoreDecrease, intentTopicRemoved) - name those…
+      startDate:
+        in: body
+        about: For linkedinActivityIntent, results are limited to a trailing 90-day window regardless of the value
+          passed (legal requirement). Other signal types are unaffected.
+      maxResultsPerSignal:
+        in: body
+        type: integer
+        about: For linkedinActivityIntent, results are capped at 50 per company regardless of the value passed.
+          Other signal types use the requested value as-is (1-100). For the intent types, the cap applies after…
+      tableId:
+        in: body
+        about: Optional. If provided, these companies are also added to this table (if not already present) and
+          the Signals column is populated. See the Tables API.
+      filters:
+        in: body
+        type: object
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-contact-signal-types:
+    title: Get Contact Signal Types
+    about: Returns the full list of supported signal types for contacts.
+    request: GET /v3/contacts/signals/types
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-company-signal-types:
+    title: Get Company Signal Types
+    about: Returns the full list of supported signal types for companies.
+    request: GET /v3/companies/signals/types
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-company-signal-filters:
+    title: Get Company Signal Filters (Discovery)
+    about: Returns all available filter types for company signals and whether each requires a search query.
+    request: GET /v3/companies/signals/filters
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-company-signal-filter-values:
+    title: Get Company Signal Filter Values
+    about: Returns valid values for a single company signal filter type. intentTopics is a text search over the
+      full intent topic catalog (about 18,000 topics). It returns up to 50 matching topic names as plain…
+    request: GET /v3/companies/signals/filters/{filterType}
+    params:
+      filterType:
+        in: path
+        required: true
+        choices:
+        - newsEventTypes
+        - hiringByDepartments
+        - hiringByLocations
+        - intentCategories
+        - intentTopics
+      query:
+        about: Text to match values against. Required for hiringByLocations and intentTopics.
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-company-signal-scores:
+    title: Score Companies by Signal Activity
+    about: Score companies by their active buying signals. Returns the aggregate Signal Score - a [0, 1] value reflecting
+      the fraction of the company's active signals - plus the active signal breakdown. Accepts…
+    request: POST /v3/companies/signal-score
+    params:
+      companies:
+        in: body
+        type: array
+        required: true
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-contact-signal-scores:
+    title: Score Contacts by Signal Activity
+    about: Score contacts by their active buying signals. Returns the aggregate Signal Score - a [0, 1] value -
+      plus the active signal breakdown per contact. Accepts up to 100 contacts. Each contact is resolved…
+    request: POST /v3/contacts/signal-score
+    params:
+      contacts:
+        in: body
+        type: array
+        required: true
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  list-icp-profiles:
+    title: List Target Profiles
+    about: 'Returns the Target Profiles (ICPs) you can see: your own, plus any an admin has shared with the account.
+      Use the returned id values as targetProfileIds on Score Companies by ICP Fit and Score…'
+    request: GET /v3/icp/profiles
+    params:
+      status:
+        choices:
+        - active
+        - disabled
+        about: Return only profiles with this status.
+      access:
+        choices:
+        - private
+        - shared
+        about: Return only private profiles, or only profiles shared with the account.
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-company-icp-fit-scores:
+    title: Score Companies by ICP Fit
+    about: Score how well each company fits 1-3 of your Target Profiles, from 0 to 1. Accepts 1-100 companies, each
+      identified by exactly one of id, domain, name, or email, plus an optional clientReferenceId.…
+    request: POST /v3/companies/icp-fit-score
+    params:
+      targetProfileIds:
+        in: body
+        type: array
+        required: true
+        about: 1-3 Target Profile IDs to score against. Each must be an active profile you own or that is shared
+          with your account - get them from List Target Profiles.
+      companies:
+        in: body
+        type: array
+        required: true
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-contact-icp-fit-scores:
+    title: Score Contacts by ICP Fit
+    about: Score how well each contact fits 1-3 of your Target Profiles, from 0 to 1. Accepts 1-100 contacts, each
+      identified by one of id, linkedinUrl, email, or firstName + lastName + (companyName |…
+    request: POST /v3/contacts/icp-fit-score
+    params:
+      targetProfileIds:
+        in: body
+        type: array
+        required: true
+        about: 1-3 Target Profile IDs to score against. Each must be an active profile you own or that is shared
+          with your account - get them from List Target Profiles.
+      contacts:
+        in: body
+        type: array
+        required: true
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-website-visits:
+    title: Get Website Visitors
+    about: Returns companies ranked by website-visit signals for your tracked domains and date range. Domains must
+      be configured for tracking in the Lusha dashboard - they are resolved to site IDs server-side.…
+    request: POST /v3/companies/website-visits
+    params:
+      domains:
+        in: body
+        type: array
+        required: true
+        about: Domains configured for tracking in the Lusha dashboard.
+      startDate:
+        in: body
+        required: true
+        about: Window start date (YYYY-MM-DD).
+      endDate:
+        in: body
+        required: true
+        about: Window end date (YYYY-MM-DD). Range must be ≤ 3 months.
+      pagination:
+        in: body
+        type: object
+        required: true
+      sort:
+        in: body
+        type: object
+      filters:
+        in: body
+        type: object
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-contact-filter-types:
+    title: Get Contact Filter Types (Discovery)
+    about: Returns all available filter types for contact prospecting and whether each requires a search query.
+    request: GET /v3/contacts/prospecting/filters
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-contact-filter-values:
+    title: Get Contact Filter Values
+    about: Returns valid values for a single contact filter type.
+    request: GET /v3/contacts/prospecting/filters/{filterType}
+    params:
+      filterType:
+        in: path
+        required: true
+        choices:
+        - departments
+        - seniority
+        - existingDataPoints
+        - countries
+        - locations
+      query: {}
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-company-filter-types:
+    title: Get Company Filter Types (Discovery)
+    about: Returns all available filter types for company prospecting and whether each requires a search query.
+    request: GET /v3/companies/prospecting/filters
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-company-filter-values:
+    title: Get Company Filter Values
+    about: Returns valid values for a single company filter type.
+    request: GET /v3/companies/prospecting/filters/{filterType}
+    params:
+      filterType:
+        in: path
+        required: true
+        choices:
+        - names
+        - sizes
+        - revenues
+        - locations
+        - sics
+        - naics
+        - industriesLabels
+        - intentTopics
+        - technologies
+      query: {}
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-account-usage:
+    title: Get Account Usage
+    about: 'Returns a full snapshot of your account status: - Credits - total, used, and remaining for the current
+      billing cycle - Rate limits - current usage and reset times for daily, hourly, and per-minute…'
+    request: GET /v3/account/usage
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page
+  get-contacts-enrich-job:
+    title: Get Contacts Enrich Job
+    about: Poll the async Data Waterfall job returned in the job field of Enrich Contacts. No body and no query
+      parameters. - While status is processing, wait retryAfter seconds and poll again. covers lists…
+    request: GET /v3/contacts/jobs/{jobId}
+    params:
+      jobId:
+        in: path
+        required: true
+        about: The job.id returned by Enrich Contacts.
+    price:
+      per: call
+      note: credits are charged per revealed email or phone; see the pricing page

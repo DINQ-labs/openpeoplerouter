@@ -1,0 +1,746 @@
+id: crustdata
+title: Crustdata
+about: Live people and company data — profiles, contacts, headcount, funding, hiring, research profiles — with filter
+  and natural-language search.
+site: https://crustdata.com
+docs: https://docs.crustdata.com
+pricing: https://crustdata.com/pricing
+api: https://api.crustdata.com
+key:
+  env: CRUSTDATA_API_KEY
+  bearer: true
+operations:
+  credits:
+    title: Get account credit balance
+    about: 'Returns the account''s remaining credit balance together with the recurring credit grant: the grant
+      size, how often it refreshes, and the next refresh date. Accounts with credit wallets enabled also…'
+    request: GET /account/credits
+    params:
+      x-api-version:
+        in: header
+        required: true
+        choices:
+        - '2025-11-01'
+        default: '2025-11-01'
+        about: API version to use. This endpoint currently requires 2025-11-01.
+    price:
+      usd: 0
+      per: call
+  endpoint-prices:
+    title: List endpoint permissions and rate limits
+    about: Returns one entry per Crustdata API endpoint with your account's access status (enabled or disabled),
+      the response fields enabled and disabled for your account, and the effective per-endpoint rate…
+    request: GET /account/endpoints
+    params:
+      x-api-version:
+        in: header
+        required: true
+        choices:
+        - '2025-11-01'
+        default: '2025-11-01'
+        about: API version to use. This endpoint currently requires 2025-11-01.
+      path:
+        about: 'Return only the endpoint at this exact path, for example /company/enrich. The match is exact and
+          case-sensitive: the leading slash is required, a trailing slash does not match, and a prefix such as…'
+      category:
+        about: Return only endpoints in this product category. Matching is case-insensitive, so Company, company,
+          and COMPANY all return the same 8 entries. On the 2025-11-01 version the categories are Company,…
+      status:
+        choices:
+        - enabled
+        - disabled
+        about: Return only endpoints with this access status. The value is case-sensitive and must be lowercase.
+          Any other value, including Enabled, returns 400.
+    price:
+      usd: 0
+      per: call
+  company-autocomplete:
+    title: Get autocomplete suggestions for company search fields
+    about: Returns field value suggestions with document counts for company search fields. Useful for discovering
+      valid filter values before building search queries. Accepts field names from the /company/search…
+    request: POST /company/search/autocomplete
+    params:
+      x-api-version:
+        in: header
+        required: true
+        choices:
+        - '2025-11-01'
+        default: '2025-11-01'
+        about: 'API version to use. 2025-11-01 is the only accepted value. Send it on every call: it is enforced
+          today on POST /watch/{dataset}/search, where a missing or unrecognized value returns 400, and the…'
+      field:
+        in: body
+        required: true
+        about: 'The dataset API field name to get suggestions for. Valid fields include: basic_info.name, basic_info.primary_domain,
+          basic_info.website, basic_info.professional_network_url,…'
+      query:
+        in: body
+        required: true
+        about: The search query text (can be empty to get top values by frequency)
+      limit:
+        in: body
+        type: integer
+        about: Maximum number of suggestions to return
+    price:
+      per: call
+      note: credits per result; see /account/endpoints for your prices
+  company-enrich:
+    title: Get full company enrichment
+    about: Get comprehensive company data including firmographics, headcount, funding, web traffic, employee reviews,
+      people (founders, CXOs, decision makers), news, and more. Identify the company by domain,…
+    request: POST /company/enrich
+    params:
+      x-api-version:
+        in: header
+        required: true
+        choices:
+        - '2025-11-01'
+        default: '2025-11-01'
+        about: 'API version to use. 2025-11-01 is the only accepted value. Send it on every call: it is enforced
+          today on POST /watch/{dataset}/search, where a missing or unrecognized value returns 400, and the…'
+      names:
+        in: body
+        type: array
+      domains:
+        in: body
+        type: array
+      crustdata_company_ids:
+        in: body
+        type: array
+      professional_network_profile_urls:
+        in: body
+        type: array
+      fields:
+        in: body
+        type: array
+        about: Field groups to include in company_data. When fields is omitted, only crustdata_company_id and basic_info
+          are returned — sections such as headcount, funding, people, and hiring must be listed…
+      exact_match:
+        in: body
+        type: boolean
+        about: Whether to use exact matching (null means auto-detect)
+    price:
+      credits: 1
+      per: success
+    jobs:
+      enrich_company:
+        needs:
+        - - domain
+        - - linkedin_url
+        - - name
+        send:
+          domain: domains
+          linkedin_url: professional_network_profile_urls
+          name: names
+        result: '[0].matches[0].company_data'
+        fields:
+          name: basic_info.name
+          domain: basic_info.primary_domain
+          website: basic_info.website
+          description: basic_info.description
+          industry: taxonomy.professional_network_industry || taxonomy.professional_network_specialities[0]
+          employees: headcount.total || basic_info.employee_count_range
+          founded: basic_info.year_founded
+          location: locations.headquarters
+          country: locations.country
+          linkedin_url: basic_info.professional_network_url
+          logo: basic_info.logo_permalink
+          funding: funding.total_investment_usd
+          revenue: revenue.estimated
+  company-identify:
+    title: Identify a company from name, domain, ID, or profile URL
+    about: Match a company by name, website domain, profile URL, or Crustdata company ID. Returns one or more matches
+      ranked by confidence score. This endpoint is useful for entity resolution before enrichment.…
+    request: POST /company/identify
+    params:
+      x-api-version:
+        in: header
+        required: true
+        choices:
+        - '2025-11-01'
+        default: '2025-11-01'
+        about: 'API version to use. 2025-11-01 is the only accepted value. Send it on every call: it is enforced
+          today on POST /watch/{dataset}/search, where a missing or unrecognized value returns 400, and the…'
+      names:
+        in: body
+        type: array
+      domains:
+        in: body
+        type: array
+      crustdata_company_ids:
+        in: body
+        type: array
+      professional_network_profile_urls:
+        in: body
+        type: array
+      fields:
+        in: body
+        type: array
+        about: 'Field groups to include in company_data. Valid field groups: crustdata_company_id, basic_info, social_profiles.
+          Identify resolves a company to its identity and basic profile only; requesting any…'
+      exact_match:
+        in: body
+        type: boolean
+        about: Whether to use exact matching (null means auto-detect)
+    price:
+      per: call
+      note: credits per result; see /account/endpoints for your prices
+  company-search:
+    title: Search companies with indexed fields only
+    about: 'Search the Crustdata company database using structured filters, a natural-language query, or both. Ranked
+      search supports hybrid, lexical, and semantic retrieval with cursor pagination: up to 100…'
+    request: POST /company/search
+    params:
+      x-api-version:
+        in: header
+        required: true
+        choices:
+        - '2025-11-01'
+        default: '2025-11-01'
+        about: 'API version to use. 2025-11-01 is the only accepted value. Send it on every call: it is enforced
+          today on POST /watch/{dataset}/search, where a missing or unrecognized value returns 400, and the…'
+      filters:
+        in: body
+        type: object
+        about: Search filters. Required when search is omitted. When combined with ranked search, filters are hard
+          constraints applied before retrieval.
+      search:
+        in: body
+        type: object
+      cursor:
+        in: body
+        about: Pagination cursor from the previous response's next_cursor. For ranked search, keep query, mode,
+          filters and API version unchanged; limit and authorized fields may change. Cursors expire 20 minutes…
+      limit:
+        in: body
+        type: integer
+        about: Results per page. The maximum is 1000 for filter-only search and 100 for ranked search. Ranked search
+          covers at most 1000 candidate positions across pages.
+      sorts:
+        in: body
+        type: array
+        about: Sort directives applied to filter-only results. Not supported with ranked search.
+      fields:
+        in: body
+        type: array
+        about: Fields to return in the response. Use dot-notation for nested fields (e.g., "basic_info.name", "headcount.total").
+          Each company always includes crustdata_company_id, even when you do not request it.…
+    price:
+      credits: 0.03
+      per: result
+      note: plus premium field groups
+    jobs:
+      find_companies:
+        needs:
+        - - query
+        - - industry
+        - - location
+        - - employees
+        send:
+          query: search.query
+          industry:
+            to: filters.conditions.0
+            as:
+              field: taxonomy.professional_network_industry
+              type: (.)
+              value: $
+          location:
+            to: filters.conditions.1
+            as:
+              field: locations.headquarters
+              type: (.)
+              value: $
+          employees:
+            to: filters.conditions.2
+            as:
+              field: basic_info.employee_count_range
+              type: '='
+              value: $
+        fixed:
+          filters.op: and
+          fields:
+          - basic_info
+          - locations
+          - headcount
+        limit: limit
+        result: companies
+        fields:
+          name: basic_info.name
+          domain: basic_info.primary_domain
+          website: basic_info.website
+          description: basic_info.description
+          employees: headcount.total || basic_info.employee_count_range
+          founded: basic_info.year_founded
+          location: locations.headquarters
+          country: locations.country
+          linkedin_url: basic_info.professional_network_url
+          logo: basic_info.logo_permalink
+  job-autocomplete:
+    title: Autocomplete values for a job search field
+    about: Return type-ahead suggestions for the values of a single /job/search field. Pass the field you intend
+      to filter on (for example title or category) and a partial query, and the endpoint returns…
+    request: POST /job/search/autocomplete
+    params:
+      x-api-version:
+        in: header
+        required: true
+        choices:
+        - '2025-11-01'
+        default: '2025-11-01'
+        about: 'API version to use. 2025-11-01 is the only accepted value. Send it on every call: it is enforced
+          today on POST /watch/{dataset}/search, where a missing or unrecognized value returns 400, and the…'
+      field:
+        in: body
+        required: true
+        about: 'The /job/search field whose values to autocomplete. Accepts the same names used in /job/search filters,
+          plus their short aliases. Common values: title, category, company.name, company.industries,…'
+      query:
+        in: body
+        required: true
+        about: Partial text to match against the field's values. May be an empty string to return top values.
+      limit:
+        in: body
+        type: integer
+        about: Maximum number of suggestions to return. Must be between 1 and 100.
+    price:
+      per: call
+      note: credits per result; see /account/endpoints for your prices
+  job-search:
+    title: Search the indexed job dataset
+    about: Search the Crustdata job dataset using filter conditions. Each result includes the job's details (title,
+      category, URL, openings), the hiring company's core firmographics (basic info, headcount,…
+    request: POST /job/search
+    params:
+      x-api-version:
+        in: header
+        required: true
+        choices:
+        - '2025-11-01'
+        default: '2025-11-01'
+        about: 'API version to use. 2025-11-01 is the only accepted value. Send it on every call: it is enforced
+          today on POST /watch/{dataset}/search, where a missing or unrecognized value returns 400, and the…'
+      filters:
+        in: body
+        type: object
+        about: Search filter conditions. Can be a single condition or a nested group combined with AND/OR logic.
+          Only indexed fields are filterable — see SearchCondition.field for the full list.
+      cursor:
+        in: body
+        about: Opaque pagination cursor returned in a prior response's next_cursor field. Pass this to fetch the
+          next page of results with the same filter, sort, and field selection.
+      limit:
+        in: body
+        type: integer
+        about: Maximum number of job listings to return per page. Set to 0 when you only want aggregations.
+      sorts:
+        in: body
+        type: array
+        about: Sort specifications for ordering results. Sorts are applied in order.
+      fields:
+        in: body
+        type: array
+        about: Fields to return in each job listing. Use dot-notation for nested fields (e.g., "job_details.title",
+          "company.basic_info.name"). If omitted, all available fields are returned. Valid top-level groups:…
+      aggregations:
+        in: body
+        type: array
+        about: 'Aggregation queries to run alongside the search. Set limit: 0 if you want only aggregation results
+          and no job rows.'
+    price:
+      per: call
+      note: credits per result; see /account/endpoints for your prices
+  person-contact-enrich:
+    title: Enrich only person contact data from cached dataset
+    about: Enrich only the contact data for a person — business emails, personal emails, and phone numbers — using
+      the Crustdata cached dataset. Provide either a profile URL or a business email. Exactly one…
+    request: POST /person/contact/enrich
+    params:
+      x-api-version:
+        in: header
+        required: true
+        choices:
+        - '2025-11-01'
+        default: '2025-11-01'
+        about: 'API version to use. 2025-11-01 is the only accepted value. Send it on every call: it is enforced
+          today on POST /watch/{dataset}/search, where a missing or unrecognized value returns 400, and the…'
+      professional_network_profile_urls:
+        in: body
+        type: array
+        about: Array of professional-network profile URLs to enrich (max 25).
+      business_emails:
+        in: body
+        type: array
+        about: Array of business emails to look up (max 25).
+      fields:
+        in: body
+        type: array
+        about: 'Contact tiers to enrich. Only contact fields are accepted: contact.business_emails, contact.personal_emails,
+          contact.phone_numbers, contact.phone_numbers_info, and contact.websites.…'
+      verified:
+        in: body
+        type: boolean
+        about: Return only business emails that pass a deliverability check at request time. Cached addresses marked
+          deliverable or unknown are re-checked before they are served, and only deliverable and catch_all…
+    price:
+      credits: 2
+      per: success
+      note: per contact field returned
+    jobs:
+      find_contact:
+        needs:
+        - - linkedin_url
+        send:
+          linkedin_url: professional_network_profile_urls
+        result: '[0].matches[0].person_data.contact'
+        fields:
+          email: business_emails[0].email
+          email_status: business_emails[0].status
+          phone: phone_numbers_info[0].phone_number || phone_numbers[0]
+  person-enrich:
+    title: Enrich person profiles from cached dataset
+    about: Enrich person records using the Crustdata cached dataset. Provide profile URLs to retrieve detailed person
+      data including employment history, education, skills, and developer platform data when…
+    request: POST /person/enrich
+    params:
+      x-api-version:
+        in: header
+        required: true
+        choices:
+        - '2025-11-01'
+        default: '2025-11-01'
+        about: 'API version to use. 2025-11-01 is the only accepted value. Send it on every call: it is enforced
+          today on POST /watch/{dataset}/search, where a missing or unrecognized value returns 400, and the…'
+      professional_network_profile_urls:
+        in: body
+        type: array
+        required: true
+        about: Array of professional-network profile URLs (max 25).
+      fields:
+        in: body
+        type: array
+        about: 'Fields to include in the response. Valid field groups for enrich: basic_profile, professional_network,
+          skills, social_handles, experience, education, certifications, honors, dev_platform_profiles,…'
+      preview:
+        in: body
+        type: boolean
+        about: Enabled per account on request. Without the grant, the API returns 400 invalid_request with the message
+          Preview feature is not available for your account. Please reach out to Crustdata team. and…
+    price:
+      credits: 1
+      per: success
+    jobs:
+      enrich_person:
+        needs:
+        - - linkedin_url
+        send:
+          linkedin_url: professional_network_profile_urls
+        result: '[0].matches[0].person_data'
+        fields:
+          name: basic_profile.name
+          headline: basic_profile.headline
+          title: basic_profile.current_title
+          company: experience.employment_details.current[0].name
+          company_domain: experience.employment_details.current[0].company_website
+          location: basic_profile.location.raw
+          country: basic_profile.location.country
+          linkedin_url: social_handles.professional_network_identifier.profile_url
+          image: basic_profile.profile_picture_permalink
+          skills: skills.professional_network_skills
+          experience: experience.employment_details
+          education: education.schools
+  person-autocomplete:
+    title: Get autocomplete suggestions for person search fields
+    about: Return ranked field-value suggestions for any supported person search field. Use this endpoint to discover
+      the exact indexed values that /person/search filters expect — feed the suggestion value back…
+    request: POST /person/search/autocomplete
+    params:
+      x-api-version:
+        in: header
+        required: true
+        choices:
+        - '2025-11-01'
+        default: '2025-11-01'
+        about: 'API version to use. 2025-11-01 is the only accepted value. Send it on every call: it is enforced
+          today on POST /watch/{dataset}/search, where a missing or unrecognized value returns 400, and the…'
+      field:
+        in: body
+        required: true
+        about: 'The dataset API field name to get suggestions for. Valid fields include: basic_profile.name, basic_profile.first_name,
+          basic_profile.last_name, basic_profile.headline, basic_profile.languages,…'
+      query:
+        in: body
+        required: true
+        about: The search query text (can be empty to get top values by frequency)
+      limit:
+        in: body
+        type: integer
+        about: Maximum number of suggestions to return
+    price:
+      per: call
+      note: credits per result; see /account/endpoints for your prices
+  person-identify:
+    title: Identify people from profile URLs, emails or Google Scholar profile URLs
+    about: 'Resolve up to 25 identifiers to the people behind them in one synchronous request. Send exactly one
+      identifier key: professional_network_profile_urls, emails or research_profile_urls. Profile URLs…'
+    request: POST /person/identify
+    params:
+      x-api-version:
+        in: header
+        required: true
+        choices:
+        - '2025-11-01'
+        default: '2025-11-01'
+        about: 'API version to use. 2025-11-01 is the only accepted value. Send it on every call: it is enforced
+          today on POST /watch/{dataset}/search, where a missing or unrecognized value returns 400, and the…'
+      professional_network_profile_urls:
+        in: body
+        type: array
+        about: Person profile URLs. 1 credit per match.
+      emails:
+        in: body
+        type: array
+        about: Email addresses, business or personal. An address not on file is matched by name at the domain's
+          company, then looked up with a contact vendor, in the same request. 1 credit per match.
+      research_profile_urls:
+        in: body
+        type: array
+        about: Google Scholar profile URLs, for example https://scholar.google.com/citations?user=VGjeKSMAAAAJ.
+          Only Google Scholar is supported. 1 credit per match.
+    price:
+      per: call
+      note: credits per result; see /account/endpoints for your prices
+  person-search:
+    title: Search people using filters and sorting
+    about: Search the Crustdata person database using flexible filter conditions, sorting, and cursor-based pagination.
+      Supports filtering on hundreds of fields including job title, company, location,…
+    request: POST /person/search
+    params:
+      x-api-version:
+        in: header
+        required: true
+        choices:
+        - '2025-11-01'
+        default: '2025-11-01'
+        about: 'API version to use. 2025-11-01 is the only accepted value. Send it on every call: it is enforced
+          today on POST /watch/{dataset}/search, where a missing or unrecognized value returns 400, and the…'
+      filters:
+        in: body
+        type: object
+        required: true
+        about: Filter criteria — a single PersonSearchCondition or a PersonSearchConditionGroup combining conditions
+          with and, or, or all_of (cross-element matching on nested-array fields).
+      sorts:
+        in: body
+        type: array
+        about: Sort directives applied to matched people in order.
+      limit:
+        in: body
+        type: integer
+      count:
+        in: body
+        type: integer
+        about: Alias for limit.
+      cursor:
+        in: body
+        about: Pagination cursor from a previous response's next_cursor. Omit on the first page.
+      post_processing:
+        in: body
+        type: object
+        about: Post-processing options applied to search results (e.g., exclusions).
+      return_query:
+        in: body
+        type: boolean
+        about: Debug flag - include search query in response
+      preview:
+        in: body
+        type: boolean
+        about: Preview mode - return only basic fields for faster response
+      explain:
+        in: body
+        type: boolean
+        about: Explain an empty result. When true and a filters-only request returns total_count 0, remarks names
+          the condition whose removal recovers profiles. Not the search.explain flag on semantic search, which…
+      fields:
+        in: body
+        type: array
+        about: Optional list of field paths to include in each returned profile. When omitted, a default set of
+          profile fields is returned. Use dot notation for a nested field (for example…
+    price:
+      credits: 0.03
+      per: result
+      note: plus premium field groups you filter on or receive
+    jobs:
+      find_people:
+        needs:
+        - - title
+        - - company
+        - - company_domain
+        - - location
+        - - keywords
+        send:
+          title:
+            to: filters.conditions.0
+            as:
+              field: experience.employment_details.current.title
+              type: (.)
+              value: $
+          company:
+            to: filters.conditions.1
+            as:
+              field: experience.employment_details.current.name
+              type: (.)
+              value: $
+          company_domain:
+            to: filters.conditions.2
+            as:
+              field: experience.employment_details.current.company_website
+              type: (.)
+              value: $
+          location:
+            to: filters.conditions.3
+            as:
+              field: basic_profile.location.raw
+              type: (.)
+              value: $
+          keywords:
+            to: filters.conditions.4
+            as:
+              field: skills.professional_network_skills
+              type: (.)
+              value: $
+        fixed:
+          filters.op: and
+          fields:
+          - basic_profile
+          - social_handles
+          - experience.employment_details.current
+        limit: limit
+        result: profiles
+        fields:
+          name: basic_profile.name
+          headline: basic_profile.headline
+          title: basic_profile.current_title
+          company: experience.employment_details.current[0].name
+          company_domain: experience.employment_details.current[0].company_website
+          location: basic_profile.location.raw
+          country: basic_profile.location.country
+          linkedin_url: social_handles.professional_network_identifier.profile_url
+          image: basic_profile.profile_picture_permalink
+  social-post-search:
+    title: Search the social post dataset
+    about: Search the indexed Crustdata social post dataset with structured filter conditions. Each result is a
+      post with its author (person or company page) enriched with a Crustdata id, headline, current…
+    request: POST /social_post/search
+    params:
+      x-api-version:
+        in: header
+        required: true
+        choices:
+        - '2025-11-01'
+        default: '2025-11-01'
+        about: 'API version to use. 2025-11-01 is the only accepted value. Send it on every call: it is enforced
+          today on POST /watch/{dataset}/search, where a missing or unrecognized value returns 400, and the…'
+      filters:
+        in: body
+        type: object
+        about: A single SocialPostDbSearchCondition or a nested SocialPostDbSearchConditionGroup. Omit to match
+          every indexed post.
+      cursor:
+        in: body
+        about: Opaque cursor from a prior response's next_cursor. Send the same filters, sorts, and fields with
+          it; a cursor issued for a different body is rejected with Invalid cursor.
+      limit:
+        in: body
+        type: integer
+        about: Posts per page. 0 returns total_count alone and costs nothing.
+      sorts:
+        in: body
+        type: array
+        about: Ordering rules applied in array order. Defaults to date_posted descending.
+      fields:
+        in: body
+        type: array
+        about: Dot-paths to include in each returned post, for example actor.name or a whole group such as engagement.
+          Omit to return everything. actor.location and reposter.location are selected whole; their…
+    price:
+      per: call
+      note: credits per result; see /account/endpoints for your prices
+  web-fetch:
+    title: Web Fetch
+    about: Fetch the HTML content of webpages given their URLs. Retrieves the page title and full HTML content for
+      up to 10 URLs in a single request. Use this for content extraction, web content retrieval, data…
+    request: POST /web/enrich/live
+    params:
+      x-api-version:
+        in: header
+        required: true
+        choices:
+        - '2025-11-01'
+        default: '2025-11-01'
+        about: API version to use. This endpoint currently requires 2025-11-01.
+      urls:
+        in: body
+        type: array
+        required: true
+        about: List of URLs to fetch web content for. Each URL must include the protocol prefix (http:// or https://).
+          Maximum of 10 URLs per request.
+      human_mode:
+        in: body
+        type: boolean
+        about: Whether to use a browser-like retrieval path when standard access is blocked.
+    price:
+      per: call
+      note: credits per result; see /account/endpoints for your prices
+  web-search:
+    title: Web Search
+    about: Perform a web search query and return results from multiple sources including web, news, academic articles,
+      academic author profiles, deep research results, and social media. Use this endpoint for…
+    request: POST /web/search/live
+    params:
+      x-api-version:
+        in: header
+        required: true
+        choices:
+        - '2025-11-01'
+        default: '2025-11-01'
+        about: API version to use. This endpoint currently requires 2025-11-01.
+      query:
+        in: body
+        required: true
+        about: The search query text. Keep queries concise and specific for better results. Supports standard search
+          operators (e.g., site:, filetype:).
+      location:
+        in: body
+        about: ISO 3166-1 alpha-2 country code for location targeting. Use this to get region-specific search results.
+          Valid values include US, CA, MX, BR, AR, CL, CO, PE, VE, GB, DE, FR, IT, ES, PT, NL, BE, CH,…
+      sources:
+        in: body
+        type: array
+        about: List of search sources to query. If omitted, all sources are searched. Use specific sources to narrow
+          results.
+      site:
+        in: body
+        about: Restrict search results to a specific site domain. For example, use "linkedin.com/company" to find
+          company LinkedIn pages, or "site:github.com" for developer profiles.
+      start_date:
+        in: body
+        type: integer
+        about: Unix timestamp (seconds since epoch) for the start date filter. Must be less than end_date if both
+          are provided.
+      end_date:
+        in: body
+        type: integer
+        about: Unix timestamp (seconds since epoch) for the end date filter. Must be greater than start_date if
+          both are provided.
+      human_mode:
+        in: body
+        type: boolean
+        about: Whether to use a browser-like retrieval path when standard access is blocked.
+      page:
+        in: body
+        type: integer
+        about: Number of search result pages to aggregate into a single response. Values above 15 are rejected with
+          a 400. When greater than 1, sources must contain exactly one source.
+    price:
+      per: call
+      note: credits per result; see /account/endpoints for your prices

@@ -1,0 +1,52 @@
+id: orcid
+title: ORCID
+about: Persistent identifiers that researchers register and maintain themselves.
+site: https://orcid.org
+docs: https://info.orcid.org/documentation/api-tutorials/api-tutorial-searching-the-orcid-registry/
+api: https://pub.orcid.org/v3.0
+key:
+  env: ORCID_ACCESS_TOKEN
+  bearer: true
+  optional: true
+operations:
+  expanded-search:
+    title: Researchers by name, affiliation or keyword
+    about: "Solr query syntax: family-name:smith AND affiliation-org-name:\"MIT\"."
+    request: GET /expanded-search/
+    params:
+      q: {required: true, about: Solr query over the public registry}
+      rows: {type: integer, default: 25, about: up to 1000}
+      start: {type: integer}
+    price: {usd: 0, per: call}
+    jobs:
+      find_people:
+        audience: researchers
+        needs: [[query]]
+        send: {query: q}
+        limit: rows
+        result: '"expanded-result"'
+        fields:
+          first_name: '"given-names"'
+          last_name: '"family-names"'
+          name: '"credit-name" || join('' '', [ "given-names" || '''', "family-names" || ''''])'
+          company: '"institution-name"[0]'
+          email: email[0]
+          url: join('', ['https://orcid.org/', "orcid-id"])
+  record:
+    title: A researcher's full public record
+    request: GET /{orcid}/record
+    params:
+      orcid: {in: path, required: true, about: 0000-0002-1825-0097}
+    price: {usd: 0, per: call}
+  works:
+    title: A researcher's works
+    request: GET /{orcid}/works
+    params:
+      orcid: {in: path, required: true}
+    price: {usd: 0, per: call}
+  employments:
+    title: A researcher's employment history
+    request: GET /{orcid}/employments
+    params:
+      orcid: {in: path, required: true}
+    price: {usd: 0, per: call}

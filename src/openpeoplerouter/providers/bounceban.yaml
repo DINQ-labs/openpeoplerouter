@@ -1,0 +1,54 @@
+id: bounceban
+title: BounceBan
+about: Email verification that resolves catch-all (accept-all) addresses, with a deepverify mode for addresses on a person's current company domain.
+site: https://bounceban.com
+docs: https://bounceban.com/public/doc/api.html
+pricing: https://bounceban.com/pricing
+api: https://api.bounceban.com/v1
+key:
+  env: BOUNCEBAN_API_KEY
+  header: Authorization
+operations:
+  verify-single:
+    title: Whether an address accepts mail, catch-all included
+    about: Answers within 15 seconds or returns status verifying and an id; never resubmit while verifying, each request costs a credit.
+    request: GET /verify/single
+    params:
+      email: {required: true}
+      mode: {choices: [regular, deepverify]}
+      url: {about: webhook for the result}
+      disable_catchall_verify: {choices: ['0', '1']}
+    price: {credits: 1, per: call}
+    jobs:
+      verify_email:
+        needs: [[email]]
+        send: {email: email}
+        poll: {operation: verify-single-status, send: {id: id}, when: "status != 'success'", until: "status == 'success'",
+               every: 5, within: 120}
+        result: '@'
+        fields:
+          email: email
+          status: result
+          deliverable: result == 'deliverable'
+          score: score
+          catch_all: is_accept_all
+          disposable: is_disposable
+  verify-single-status:
+    title: The result of a pending verification
+    request: GET /verify/single/status
+    params:
+      id: {required: true}
+    price: {usd: 0, per: call}
+  waterfall-verify-single:
+    title: Verification that waits for the answer (for workflow tools)
+    request: GET /verify/single
+    api: https://api-waterfall.bounceban.com/v1
+    params:
+      email: {required: true}
+      mode: {choices: [regular, deepverify]}
+      disable_catchall_verify: {choices: ['0', '1']}
+    price: {credits: 1, per: call, note: retries of the same email within 30 minutes are free}
+  account:
+    title: Credits and key quotas
+    request: GET /account
+    price: {usd: 0, per: call}

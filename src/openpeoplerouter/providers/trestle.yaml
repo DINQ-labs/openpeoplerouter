@@ -1,0 +1,128 @@
+id: trestle
+title: Trestle
+about: 'US and Canada phone intelligence — validation, line type and carrier, caller name and phone owner. Not a
+  consumer report: not for credit, insurance, employment or housing decisions.'
+site: https://trestleiq.com
+docs: https://docs.trestleiq.com
+pricing: https://trestleiq.com/pricing/
+api: https://api.trestleiq.com
+key:
+  env: TRESTLE_API_KEY
+  header: x-api-key
+operations:
+  caller-id:
+    title: Identify the top owner of a phone number
+    about: Validates the phone number, provides real-time metadata (line type, carrier), and returns the highest-ranked
+      phone owner with their current address.
+    request: GET /3.1/caller_id
+    params:
+      phone:
+        required: true
+        about: Phone number in E.164 or local format. Default country code +1 (USA). Example 2069735100
+      phone.country_hint:
+        about: ISO-3166 alpha-2 country code of the phone number. Example US
+      phone.name_hint:
+        about: Name hint to rank results when multiple owners are found.
+      phone.postal_code_hint:
+        about: Postal code hint to rank name/address results.
+      source_id:
+        about: Optional identifier used to group queries by source, campaign, channel, or cohort. Maximum length
+          is 255 characters.
+    price:
+      per: call
+      note: billed per query; see pricing
+    jobs:
+      enrich_person:
+        needs:
+        - - phone
+        send:
+          phone: phone
+        result: belongs_to
+        fields:
+          name: name
+          first_name: firstname
+          last_name: lastname
+  phone-validation:
+    title: Validate a phone number and get metadata
+    about: Validates the phone number and returns carrier, line type, prepaid status, country info, and a 0–100
+      activity score indicating whether the number is active.
+    request: GET /3.0/phone_intel
+    params:
+      phone:
+        required: true
+        about: Phone number in E.164 or local format. Example 2069735100
+      phone.country_hint:
+        about: ISO-3166 alpha-2 country code. Example US
+      add_ons:
+        about: 'Comma-separated add-ons to enable. Options: litigator_checks. Additional charges apply.'
+      source_id:
+        about: Optional identifier used to group queries by source, campaign, channel, or cohort. Maximum length
+          is 255 characters.
+    price:
+      per: call
+      note: billed per query; see pricing
+  reverse-phone:
+    title: Look up all owners of a phone number
+    about: Validates the phone and returns all potential owners with demographics, current addresses, alternate
+      phone numbers, and email addresses for each owner.
+    request: GET /3.2/phone
+    params:
+      phone:
+        required: true
+        about: Phone number in E.164 or local format. Example 2069735100
+      phone.country_hint:
+        about: ISO-3166 alpha-2 country code. Example US
+      phone.name_hint:
+        about: Name hint to rank results when multiple owners are found.
+      phone.postal_code_hint:
+        about: Postal code hint to rank name/address results.
+    price:
+      per: call
+      note: billed per query; see pricing
+  real-contact:
+    title: Verify and grade a lead's contact information
+    about: Verifies the contactability and consistency of an identity profile across name, phone, email, address,
+      and IP address. Returns contact grades (A–F), activity scores, name-match indicators, and IP…
+    request: GET /2.0/real_contact
+    params:
+      name:
+        required: true
+        about: The name of the person to search. Example John Doe
+      phone:
+        required: true
+        about: The phone number provided by the lead. Example 4259853735
+      email:
+        about: The email provided by the lead. Example john.doe@example.com
+      address.street_line_1: {}
+      address.city: {}
+      address.state_code: {}
+      address.postal_code: {}
+      address.country_code:
+        about: ISO-3166 alpha-2 country code. Example US
+      ip_address:
+        about: The IP address captured at time of interaction. Example 192.0.0.1
+      add_ons:
+        about: 'Comma-separated list of add-ons to enable. Options: email_checks_deliverability, email_checks_age,
+          litigator_checks. Additional charges apply.'
+      business.name:
+        about: The business name to search. Example The Golden Company
+      source_id:
+        about: Optional identifier used to group queries by source, campaign, channel, or cohort. Maximum length
+          is 255 characters.
+    price:
+      per: call
+      note: billed per query; see pricing
+  caller-name:
+    title: Get the name associated with a phone number
+    about: Validates the phone number and returns the top associated name (person or business). Lighter-weight than
+      Caller ID — use when name-only resolution is sufficient.
+    request: GET /3.1/cnam
+    params:
+      phone:
+        required: true
+        about: Phone number in E.164 or local format. Example 2069735100
+      phone.country_hint:
+        about: ISO-3166 alpha-2 country code. Example US
+    price:
+      per: call
+      note: billed per query; see pricing

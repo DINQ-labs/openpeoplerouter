@@ -1,0 +1,368 @@
+id: blitzapi
+title: BlitzAPI
+about: Work emails and mobiles from LinkedIn profiles, person and company enrichment, people and company search,
+  and job postings.
+site: https://blitz-api.ai
+docs: https://docs.blitz-api.ai
+pricing: https://blitz-api.ai/pricing
+api: https://api.blitz-api.ai
+key:
+  env: BLITZAPI_API_KEY
+  header: x-api-key
+operations:
+  account:
+    title: Get API Key Details
+    about: Check API key validity, remaining records, rate limit per endpoint, allowed endpoints, and active subscription
+      plans.
+    request: GET /v2/account/key-info
+    price:
+      usd: 0
+      per: call
+  enrichment-company:
+    title: Company Enrichment
+    about: Retrieve a full company profile from a LinkedIn company URL. company.mx lists the MX records of the company
+      domain, each with a priority and a host, lowest priority first, at most 10. It is null when…
+    request: POST /v2/enrichment/company
+    params:
+      company_linkedin_url:
+        in: body
+        required: true
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint
+  enrichment-domain-to-linkedin:
+    title: Domain to LinkedIn URL
+    about: Convert a website domain into a Company LinkedIn URL.
+    request: POST /v2/enrichment/domain-to-linkedin
+    params:
+      domain:
+        in: body
+        required: true
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint
+  enrichment-linkedin-to-domain:
+    title: LinkedIn URL to Domain
+    about: Get the email domain associated with a Company LinkedIn URL.
+    request: POST /v2/enrichment/linkedin-to-domain
+    params:
+      company_linkedin_url:
+        in: body
+        required: true
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint
+  search-companies:
+    title: Company Search
+    about: Find companies matching ICP criteria (industry, size, location, keywords).
+    request: POST /v2/search/companies
+    params:
+      company:
+        in: body
+        type: object
+        about: Company search criteria
+      max_results:
+        in: body
+        type: number
+        about: Maximum number of results to return
+      cursor:
+        in: body
+        about: Cursor to paginate through the results
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint
+  tam-by-jobs:
+    title: TAM By Jobs
+    about: Returns the distinct companies hiring for the matching jobs (deduplicated), each with its matched-jobs
+      count. Optional job.min_per_company floors that count; when it filters heavily, a page may be…
+    request: POST /v2/company/tam-by-jobs
+    params:
+      job:
+        in: body
+        type: object
+        about: Job-level search criteria
+      company:
+        in: body
+        type: object
+        about: Company-level firmographic criteria (enriched from the internal company record)
+      max_results:
+        in: body
+        type: number
+        about: Maximum number of results to return
+      cursor:
+        in: body
+        about: Cursor to paginate through the results
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint
+  tam-by-people:
+    title: TAM By People
+    about: Returns the distinct companies whose current employees match the people and firmographic filters (deduplicated),
+      each with its matched-people count. Takes the same filters as Find People, except…
+    request: POST /v2/company/tam-by-people
+    params:
+      company:
+        in: body
+        type: object
+        about: Company search criteria
+      people:
+        in: body
+        type: object
+        about: People search criteria for company matching
+      max_results:
+        in: body
+        type: number
+        about: Maximum number of results to return
+      cursor:
+        in: body
+        about: Cursor to paginate through the results
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint
+  company-jobs:
+    title: Search Company Jobs
+    about: List job postings at a single company from its LinkedIn company URL, with optional job-level filters.
+    request: POST /v2/jobs/company
+    params:
+      company_linkedin_url:
+        in: body
+        required: true
+        about: LinkedIn company URL. Results are scoped to this single company.
+      job:
+        in: body
+        type: object
+        about: Job-level search criteria
+      max_results:
+        in: body
+        type: number
+        about: Maximum number of results to return
+      cursor:
+        in: body
+        about: Cursor to paginate through the results
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint
+  search-jobs:
+    title: Search Jobs
+    about: Search job postings across companies by job attributes, location, and company firmographics.
+    request: POST /v2/jobs/search
+    params:
+      job:
+        in: body
+        type: object
+        about: Job-level search criteria
+      company:
+        in: body
+        type: object
+        about: Company-level firmographic criteria (enriched from the internal company record)
+      max_results:
+        in: body
+        type: number
+        about: Maximum number of results to return
+      cursor:
+        in: body
+        about: Cursor to paginate through the results
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint
+  enrichment-phone:
+    title: Find Mobile & Direct Phone
+    about: 'Retrieve one phone number from a LinkedIn profile URL: the mobile number if there is one, taken from
+      the first job in profile order that has either (current or past).'
+    request: POST /v2/enrichment/phone
+    params:
+      person_linkedin_url:
+        in: body
+        required: true
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint
+  enrichment-email:
+    title: Find Work Email
+    about: Retrieve a verified work email address from a LinkedIn profile URL.
+    request: POST /v2/enrichment/email
+    params:
+      person_linkedin_url:
+        in: body
+        required: true
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint
+  enrichment-person:
+    title: Person Enrichment
+    about: Retrieve a professional's full profile and entire career history from their LinkedIn profile URL.
+    request: POST /v2/enrichment/person
+    params:
+      person_linkedin_url:
+        in: body
+        required: true
+        about: LinkedIn profile URL of the person to enrich.
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint
+  enrichment-email-to-person:
+    title: Reverse Email Lookup
+    about: Identify a professional and retrieve their full profile starting from a verified work email address.
+    request: POST /v2/enrichment/email-to-person
+    params:
+      email:
+        in: body
+        required: true
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint
+  enrichment-phone-to-person:
+    title: Reverse Phone Lookup
+    about: Identify a professional and retrieve their full profile from a verified phone number.
+    request: POST /v2/enrichment/phone-to-person
+    params:
+      phone:
+        in: body
+        required: true
+        about: Phone number of the person to find. Write it with the country code (+14155550123); a number with
+          no country code is read as a US number. It is matched against the mobile and direct numbers Blitz has…
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint
+  search-employee-finder:
+    title: Employee Finder
+    about: Search all employees at a single company by job level, department, location, and seniority.
+    request: POST /v2/search/employee-finder
+    params:
+      company_linkedin_url:
+        in: body
+        required: true
+      country_code:
+        in: body
+        type: array
+      continent:
+        in: body
+        type: array
+      sales_region:
+        in: body
+        type: array
+      job_level:
+        in: body
+        type: array
+      job_function:
+        in: body
+        type: array
+      min_connections_count:
+        in: body
+        type: number
+      is_recent_hire:
+        in: body
+        type: boolean
+        about: Only people whose current job at the company started in the last 90 days. The job must also match
+          job_level and job_function. A job with no start date never matches.
+      max_results:
+        in: body
+        type: number
+        about: Maximum number of results to return.
+      page:
+        in: body
+        type: number
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint
+  search-people:
+    title: Find People
+    about: 'Search decision-makers across many companies in a single call. Each result is one person, and experiences[]
+      holds only the position that matched your filters: a current or past job depending on…'
+    request: POST /v2/search/people
+    params:
+      company:
+        in: body
+        type: object
+        about: Company search criteria
+      people:
+        in: body
+        type: object
+        about: People search criteria for company matching
+      max_results:
+        in: body
+        type: number
+        about: Maximum number of results to return
+      cursor:
+        in: body
+        about: Cursor to paginate through the results
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint
+  search-waterfall-icp-keyword:
+    title: Waterfall ICP Search
+    about: Find the best decision-maker at a target company using a prioritized cascade hierarchy.
+    request: POST /v2/search/waterfall-icp-keyword
+    params:
+      company_linkedin_url:
+        in: body
+        required: true
+      cascade:
+        in: body
+        type: array
+        required: true
+        about: Ordered list of search tiers (1 to 10). Tier 1 fills max_results first. If it finds fewer people
+          than max_results, the next tier fills the slots that are left, and so on, until max_results is reached…
+      max_results:
+        in: body
+        type: number
+        about: Maximum number of results to return.
+      profile_min_connections:
+        in: body
+        type: number
+        about: Minimum number of LinkedIn connections a profile must have to be returned.
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint
+  enrichment-company-distribution-by-department:
+    title: Company Distribution by Department
+    about: 'Returns the distribution of a company''s employees grouped by department. It counts current jobs, not
+      people: a person with two current jobs at the company counts twice, so total_employees can be…'
+    request: POST /v2/enrichment/company-distribution-by-department
+    params:
+      company_linkedin_url:
+        in: body
+        required: true
+      is_recent_hire:
+        in: body
+        type: boolean
+        about: Only count people whose current job at the company started in the last 90 days. A job with no start
+          date is not counted.
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint
+  enrichment-company-distribution-by-country:
+    title: Company Distribution by Country
+    about: 'Returns the distribution of a company''s employees grouped by ISO 3166-1 alpha-2 country code. Counts
+      people, not jobs: a person with several jobs at the company is counted once. When the company is…'
+    request: POST /v2/enrichment/company-distribution-by-country
+    params:
+      company_linkedin_url:
+        in: body
+        required: true
+      is_recent_hire:
+        in: body
+        type: boolean
+        about: Only count people whose current job at the company started in the last 90 days. A job with no start
+          date is not counted.
+    price:
+      credits: 1
+      per: success
+      note: see pricing for each endpoint

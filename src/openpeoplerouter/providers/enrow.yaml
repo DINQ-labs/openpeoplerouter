@@ -1,0 +1,98 @@
+id: enrow
+title: Enrow
+about: Work emails verified even on catch-all domains, email verification and phone numbers. Searches run asynchronously.
+site: https://enrow.io
+docs: https://docs.enrow.io
+pricing: https://enrow.io/pricing
+api: https://api.enrow.io
+key:
+  env: ENROW_API_KEY
+  header: x-api-key
+operations:
+  email-find:
+    title: Start a work email search from a name and company, or a LinkedIn URL
+    request: POST /email/find/single
+    docs: https://docs.enrow.io/api-reference/email-finder/find-single
+    params:
+      fullname: {in: body}
+      company_domain: {in: body}
+      company_name: {in: body}
+      linkedin_url: {in: body}
+      settings: {in: body, type: object, about: "{webhook, country_code, retrieve_gender}"}
+    price: {credits: 1, per: success, note: 0.25 for a LinkedIn search that finds nothing}
+    jobs:
+      find_contact:
+        needs: [[full_name, company_domain], [full_name, company], [linkedin_url]]
+        send: {full_name: fullname, company_domain: company_domain, company: company_name, linkedin_url: linkedin_url}
+        poll: {operation: email-result, send: {id: id}, until: "qualification != 'ongoing'", every: 2, within: 90}
+        result: "[@][?qualification == 'valid'] | [0]"
+        fields: {email: email, email_status: qualification, name: info.fullname, company_domain: info.company_domain}
+  email-result:
+    title: The result of a work email search
+    about: 202 with qualification ongoing while it runs; reading a result is free.
+    request: GET /email/find/single
+    params:
+      id: {required: true}
+    price: {usd: 0, per: call}
+  email-verify:
+    title: Start verifying an address
+    request: POST /email/verify/single
+    docs: https://docs.enrow.io/api-reference/email-verifier/verify-single
+    params:
+      email: {in: body, required: true}
+    price: {credits: 0.25, per: call}
+    jobs:
+      verify_email:
+        needs: [[email]]
+        send: {email: email}
+        poll: {operation: verify-result, send: {id: id}, until: "qualification != 'ongoing'", every: 2, within: 60}
+        result: '@'
+        fields: {email: email, status: qualification, deliverable: qualification == 'valid'}
+  verify-result:
+    title: The result of an email verification
+    request: GET /email/verify/single
+    params:
+      id: {required: true}
+    price: {usd: 0, per: call}
+  phone-find:
+    title: Start a phone search from a LinkedIn URL or a name and company
+    request: POST /phone/single
+    docs: https://docs.enrow.io/api-reference/phone/find-single
+    params:
+      linkedin_url: {in: body}
+      firstname: {in: body}
+      lastname: {in: body}
+      company_domain: {in: body}
+      company_name: {in: body}
+    price: {credits: 40, per: success, note: refunded when no number is found}
+    jobs:
+      find_contact:
+        needs: [[linkedin_url], [first_name, last_name, company_domain]]
+        send: {linkedin_url: linkedin_url, first_name: firstname, last_name: lastname, company_domain: company_domain}
+        poll: {operation: phone-result, send: {id: id}, until: "qualification != 'ongoing'", every: 3, within: 120}
+        result: "[@][?qualification == 'found'] | [0]"
+        fields: {phone: number}
+  phone-result:
+    title: The result of a phone search
+    request: GET /phone/single
+    params:
+      id: {required: true}
+    price: {usd: 0, per: call}
+  email-find-bulk:
+    title: Start up to 5,000 email searches at once
+    request: POST /email/find/bulk
+    docs: https://docs.enrow.io/api-reference/email-finder/find-bulk
+    params:
+      searches: {in: body, type: array, required: true, about: "[{fullname, company_domain | company_name | linkedin_url}]"}
+      settings: {in: body, type: object}
+    price: {credits: 1, per: success}
+  email-find-bulk-result:
+    title: Results of a bulk email search
+    request: GET /email/find/bulk
+    params:
+      id: {required: true}
+    price: {usd: 0, per: call}
+  account:
+    title: Credit balance and webhooks
+    request: GET /account/info
+    price: {usd: 0, per: call}

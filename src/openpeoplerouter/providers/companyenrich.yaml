@@ -1,0 +1,1912 @@
+id: companyenrich
+title: CompanyEnrich
+about: Company enrichment, search and lookalikes, plus people search, person lookup by email and work emails.
+site: https://companyenrich.com
+docs: https://docs.companyenrich.com
+pricing: https://companyenrich.com/pricing
+api: https://api.companyenrich.com
+key:
+  env: COMPANYENRICH_API_KEY
+  bearer: true
+operations:
+  companies-autocomplete:
+    title: Autocomplete
+    about: 'Cost: FREE - No credits deducted Returns a list of companies matching the given partial domain name.
+      This is useful for autocompleting domain names in your application. Up to 10 companies are…'
+    request: GET /companies/autocomplete
+    params:
+      query:
+        required: true
+        about: The query to autocomplete
+    price:
+      credits: 1
+      per: call
+  companies-enrich-bulk:
+    title: Get job status
+    about: 'Cost: FREE - No credits deducted Returns the current status of a bulk enrichment job. Once completed,
+      includes the results_url to download the enrichment results.'
+    request: GET /companies/enrich/bulk/{jobId}
+    params:
+      jobId:
+        in: path
+        required: true
+    price:
+      credits: 1
+      per: call
+  enrich-bulk-jobs:
+    title: List jobs
+    about: 'Cost: FREE - No credits deducted Returns a paginated list of all bulk enrichment jobs for the authenticated
+      user. Supports optional filtering by job status.'
+    request: GET /companies/enrich/bulk/jobs
+    params:
+      page:
+        type: integer
+        about: 'Page number (default: 1).'
+      pageSize:
+        type: integer
+        about: 'Number of items per page (default: 20, max: 100).'
+      status:
+        choices:
+        - pending
+        - processing
+        - completing
+        - completed
+        - failed
+        - null
+        about: Filter jobs by status.
+    price:
+      credits: 1
+      per: call
+  companies-enrich:
+    title: Enrich by domain
+    about: 'Cost: 1 credit per call Enriches a company using its domain name as lookup parameter. We map each domain
+      to a unique company so lookups via domain are fast and reliable. It is the preferred way to…'
+    request: GET /companies/enrich
+    params:
+      domain:
+        required: true
+      expand:
+        type: array
+        about: 'Expandable response fields. Repeat the parameter to request multiple expansions. Supported values:
+          - workforce: costs 5 credits per company and adds the workforce field to CompanyInfo.'
+      waitForEnrichment:
+        type: boolean
+        about: Whether to wait for on-demand enrichment when the company is not stored yet. When false, stored company
+          data is returned immediately; a company that is not stored yet results in a 404 without…
+    price:
+      credits: 1
+      per: call
+    not_found: 404
+    jobs:
+      enrich_company:
+        needs:
+        - - domain
+        send:
+          domain: domain
+        result: '@'
+        fields:
+          name: name
+          domain: domain
+          website: website
+          description: description
+          industry: industry
+          employees: employees
+          founded: founded_year
+          location: join(', ', [location.city.name, location.country.name][?@])
+          country: location.country.code
+          linkedin_url: socials.linkedin_url
+          logo: logo_url
+          technologies: technologies
+          revenue: revenue
+          funding: financial.total_funding
+  post-companies-enrich:
+    title: Enrich by properties
+    about: 'Cost: 1 credit per call Enriches a company using its properties. You need to provide at least one of
+      the following properties: - Name - LinkedinUrl - LinkedinId - TwitterUrl - FacebookUrl -…'
+    request: POST /companies/enrich
+    params:
+      expand:
+        type: array
+        about: 'Expandable response fields. Repeat the parameter to request multiple expansions. Supported values:
+          - workforce: costs 5 credits per company and adds the workforce field to CompanyInfo.'
+      name:
+        in: body
+        about: The name of the company to enrich
+      linkedinUrl:
+        in: body
+        about: The LinkedIn URL of the company to enrich
+      linkedinId:
+        in: body
+        about: The LinkedIn ID of the company to enrich
+      twitterUrl:
+        in: body
+        about: The Twitter URL of the company to enrich
+      facebookUrl:
+        in: body
+        about: The Facebook URL of the company to enrich
+      instagramUrl:
+        in: body
+        about: The Instagram URL of the company to enrich
+      youTubeUrl:
+        in: body
+        about: The YouTube URL of the company to enrich
+    price:
+      credits: 1
+      per: call
+  companies-search-async:
+    title: Get export job status
+    about: 'Cost: FREE - No credits deducted Returns the current status of a search export job. Once completed,
+      includes the results_url to download the export results.'
+    request: GET /companies/search/async/{jobId}
+    params:
+      jobId:
+        in: path
+        required: true
+    price:
+      credits: 1
+      per: call
+  search-async-jobs:
+    title: List export jobs
+    about: 'Cost: FREE - No credits deducted Returns a paginated list of all search export jobs for the authenticated
+      user. Supports optional filtering by job status.'
+    request: GET /companies/search/async/jobs
+    params:
+      page:
+        type: integer
+        about: 'Page number (default: 1).'
+      pageSize:
+        type: integer
+        about: 'Number of items per page (default: 20, max: 100).'
+      status:
+        choices:
+        - pending
+        - processing
+        - completing
+        - completed
+        - failed
+        - null
+        about: Filter jobs by status.
+    price:
+      credits: 1
+      per: call
+  companies-workforce:
+    title: Workforce
+    about: 'Cost: 5 credits per successful call Returns workforce insights for a single company. You must provide
+      exactly one lookup parameter: id or domain. The response includes observed employee count, an…'
+    request: GET /companies/workforce
+    params:
+      id:
+        about: CompanyEnrich company ID. Provide either id or domain.
+      domain:
+        about: Company domain. Provide either id or domain.
+    price:
+      credits: 1
+      per: call
+  company-by-id:
+    title: Get by ID
+    about: 'Cost: 1 credits per call Gets a company information by its CompanyEnrich ID. You can obtain this ID
+      by calling the Enrich endpoint or other endpoints returning company information.'
+    request: GET /companies
+    params:
+      id:
+        required: true
+      expand:
+        type: array
+        about: 'Expandable response fields. Repeat the parameter to request multiple expansions. Supported values:
+          - workforce: costs 5 credits per company and adds the workforce field to CompanyInfo.'
+    price:
+      credits: 1
+      per: call
+  geo-countries:
+    title: Get country by code
+    about: Searches a country by its ISO 3166-1 alpha-2 code.
+    request: GET /geo/countries/{countryCode}
+    params:
+      countryCode:
+        in: path
+        required: true
+    price:
+      credits: 1
+      per: call
+  geo-regions:
+    title: Get regions
+    about: Returns all regions.
+    request: GET /geo/regions
+    price:
+      credits: 1
+      per: call
+  industries:
+    title: List industries
+    about: Obtain a list of all company industries
+    request: GET /industries
+    price:
+      credits: 1
+      per: call
+  jobs:
+    title: Get job details
+    about: 'Cost: FREE - No credits deducted Returns details for a specific job by ID.'
+    request: GET /jobs/{jobId}
+    params:
+      jobId:
+        in: path
+        required: true
+    price:
+      credits: 1
+      per: call
+  job-by-id:
+    title: List all jobs
+    about: 'Cost: FREE - No credits deducted Returns a paginated list of all jobs (bulk enrichment, etc.) for the
+      authenticated user. Supports optional filtering by job status and type.'
+    request: GET /jobs
+    params:
+      page:
+        type: integer
+        about: 'Page number (default: 1).'
+      pageSize:
+        type: integer
+        about: 'Number of items per page (default: 20, max: 100).'
+      status:
+        choices:
+        - pending
+        - processing
+        - completing
+        - completed
+        - failed
+        - null
+        about: Filter jobs by status.
+      type:
+        about: Filter jobs by type (bulk_enrichment, etc.).
+    price:
+      credits: 1
+      per: call
+  keywords-autocomplete:
+    title: Lookup keywords
+    request: GET /keywords/autocomplete
+    params:
+      query:
+        required: true
+    price:
+      credits: 1
+      per: call
+  account:
+    title: Get current user information
+    about: 'Cost: FREE - No credits deducted Returns information about the authenticated user, including their API
+      key, credit balance, and account capabilities. This endpoint requires authentication via an API…'
+    request: GET /me
+    price:
+      usd: 0
+      per: call
+  people-education:
+    title: Education
+    about: 'Cost: 1 credit per successful call Returns the education history for a person by their CompanyEnrich
+      ID. The response is an empty array when the person has no education records.'
+    request: GET /people/education
+    params:
+      id:
+        type: integer
+        required: true
+        about: The CompanyEnrich ID of the person
+    price:
+      credits: 1
+      per: call
+  people-email-bulk:
+    title: Get bulk email enrichment job status (BETA)
+    about: 'BETA: This endpoint is currently in beta and may change based on provider coverage, job orchestration,
+      and response tuning. Cost: FREE - No credits deducted Returns the current status of a bulk…'
+    request: GET /people/email/bulk/{jobId}
+    params:
+      jobId:
+        in: path
+        required: true
+    price:
+      credits: 1
+      per: call
+  people-email:
+    title: Email (BETA)
+    about: 'BETA: This endpoint is currently in beta and may change based on provider coverage and response tuning.
+      Cost: 10 credits per newly accessed found email Resolves a work email address for a single…'
+    request: GET /people/email
+    params:
+      id:
+        type: integer
+        required: true
+        about: The CompanyEnrich person ID.
+      domain:
+        about: Optional company domain to resolve the email address on. If omitted, current experience domains are
+          tried in seniority order.
+    price:
+      credits: 1
+      per: success
+  people-search-async:
+    title: Get export job status
+    about: 'Cost: FREE - No credits deducted Returns the current status of a person search export job. Once completed,
+      includes the results_url to download the export results.'
+    request: GET /people/search/async/{jobId}
+    params:
+      jobId:
+        in: path
+        required: true
+    price:
+      credits: 1
+      per: call
+  get-search-async-jobs:
+    title: List export jobs
+    about: 'Cost: FREE - No credits deducted Returns a paginated list of all person search export jobs for the authenticated
+      user. Supports optional filtering by job status.'
+    request: GET /people/search/async/jobs
+    params:
+      page:
+        type: integer
+        about: 'Page number (default: 1).'
+      pageSize:
+        type: integer
+        about: 'Number of items per page (default: 20, max: 100).'
+      status:
+        choices:
+        - pending
+        - processing
+        - completing
+        - completed
+        - failed
+        - null
+        about: Filter jobs by status.
+    price:
+      credits: 1
+      per: call
+  person-by-id:
+    title: Get by ID
+    about: 'Cost: 2 credits per call Gets person information by its CompanyEnrich ID. You can obtain this ID from
+      people search results, lookup responses, and other endpoints returning person information.'
+    request: GET /people
+    params:
+      id:
+        type: integer
+        required: true
+        about: The CompanyEnrich ID of the person
+      expand:
+        type: array
+        about: 'Expandable response fields. Repeat the parameter to request multiple expansions. Supported values:
+          - education: costs 1 credit per person and adds the education field to PersonInfo.'
+    price:
+      credits: 1
+      per: call
+  positions-autocomplete:
+    title: Lookup positions
+    request: GET /positions/autocomplete
+    params:
+      query:
+        required: true
+    price:
+      credits: 1
+      per: call
+  technologies-autocomplete:
+    title: Lookup technologies
+    request: GET /technologies/autocomplete
+    params:
+      query:
+        required: true
+    price:
+      credits: 1
+      per: call
+  companies-enrich-batch:
+    title: Batch enrich
+    about: 'Cost: 1 credit per domain enriched Enriches a list of companies using their domain names. Up to 50 domains
+      can be provided in a single request. We map each domain to a unique company so lookups via…'
+    request: POST /companies/enrich/batch
+    params:
+      expand:
+        type: array
+        about: 'Expandable response fields. Repeat the parameter to request multiple expansions. Supported values:
+          - workforce: costs 5 credits per company and adds the workforce field to CompanyInfo.'
+      domains:
+        in: body
+        type: array
+        required: true
+        about: A list of domains to enrich. Up to 50 domains can be provided in a single request.
+    price:
+      credits: 1
+      per: call
+  post-companies-enrich-bulk:
+    title: Create job
+    about: 'Cost: 1 credit per domain successfully enriched (charged on completion) Creates an asynchronous bulk
+      enrichment job for up to 10,000 domains. Returns a job ID immediately. The webhook URL will be…'
+    request: POST /companies/enrich/bulk
+    params:
+      expand:
+        type: array
+        about: 'Expandable response fields. Repeat the parameter to request multiple expansions. Supported values:
+          - workforce: costs 5 credits per company and adds the workforce field to CompanyInfo.'
+      domains:
+        in: body
+        type: array
+        required: true
+        about: A list of domains to enrich. Up to 10,000 domains can be provided.
+      webhook_url:
+        in: body
+        about: The webhook URL to receive the notification when processing completes.
+    price:
+      credits: 1
+      per: call
+  post-companies-search-async:
+    title: Create export job
+    about: 'Cost: 1 credit per company returned (reserved when the job is created, settled on completion) Creates
+      an asynchronous search export job for up to 50,000 companies. Supports both standard company…'
+    request: POST /companies/search/async
+    params:
+      expand:
+        type: array
+        about: 'Expandable response fields. Repeat the parameter to request multiple expansions. Supported values:
+          - workforce: costs 5 credits per company and adds the workforce field to CompanyInfo.'
+      count:
+        in: body
+        type: integer
+        required: true
+        about: The number of companies to export.
+      webhook_url:
+        in: body
+        about: The webhook URL to receive the notification when processing completes.
+      search:
+        in: body
+        type: object
+        about: The filters to be applied on the companies
+      similar:
+        in: body
+        type: object
+        about: The filters used to find similar companies
+    price:
+      credits: 1
+      per: call
+  companies-search-count:
+    title: Count
+    about: 'Cost: FREE - No credits deducted Returns the total count of companies matching the given search criteria
+      without retrieving the actual results.'
+    request: POST /companies/search/count
+    params:
+      lists:
+        in: body
+        type: array
+        about: The list IDs to filter by
+      semanticQuery:
+        in: body
+        about: The semantic search query to find companies with. More natural language version of the standard query.
+      semanticWeight:
+        in: body
+        type: number
+        about: The semantic weight to apply to the results. Must be between 0 and 1. 0.7 is default. Larger values
+          will prioritize semantic similarity, smaller values will prioritize traditional search factors.
+      exclude:
+        in: body
+        type: object
+        about: Exclusion filters to apply on the companies. If a company matches any of the filters here, it will
+          be excluded from the results.
+      query:
+        in: body
+        about: The search query to apply on the company name and domain
+      foundedYear:
+        in: body
+        type: object
+        about: The range of years
+      fundingAmount:
+        in: body
+        type: object
+        about: The funding amount range to filter by
+      fundingYear:
+        in: body
+        type: object
+        about: The range of years
+      categoryOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      keywordsOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      technologiesOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      workforceGrowth:
+        in: body
+        type: object
+        about: Filter companies by workforce growth percentage over a selected period and department.
+      workforceSize:
+        in: body
+        type: array
+        about: Filter companies by absolute workforce headcount. Multiple entries can be provided to filter on different
+          departments simultaneously.
+      require:
+        in: body
+        type: array
+        about: The features that must exist for the company
+      regions:
+        in: body
+        type: array
+        about: The region IDs to filter by
+      countries:
+        in: body
+        type: array
+        about: The 2 letter country codes to filter by
+      states:
+        in: body
+        type: array
+        about: The state IDs to filter by
+      cities:
+        in: body
+        type: array
+        about: The city IDs to filter by
+      type:
+        in: body
+        type: array
+        about: The list of company types to filter by
+      category:
+        in: body
+        type: array
+        about: The list of company categories to filter by
+      employees:
+        in: body
+        type: array
+        about: The list of employee counts to filter by
+      reportedEmployees:
+        in: body
+        type: array
+        about: The list of externally reported employee counts to filter by
+      revenue:
+        in: body
+        type: array
+        about: The list of revenue ranges to filter by
+      naicsCode:
+        in: body
+        type: array
+        about: The NAICS codes to filter by. Can be 2 to 6 digit codes. In case of a 2-5 digit code, all 6 digit
+          codes under it will be included
+      keywords:
+        in: body
+        type: array
+        about: The keywords to filter by
+      technologies:
+        in: body
+        type: array
+        about: The technologies to filter by
+      fundingRounds:
+        in: body
+        type: array
+        about: The funding rounds to filter by
+    price:
+      credits: 1
+      per: call
+  companies-search-preview:
+    title: Preview
+    about: 'Cost: FREE - No credits deducted Requirements: Requires Scale plans Notice: Returns top 25 results only
+      Preview search for companies based on given criteria. You can search by name, domain, industry,…'
+    request: POST /companies/search/preview
+    params:
+      lists:
+        in: body
+        type: array
+        about: The list IDs to filter by
+      semanticQuery:
+        in: body
+        about: The semantic search query to find companies with. More natural language version of the standard query.
+      semanticWeight:
+        in: body
+        type: number
+        about: The semantic weight to apply to the results. Must be between 0 and 1. 0.7 is default. Larger values
+          will prioritize semantic similarity, smaller values will prioritize traditional search factors.
+      exclude:
+        in: body
+        type: object
+        about: Exclusion filters to apply on the companies. If a company matches any of the filters here, it will
+          be excluded from the results.
+      query:
+        in: body
+        about: The search query to apply on the company name and domain
+      foundedYear:
+        in: body
+        type: object
+        about: The range of years
+      fundingAmount:
+        in: body
+        type: object
+        about: The funding amount range to filter by
+      fundingYear:
+        in: body
+        type: object
+        about: The range of years
+      categoryOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      keywordsOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      technologiesOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      workforceGrowth:
+        in: body
+        type: object
+        about: Filter companies by workforce growth percentage over a selected period and department.
+      workforceSize:
+        in: body
+        type: array
+        about: Filter companies by absolute workforce headcount. Multiple entries can be provided to filter on different
+          departments simultaneously.
+      require:
+        in: body
+        type: array
+        about: The features that must exist for the company
+      regions:
+        in: body
+        type: array
+        about: The region IDs to filter by
+      countries:
+        in: body
+        type: array
+        about: The 2 letter country codes to filter by
+      states:
+        in: body
+        type: array
+        about: The state IDs to filter by
+      cities:
+        in: body
+        type: array
+        about: The city IDs to filter by
+      type:
+        in: body
+        type: array
+        about: The list of company types to filter by
+      category:
+        in: body
+        type: array
+        about: The list of company categories to filter by
+      employees:
+        in: body
+        type: array
+        about: The list of employee counts to filter by
+      reportedEmployees:
+        in: body
+        type: array
+        about: The list of externally reported employee counts to filter by
+      revenue:
+        in: body
+        type: array
+        about: The list of revenue ranges to filter by
+      naicsCode:
+        in: body
+        type: array
+        about: The NAICS codes to filter by. Can be 2 to 6 digit codes. In case of a 2-5 digit code, all 6 digit
+          codes under it will be included
+      keywords:
+        in: body
+        type: array
+        about: The keywords to filter by
+      technologies:
+        in: body
+        type: array
+        about: The technologies to filter by
+      fundingRounds:
+        in: body
+        type: array
+        about: The funding rounds to filter by
+    price:
+      credits: 1
+      per: call
+  companies-search-scroll:
+    title: Scroll
+    about: 'Cost: 1 credit per company returned. 1 credit minimum if no results are found. Searches companies based
+      on given criteria. You can search by name, domain, industry, employees, revenue, founded year,…'
+    request: POST /companies/search/scroll
+    params:
+      expand:
+        type: array
+        about: 'Expandable response fields. Repeat the parameter to request multiple expansions. Supported values:
+          - workforce: costs 5 credits per company and adds the workforce field to CompanyInfo.'
+      pageSize:
+        in: body
+        type: integer
+        about: The number of results to return in each page. Must be between 1 and 100
+      cursor:
+        in: body
+        about: The cursor to use for pagination. This is used for cursor based pagination. If this is set, Page
+          will be ignored.
+      lists:
+        in: body
+        type: array
+        about: The list IDs to filter by
+      semanticQuery:
+        in: body
+        about: The semantic search query to find companies with. More natural language version of the standard query.
+      semanticWeight:
+        in: body
+        type: number
+        about: The semantic weight to apply to the results. Must be between 0 and 1. 0.7 is default. Larger values
+          will prioritize semantic similarity, smaller values will prioritize traditional search factors.
+      exclude:
+        in: body
+        type: object
+        about: Exclusion filters to apply on the companies. If a company matches any of the filters here, it will
+          be excluded from the results.
+      query:
+        in: body
+        about: The search query to apply on the company name and domain
+      foundedYear:
+        in: body
+        type: object
+        about: The range of years
+      fundingAmount:
+        in: body
+        type: object
+        about: The funding amount range to filter by
+      fundingYear:
+        in: body
+        type: object
+        about: The range of years
+      categoryOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      keywordsOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      technologiesOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      workforceGrowth:
+        in: body
+        type: object
+        about: Filter companies by workforce growth percentage over a selected period and department.
+      workforceSize:
+        in: body
+        type: array
+        about: Filter companies by absolute workforce headcount. Multiple entries can be provided to filter on different
+          departments simultaneously.
+      require:
+        in: body
+        type: array
+        about: The features that must exist for the company
+      regions:
+        in: body
+        type: array
+        about: The region IDs to filter by
+      countries:
+        in: body
+        type: array
+        about: The 2 letter country codes to filter by
+      states:
+        in: body
+        type: array
+        about: The state IDs to filter by
+      cities:
+        in: body
+        type: array
+        about: The city IDs to filter by
+      type:
+        in: body
+        type: array
+        about: The list of company types to filter by
+      category:
+        in: body
+        type: array
+        about: The list of company categories to filter by
+      employees:
+        in: body
+        type: array
+        about: The list of employee counts to filter by
+      reportedEmployees:
+        in: body
+        type: array
+        about: The list of externally reported employee counts to filter by
+      revenue:
+        in: body
+        type: array
+        about: The list of revenue ranges to filter by
+      naicsCode:
+        in: body
+        type: array
+        about: The NAICS codes to filter by. Can be 2 to 6 digit codes. In case of a 2-5 digit code, all 6 digit
+          codes under it will be included
+      keywords:
+        in: body
+        type: array
+        about: The keywords to filter by
+      technologies:
+        in: body
+        type: array
+        about: The technologies to filter by
+      fundingRounds:
+        in: body
+        type: array
+        about: The funding rounds to filter by
+    price:
+      credits: 1
+      per: call
+  companies-search:
+    title: Search
+    about: 'Cost: 1 credit per company returned. 1 credit minimum if no results are found. Notice: Up to 10.000
+      results can be returned from this endpoint (page * pageSize can not exceed 10.000). If you need…'
+    request: POST /companies/search
+    params:
+      expand:
+        type: array
+        about: 'Expandable response fields. Repeat the parameter to request multiple expansions. Supported values:
+          - workforce: costs 5 credits per company and adds the workforce field to CompanyInfo.'
+      page:
+        in: body
+        type: integer
+        about: The page number to return. Must be greater than 0
+      pageSize:
+        in: body
+        type: integer
+        about: The number of results to return in each page. Must be between 1 and 100
+      lists:
+        in: body
+        type: array
+        about: The list IDs to filter by
+      semanticQuery:
+        in: body
+        about: The semantic search query to find companies with. More natural language version of the standard query.
+      semanticWeight:
+        in: body
+        type: number
+        about: The semantic weight to apply to the results. Must be between 0 and 1. 0.7 is default. Larger values
+          will prioritize semantic similarity, smaller values will prioritize traditional search factors.
+      exclude:
+        in: body
+        type: object
+        about: Exclusion filters to apply on the companies. If a company matches any of the filters here, it will
+          be excluded from the results.
+      query:
+        in: body
+        about: The search query to apply on the company name and domain
+      foundedYear:
+        in: body
+        type: object
+        about: The range of years
+      fundingAmount:
+        in: body
+        type: object
+        about: The funding amount range to filter by
+      fundingYear:
+        in: body
+        type: object
+        about: The range of years
+      categoryOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      keywordsOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      technologiesOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      workforceGrowth:
+        in: body
+        type: object
+        about: Filter companies by workforce growth percentage over a selected period and department.
+      workforceSize:
+        in: body
+        type: array
+        about: Filter companies by absolute workforce headcount. Multiple entries can be provided to filter on different
+          departments simultaneously.
+      require:
+        in: body
+        type: array
+        about: The features that must exist for the company
+      regions:
+        in: body
+        type: array
+        about: The region IDs to filter by
+      countries:
+        in: body
+        type: array
+        about: The 2 letter country codes to filter by
+      states:
+        in: body
+        type: array
+        about: The state IDs to filter by
+      cities:
+        in: body
+        type: array
+        about: The city IDs to filter by
+      type:
+        in: body
+        type: array
+        about: The list of company types to filter by
+      category:
+        in: body
+        type: array
+        about: The list of company categories to filter by
+      employees:
+        in: body
+        type: array
+        about: The list of employee counts to filter by
+      reportedEmployees:
+        in: body
+        type: array
+        about: The list of externally reported employee counts to filter by
+      revenue:
+        in: body
+        type: array
+        about: The list of revenue ranges to filter by
+      naicsCode:
+        in: body
+        type: array
+        about: The NAICS codes to filter by. Can be 2 to 6 digit codes. In case of a 2-5 digit code, all 6 digit
+          codes under it will be included
+      keywords:
+        in: body
+        type: array
+        about: The keywords to filter by
+      technologies:
+        in: body
+        type: array
+        about: The technologies to filter by
+      fundingRounds:
+        in: body
+        type: array
+        about: The funding rounds to filter by
+    price:
+      credits: 1
+      per: result
+    jobs:
+      find_companies:
+        needs:
+        - - query
+        - - technology
+        - - country
+        send:
+          query: semanticQuery
+          technology: technologies
+          country: countries
+        limit: pageSize
+        result: items
+        fields:
+          name: name
+          domain: domain
+          website: website
+          description: description
+          industry: industry
+          employees: employees
+          founded: founded_year
+          location: join(', ', [location.city.name, location.country.name][?@])
+          country: location.country.code
+          linkedin_url: socials.linkedin_url
+  companies-similar-count:
+    title: Count
+    about: 'Cost: FREE - No credits deducted Returns the total count of similar companies matching the given search
+      criteria without retrieving the actual results.'
+    request: POST /companies/similar/count
+    params:
+      waitForEnrichment:
+        type: boolean
+        about: Whether to wait for on-demand enrichment when a seed company is not stored yet. When false, valid
+          missing domains are scheduled for background enrichment and the request returns a 404 if any seed…
+      domains:
+        in: body
+        type: array
+        about: The domains to find similar companies for. Up to 10 domains are allowed.
+      similarityWeight:
+        in: body
+        type: number
+        about: The similarity weight to apply to the results. Must be between -1 and 1. 0 is default. Larger values
+          will prioritize more similar companies, smaller values will prioritize more established companies.
+      minScore:
+        in: body
+        type: number
+        about: The minimum similarity score required for results. Must be between 0 and 1. When omitted, the default
+          cutoff is used.
+      exclude:
+        in: body
+        type: object
+        about: Exclusion filters to apply on the companies. If a company matches any of the filters here, it will
+          be excluded from the results.
+      query:
+        in: body
+        about: The search query to apply on the company name and domain
+      foundedYear:
+        in: body
+        type: object
+        about: The range of years
+      fundingAmount:
+        in: body
+        type: object
+        about: The funding amount range to filter by
+      fundingYear:
+        in: body
+        type: object
+        about: The range of years
+      categoryOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      keywordsOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      technologiesOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      workforceGrowth:
+        in: body
+        type: object
+        about: Filter companies by workforce growth percentage over a selected period and department.
+      workforceSize:
+        in: body
+        type: array
+        about: Filter companies by absolute workforce headcount. Multiple entries can be provided to filter on different
+          departments simultaneously.
+      require:
+        in: body
+        type: array
+        about: The features that must exist for the company
+      regions:
+        in: body
+        type: array
+        about: The region IDs to filter by
+      countries:
+        in: body
+        type: array
+        about: The 2 letter country codes to filter by
+      states:
+        in: body
+        type: array
+        about: The state IDs to filter by
+      cities:
+        in: body
+        type: array
+        about: The city IDs to filter by
+      type:
+        in: body
+        type: array
+        about: The list of company types to filter by
+      category:
+        in: body
+        type: array
+        about: The list of company categories to filter by
+      employees:
+        in: body
+        type: array
+        about: The list of employee counts to filter by
+      reportedEmployees:
+        in: body
+        type: array
+        about: The list of externally reported employee counts to filter by
+      revenue:
+        in: body
+        type: array
+        about: The list of revenue ranges to filter by
+      naicsCode:
+        in: body
+        type: array
+        about: The NAICS codes to filter by. Can be 2 to 6 digit codes. In case of a 2-5 digit code, all 6 digit
+          codes under it will be included
+      keywords:
+        in: body
+        type: array
+        about: The keywords to filter by
+      technologies:
+        in: body
+        type: array
+        about: The technologies to filter by
+      fundingRounds:
+        in: body
+        type: array
+        about: The funding rounds to filter by
+    price:
+      credits: 1
+      per: call
+  companies-similar-preview:
+    title: Preview
+    about: 'Cost: FREE - No credits deducted Requirements: Requires Scale plans Notice: Returns top 25 results only
+      Preview search for similar companies based on given criteria. You can search by domain,…'
+    request: POST /companies/similar/preview
+    params:
+      waitForEnrichment:
+        type: boolean
+        about: Whether to wait for on-demand enrichment when a seed company is not stored yet. When false, valid
+          missing domains are scheduled for background enrichment and the request returns a 404 if any seed…
+      domains:
+        in: body
+        type: array
+        about: The domains to find similar companies for. Up to 10 domains are allowed.
+      similarityWeight:
+        in: body
+        type: number
+        about: The similarity weight to apply to the results. Must be between -1 and 1. 0 is default. Larger values
+          will prioritize more similar companies, smaller values will prioritize more established companies.
+      minScore:
+        in: body
+        type: number
+        about: The minimum similarity score required for results. Must be between 0 and 1. When omitted, the default
+          cutoff is used.
+      exclude:
+        in: body
+        type: object
+        about: Exclusion filters to apply on the companies. If a company matches any of the filters here, it will
+          be excluded from the results.
+      query:
+        in: body
+        about: The search query to apply on the company name and domain
+      foundedYear:
+        in: body
+        type: object
+        about: The range of years
+      fundingAmount:
+        in: body
+        type: object
+        about: The funding amount range to filter by
+      fundingYear:
+        in: body
+        type: object
+        about: The range of years
+      categoryOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      keywordsOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      technologiesOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      workforceGrowth:
+        in: body
+        type: object
+        about: Filter companies by workforce growth percentage over a selected period and department.
+      workforceSize:
+        in: body
+        type: array
+        about: Filter companies by absolute workforce headcount. Multiple entries can be provided to filter on different
+          departments simultaneously.
+      require:
+        in: body
+        type: array
+        about: The features that must exist for the company
+      regions:
+        in: body
+        type: array
+        about: The region IDs to filter by
+      countries:
+        in: body
+        type: array
+        about: The 2 letter country codes to filter by
+      states:
+        in: body
+        type: array
+        about: The state IDs to filter by
+      cities:
+        in: body
+        type: array
+        about: The city IDs to filter by
+      type:
+        in: body
+        type: array
+        about: The list of company types to filter by
+      category:
+        in: body
+        type: array
+        about: The list of company categories to filter by
+      employees:
+        in: body
+        type: array
+        about: The list of employee counts to filter by
+      reportedEmployees:
+        in: body
+        type: array
+        about: The list of externally reported employee counts to filter by
+      revenue:
+        in: body
+        type: array
+        about: The list of revenue ranges to filter by
+      naicsCode:
+        in: body
+        type: array
+        about: The NAICS codes to filter by. Can be 2 to 6 digit codes. In case of a 2-5 digit code, all 6 digit
+          codes under it will be included
+      keywords:
+        in: body
+        type: array
+        about: The keywords to filter by
+      technologies:
+        in: body
+        type: array
+        about: The technologies to filter by
+      fundingRounds:
+        in: body
+        type: array
+        about: The funding rounds to filter by
+    price:
+      credits: 1
+      per: call
+  companies-similar-scroll:
+    title: Scroll
+    about: 'Cost: 5 credit per company returned. 5 credits if no results are found. Finds similar companies to the
+      given company by id or domain. The POST route allows specifying further filtering parameters. At…'
+    request: POST /companies/similar/scroll
+    params:
+      expand:
+        type: array
+        about: 'Expandable response fields. Repeat the parameter to request multiple expansions. Supported values:
+          - workforce: costs 5 credits per company and adds the workforce field to CompanyInfo.'
+      waitForEnrichment:
+        type: boolean
+        about: Whether to wait for on-demand enrichment when a seed company is not stored yet. When false, valid
+          missing domains are scheduled for background enrichment and the request returns a 404 if any seed…
+      pageSize:
+        in: body
+        type: integer
+        about: The number of results to return in each page. Must be between 1 and 100
+      cursor:
+        in: body
+        about: The cursor to use for pagination. This is used for cursor based pagination. If this is set, Page
+          will be ignored.
+      domains:
+        in: body
+        type: array
+        about: The domains to find similar companies for. Up to 10 domains are allowed.
+      similarityWeight:
+        in: body
+        type: number
+        about: The similarity weight to apply to the results. Must be between -1 and 1. 0 is default. Larger values
+          will prioritize more similar companies, smaller values will prioritize more established companies.
+      minScore:
+        in: body
+        type: number
+        about: The minimum similarity score required for results. Must be between 0 and 1. When omitted, the default
+          cutoff is used.
+      exclude:
+        in: body
+        type: object
+        about: Exclusion filters to apply on the companies. If a company matches any of the filters here, it will
+          be excluded from the results.
+      query:
+        in: body
+        about: The search query to apply on the company name and domain
+      foundedYear:
+        in: body
+        type: object
+        about: The range of years
+      fundingAmount:
+        in: body
+        type: object
+        about: The funding amount range to filter by
+      fundingYear:
+        in: body
+        type: object
+        about: The range of years
+      categoryOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      keywordsOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      technologiesOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      workforceGrowth:
+        in: body
+        type: object
+        about: Filter companies by workforce growth percentage over a selected period and department.
+      workforceSize:
+        in: body
+        type: array
+        about: Filter companies by absolute workforce headcount. Multiple entries can be provided to filter on different
+          departments simultaneously.
+      require:
+        in: body
+        type: array
+        about: The features that must exist for the company
+      regions:
+        in: body
+        type: array
+        about: The region IDs to filter by
+      countries:
+        in: body
+        type: array
+        about: The 2 letter country codes to filter by
+      states:
+        in: body
+        type: array
+        about: The state IDs to filter by
+      cities:
+        in: body
+        type: array
+        about: The city IDs to filter by
+      type:
+        in: body
+        type: array
+        about: The list of company types to filter by
+      category:
+        in: body
+        type: array
+        about: The list of company categories to filter by
+      employees:
+        in: body
+        type: array
+        about: The list of employee counts to filter by
+      reportedEmployees:
+        in: body
+        type: array
+        about: The list of externally reported employee counts to filter by
+      revenue:
+        in: body
+        type: array
+        about: The list of revenue ranges to filter by
+      naicsCode:
+        in: body
+        type: array
+        about: The NAICS codes to filter by. Can be 2 to 6 digit codes. In case of a 2-5 digit code, all 6 digit
+          codes under it will be included
+      keywords:
+        in: body
+        type: array
+        about: The keywords to filter by
+      technologies:
+        in: body
+        type: array
+        about: The technologies to filter by
+      fundingRounds:
+        in: body
+        type: array
+        about: The funding rounds to filter by
+    price:
+      credits: 1
+      per: call
+  companies-similar:
+    title: Find similar
+    about: 'Cost: 5 credit per company returned. 5 credits if no results are found. Finds similar companies to the
+      given company by id or domain. The POST route allows specifying further filtering parameters. At…'
+    request: POST /companies/similar
+    params:
+      expand:
+        type: array
+        about: 'Expandable response fields. Repeat the parameter to request multiple expansions. Supported values:
+          - workforce: costs 5 credits per company and adds the workforce field to CompanyInfo.'
+      waitForEnrichment:
+        type: boolean
+        about: Whether to wait for on-demand enrichment when a seed company is not stored yet. When false, valid
+          missing domains are scheduled for background enrichment and the request returns a 404 if any seed…
+      domain:
+        in: body
+        about: The domain to find similar companies for. This is deprecated, use domains instead. Using domains
+          with a single domain acts the same as using the domain parameter.
+      page:
+        in: body
+        type: integer
+        about: The page number to return. Must be greater than 0
+      pageSize:
+        in: body
+        type: integer
+        about: The number of results to return. Must be between 1 and 100
+      domains:
+        in: body
+        type: array
+        about: The domains to find similar companies for. Up to 10 domains are allowed.
+      similarityWeight:
+        in: body
+        type: number
+        about: The similarity weight to apply to the results. Must be between -1 and 1. 0 is default. Larger values
+          will prioritize more similar companies, smaller values will prioritize more established companies.
+      minScore:
+        in: body
+        type: number
+        about: The minimum similarity score required for results. Must be between 0 and 1. When omitted, the default
+          cutoff is used.
+      exclude:
+        in: body
+        type: object
+        about: Exclusion filters to apply on the companies. If a company matches any of the filters here, it will
+          be excluded from the results.
+      query:
+        in: body
+        about: The search query to apply on the company name and domain
+      foundedYear:
+        in: body
+        type: object
+        about: The range of years
+      fundingAmount:
+        in: body
+        type: object
+        about: The funding amount range to filter by
+      fundingYear:
+        in: body
+        type: object
+        about: The range of years
+      categoryOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      keywordsOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      technologiesOperator:
+        in: body
+        choices:
+        - And
+        - Or
+        - null
+        about: The operator to apply to the filters. Defaults to And.
+      workforceGrowth:
+        in: body
+        type: object
+        about: Filter companies by workforce growth percentage over a selected period and department.
+      workforceSize:
+        in: body
+        type: array
+        about: Filter companies by absolute workforce headcount. Multiple entries can be provided to filter on different
+          departments simultaneously.
+      require:
+        in: body
+        type: array
+        about: The features that must exist for the company
+      regions:
+        in: body
+        type: array
+        about: The region IDs to filter by
+      countries:
+        in: body
+        type: array
+        about: The 2 letter country codes to filter by
+      states:
+        in: body
+        type: array
+        about: The state IDs to filter by
+      cities:
+        in: body
+        type: array
+        about: The city IDs to filter by
+      type:
+        in: body
+        type: array
+        about: The list of company types to filter by
+      category:
+        in: body
+        type: array
+        about: The list of company categories to filter by
+      employees:
+        in: body
+        type: array
+        about: The list of employee counts to filter by
+      reportedEmployees:
+        in: body
+        type: array
+        about: The list of externally reported employee counts to filter by
+      revenue:
+        in: body
+        type: array
+        about: The list of revenue ranges to filter by
+      naicsCode:
+        in: body
+        type: array
+        about: The NAICS codes to filter by. Can be 2 to 6 digit codes. In case of a 2-5 digit code, all 6 digit
+          codes under it will be included
+      keywords:
+        in: body
+        type: array
+        about: The keywords to filter by
+      technologies:
+        in: body
+        type: array
+        about: The technologies to filter by
+      fundingRounds:
+        in: body
+        type: array
+        about: The funding rounds to filter by
+    price:
+      credits: 1
+      per: call
+  geo-cities:
+    title: Search cities
+    about: Searches cities by name or country codes. Returns up to 100 cities per page.
+    request: POST /geo/cities
+    params:
+      query:
+        in: body
+      countryCodes:
+        in: body
+        type: array
+      page:
+        in: body
+        type: integer
+    price:
+      credits: 1
+      per: call
+  post-geo-countries:
+    title: Search countries
+    about: Searches countries by name. Returns up to 100 countries per page.
+    request: POST /geo/countries
+    params:
+      query:
+        in: body
+      page:
+        in: body
+        type: integer
+    price:
+      credits: 1
+      per: call
+  geo-states:
+    title: Search states
+    about: Searches states by name or country codes. Returns up to 100 states per page.
+    request: POST /geo/states
+    params:
+      query:
+        in: body
+      countryCodes:
+        in: body
+        type: array
+      page:
+        in: body
+        type: integer
+    price:
+      credits: 1
+      per: call
+  post-people-email-bulk:
+    title: Create bulk email enrichment job (BETA)
+    about: 'BETA: This endpoint is currently in beta and may change based on provider coverage, job orchestration,
+      and response tuning. Cost: up to 10 credits per item (charged on completion for newly accessed…'
+    request: POST /people/email/bulk
+    params:
+      items:
+        in: body
+        type: array
+        required: true
+        about: A list of person email enrichment lookups. Up to 1,000 items can be provided.
+      webhook_url:
+        in: body
+        about: The webhook URL to receive the notification when processing completes.
+    price:
+      credits: 1
+      per: call
+  people-lookup:
+    title: Lookup person
+    about: 'Cost: 5 credits per successful call Looks up a person by email address. We resolve the company from
+      the email domain first, then match the person by email local-part patterns. Returns the best…'
+    request: POST /people/lookup
+    params:
+      expand:
+        type: array
+        about: 'Expandable response fields. Repeat the parameter to request multiple expansions. Supported values:
+          - education: costs 1 credit per person and adds the education field to PersonInfo.'
+      email:
+        in: body
+        required: true
+        about: The email address of the person to look up
+    price:
+      credits: 1
+      per: call
+    not_found: 404
+    jobs:
+      enrich_person:
+        needs:
+        - - email
+        send:
+          email: email
+        result: '@'
+        fields:
+          name: name
+          first_name: first_name
+          last_name: last_name
+          title: experiences[?isCurrent] | [0].position
+          company: experiences[?isCurrent] | [0].company.name
+          company_domain: experiences[?isCurrent] | [0].company.domain
+          location: location.address
+          country: location.country.code
+          linkedin_url: socials.linkedin_url
+          experience: experiences
+          education: education
+  post-people-search-async:
+    title: Create export job
+    about: 'Cost: 2 credits per person returned (reserved when the job is created, settled on completion) Creates
+      an asynchronous search export job for up to 50,000 people. Returns a job ID immediately. The…'
+    request: POST /people/search/async
+    params:
+      expand:
+        type: array
+        about: 'Expandable response fields. Repeat the parameter to request multiple expansions. Supported values:
+          - education: costs 1 credit per person and adds the education field to PersonInfo.'
+      count:
+        in: body
+        type: integer
+        required: true
+        about: The number of people to export.
+      webhook_url:
+        in: body
+        about: The webhook URL to receive the notification when processing completes.
+      companyFilter:
+        in: body
+        type: object
+        about: The filters to be applied on the companies to find people for
+      query:
+        in: body
+        about: The search query to apply on the company name and domain
+      positionQuery:
+        in: body
+        type: array
+        about: The list of search queries to apply on the person's current job position/title
+      atCurrentCompanyAfter:
+        in: body
+        about: Filter by current company join date - only include people who joined after this UTC date
+      atCurrentCompanyBefore:
+        in: body
+        about: Filter by current company join date - only include people who joined before this UTC date
+      atCurrentPositionAfter:
+        in: body
+        about: Filter by current position start date - only include people who started after this UTC date
+      atCurrentPositionBefore:
+        in: body
+        about: Filter by current position start date - only include people who started before this UTC date
+      exclude:
+        in: body
+        type: object
+        about: Exclusion filters to apply on the people. If a person matches any of the filters here, it will be
+          excluded from the results.
+      countries:
+        in: body
+        type: array
+        about: The 2 letter country codes to filter by
+      domains:
+        in: body
+        type: array
+        about: The domains to find people for. Up to 2,500 domains are allowed.
+      seniority:
+        in: body
+        type: array
+        about: The seniorities to filter by
+      department:
+        in: body
+        type: array
+        about: The departments to filter by
+      education:
+        in: body
+        type: object
+        about: The education history filters to apply
+    price:
+      credits: 1
+      per: call
+  people-search-scroll:
+    title: Scroll
+    about: 'Cost: 2 credits per person returned. 2 credits minimum if no results are found. Searches people based
+      on given criteria using cursor-based pagination. You can request the next page of results by…'
+    request: POST /people/search/scroll
+    params:
+      expand:
+        type: array
+        about: 'Expandable response fields. Repeat the parameter to request multiple expansions. Supported values:
+          - education: costs 1 credit per person and adds the education field to PersonInfo.'
+      pageSize:
+        in: body
+        type: integer
+        about: The number of results to return in each page. Must be between 1 and 100
+      cursor:
+        in: body
+        about: The cursor to use for pagination. This is used for cursor based pagination. If this is set, Page
+          will be ignored.
+      companyFilter:
+        in: body
+        type: object
+        about: The filters to be applied on the companies to find people for
+      query:
+        in: body
+        about: The search query to apply on the company name and domain
+      positionQuery:
+        in: body
+        type: array
+        about: The list of search queries to apply on the person's current job position/title
+      atCurrentCompanyAfter:
+        in: body
+        about: Filter by current company join date - only include people who joined after this UTC date
+      atCurrentCompanyBefore:
+        in: body
+        about: Filter by current company join date - only include people who joined before this UTC date
+      atCurrentPositionAfter:
+        in: body
+        about: Filter by current position start date - only include people who started after this UTC date
+      atCurrentPositionBefore:
+        in: body
+        about: Filter by current position start date - only include people who started before this UTC date
+      exclude:
+        in: body
+        type: object
+        about: Exclusion filters to apply on the people. If a person matches any of the filters here, it will be
+          excluded from the results.
+      countries:
+        in: body
+        type: array
+        about: The 2 letter country codes to filter by
+      domains:
+        in: body
+        type: array
+        about: The domains to find people for. Up to 2,500 domains are allowed.
+      seniority:
+        in: body
+        type: array
+        about: The seniorities to filter by
+      department:
+        in: body
+        type: array
+        about: The departments to filter by
+      education:
+        in: body
+        type: object
+        about: The education history filters to apply
+    price:
+      credits: 1
+      per: call
+  people-search:
+    title: Search
+    about: 'Cost: 2 credits per person returned. 2 credits minimum if no results are found. Notice: Up to 10.000
+      results can be returned from this endpoint (page * pageSize can not exceed 10.000). If you need…'
+    request: POST /people/search
+    params:
+      expand:
+        type: array
+        about: 'Expandable response fields. Repeat the parameter to request multiple expansions. Supported values:
+          - education: costs 1 credit per person and adds the education field to PersonInfo.'
+      page:
+        in: body
+        type: integer
+        about: The page number to return. Must be greater than 0
+      pageSize:
+        in: body
+        type: integer
+        about: The number of results to return in each page. Must be between 1 and 100
+      companyFilter:
+        in: body
+        type: object
+        about: The filters to be applied on the companies to find people for
+      query:
+        in: body
+        about: The search query to apply on the company name and domain
+      positionQuery:
+        in: body
+        type: array
+        about: The list of search queries to apply on the person's current job position/title
+      atCurrentCompanyAfter:
+        in: body
+        about: Filter by current company join date - only include people who joined after this UTC date
+      atCurrentCompanyBefore:
+        in: body
+        about: Filter by current company join date - only include people who joined before this UTC date
+      atCurrentPositionAfter:
+        in: body
+        about: Filter by current position start date - only include people who started after this UTC date
+      atCurrentPositionBefore:
+        in: body
+        about: Filter by current position start date - only include people who started before this UTC date
+      exclude:
+        in: body
+        type: object
+        about: Exclusion filters to apply on the people. If a person matches any of the filters here, it will be
+          excluded from the results.
+      countries:
+        in: body
+        type: array
+        about: The 2 letter country codes to filter by
+      domains:
+        in: body
+        type: array
+        about: The domains to find people for. Up to 2,500 domains are allowed.
+      seniority:
+        in: body
+        type: array
+        about: The seniorities to filter by
+      department:
+        in: body
+        type: array
+        about: The departments to filter by
+      education:
+        in: body
+        type: object
+        about: The education history filters to apply
+    price:
+      credits: 1
+      per: result
+    jobs:
+      find_people:
+        needs:
+        - - title
+        - - company_domain
+        - - query
+        send:
+          title: positionQuery
+          company_domain: domains
+          query: query
+          country: countries
+          seniority: seniority
+        limit: pageSize
+        result: items
+        fields:
+          name: name
+          first_name: first_name
+          last_name: last_name
+          title: position
+          company: experiences[?isCurrent] | [0].companyName || experiences[?isCurrent] | [0].company.name
+          company_domain: experiences[?isCurrent] | [0].company.domain
+          location: location.address
+          country: location.country.code
+          linkedin_url: socials.linkedin_url
+          image: image_url

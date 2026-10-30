@@ -1,0 +1,222 @@
+id: pdl
+title: People Data Labs
+about: Profiles of 3B people and 70M companies, matched by email, social URL, name or company, or searched with Elasticsearch or SQL.
+site: https://www.peopledatalabs.com
+docs: https://docs.peopledatalabs.com
+pricing: https://www.peopledatalabs.com/pricing
+api: https://api.peopledatalabs.com/v5
+key:
+  env: PDL_API_KEY
+  header: X-Api-Key
+operations:
+  person-enrich:
+    title: One person from an email, profile URL, phone or name
+    about: The more you give (name with company, location, school), the likelier a match; min_likelihood (1-10) sets the bar.
+    request: GET /person/enrich
+    docs: https://docs.peopledatalabs.com/docs/reference-person-enrichment-api
+    params:
+      email: {}
+      profile: {about: a social profile URL, e.g. LinkedIn}
+      phone: {}
+      name: {about: full name}
+      first_name: {}
+      last_name: {}
+      company: {about: company name or website}
+      school: {}
+      location: {}
+      pdl_id: {}
+      min_likelihood: {type: integer, about: 1-10}
+      required: {about: "fields the record must have, e.g. emails AND job_company_name"}
+      titlecase: {type: boolean, default: true}
+    not_found: 404
+    price: {credits: 1, per: success}
+    jobs:
+      enrich_person:
+        needs: [[email], [linkedin_url], [phone], [full_name, company], [full_name, company_domain]]
+        send: {email: email, linkedin_url: profile, phone: phone, full_name: name, company: company, company_domain: company}
+        result: data
+        fields:
+          name: full_name
+          first_name: first_name
+          last_name: last_name
+          title: job_title
+          headline: headline
+          company: job_company_name
+          company_domain: job_company_website
+          location: location_name
+          country: location_country
+          linkedin_url: "linkedin_url && join('', ['https://', linkedin_url])"
+          email: work_email || recommended_personal_email
+          phone: mobile_phone
+          skills: skills
+          experience: experience
+          education: education
+      find_contact:
+        needs: [[linkedin_url], [full_name, company_domain], [full_name, company]]
+        send: {linkedin_url: profile, full_name: name, company_domain: company, company: company}
+        fixed: {required: work_email}
+        result: data
+        fields:
+          email: work_email
+          phone: mobile_phone
+          name: full_name
+          title: job_title
+          company_domain: job_company_website
+  person-identify:
+    title: Up to 20 people who could match loose details
+    about: For when you hold fragments (a name and a city, a username). One credit per call, match or not.
+    request: GET /person/identify
+    docs: https://docs.peopledatalabs.com/docs/reference-person-identify-api
+    params:
+      name: {}
+      first_name: {}
+      last_name: {}
+      location: {}
+      company: {}
+      school: {}
+      email: {}
+      phone: {}
+      profile: {}
+      titlecase: {type: boolean, default: true}
+    not_found: 404
+    price: {credits: 1, per: call}
+  person-search:
+    title: People by an Elasticsearch query or SQL
+    about: "Every person field is searchable: job_title, job_company_website, location_country (full lowercase name), skills, job_title_levels…"
+    request: POST /person/search
+    docs: https://docs.peopledatalabs.com/docs/reference-person-search-api
+    params:
+      query: {in: body, type: object, about: an Elasticsearch 7.7 query}
+      sql: {in: body, about: "SELECT * FROM person WHERE ..."}
+      size: {in: body, type: integer, about: 1-100, default: 10}
+      scroll_token: {in: body, about: from the previous page}
+      dataset: {in: body, about: resume (default), email, phone, mobile_phone, developer, all…}
+      titlecase: {in: body, type: boolean, default: true}
+    price: {credits: 1, per: result}
+    jobs:
+      find_people:
+        needs: [[title], [company_domain], [company], [keywords]]
+        send:
+          title: query.bool.must.0.match.job_title
+          company_domain: query.bool.must.1.term.job_company_website
+          company: query.bool.must.2.match.job_company_name
+          location: query.bool.must.3.match.location_name
+          keywords: query.bool.must.4.match.skills
+        limit: size
+        result: data
+        fields:
+          name: full_name
+          title: job_title
+          headline: headline
+          company: job_company_name
+          company_domain: job_company_website
+          location: location_name
+          country: location_country
+          linkedin_url: "linkedin_url && join('', ['https://', linkedin_url])"
+          email: work_email
+  company-enrich:
+    title: One company from its website, name, profile URL or ticker
+    request: GET /company/enrich
+    docs: https://docs.peopledatalabs.com/docs/reference-company-enrichment-api
+    params:
+      website: {}
+      name: {}
+      profile: {about: LinkedIn or other social URL}
+      ticker: {}
+      pdl_id: {}
+      min_likelihood: {type: integer}
+      titlecase: {type: boolean, default: true}
+    not_found: 404
+    price: {credits: 1, per: success}
+    jobs:
+      enrich_company:
+        needs: [[domain], [linkedin_url], [name]]
+        send: {domain: website, linkedin_url: profile, name: name}
+        result: '@'
+        fields:
+          name: display_name || name
+          domain: website
+          website: website
+          description: summary
+          industry: industry
+          employees: employee_count
+          founded: founded
+          location: location.name
+          country: location.country
+          linkedin_url: "linkedin_url && join('', ['https://', linkedin_url])"
+          funding: total_funding_raised
+          technologies: tags
+  company-search:
+    title: Companies by an Elasticsearch query or SQL
+    request: POST /company/search
+    docs: https://docs.peopledatalabs.com/docs/reference-company-search-api
+    params:
+      query: {in: body, type: object}
+      sql: {in: body, about: "SELECT * FROM company WHERE ..."}
+      size: {in: body, type: integer, default: 10}
+      scroll_token: {in: body}
+      titlecase: {in: body, type: boolean, default: true}
+    price: {credits: 1, per: result}
+    jobs:
+      find_companies:
+        needs: [[industry], [location], [employees], [query]]
+        send:
+          industry: query.bool.must.0.match.industry
+          location: query.bool.must.1.match.location.name
+          employees: query.bool.must.2.term.size
+          query: query.bool.must.3.match.summary
+        limit: size
+        result: data
+        fields:
+          name: display_name || name
+          domain: website
+          description: summary
+          industry: industry
+          employees: employee_count
+          founded: founded
+          location: location.name
+          country: location.country
+          linkedin_url: "linkedin_url && join('', ['https://', linkedin_url])"
+  autocomplete:
+    title: Valid values for a search field
+    request: GET /autocomplete
+    params:
+      field: {required: true, choices: [all_location, class, company, country, industry, location, location_name, major, region, role, school, sub_role, skill, title, website]}
+      text: {}
+      size: {type: integer}
+    price: {usd: 0, per: call}
+  job-title-enrich:
+    title: How a job title is classified (role, level, related titles)
+    request: GET /job_title/enrich
+    params:
+      job_title: {required: true}
+    price: {usd: 0, per: call}
+  company-clean:
+    title: The canonical company for a messy name or website
+    request: GET /company/clean
+    params:
+      name: {}
+      website: {}
+      profile: {}
+    price: {usd: 0, per: call}
+  location-clean:
+    title: The canonical place for free-text location
+    request: GET /location/clean
+    params:
+      location: {required: true}
+    price: {usd: 0, per: call}
+  school-clean:
+    title: The canonical school for a name or website
+    request: GET /school/clean
+    params:
+      name: {}
+      website: {}
+      profile: {}
+    price: {usd: 0, per: call}
+  ip-enrich:
+    title: The company and place behind an IP address
+    request: GET /ip/enrich
+    params:
+      ip: {required: true}
+    not_found: 404
+    price: {credits: 1, per: success}

@@ -1,0 +1,827 @@
+id: enrichlayer
+title: Enrich Layer
+about: LinkedIn-sourced person and company profiles, person and company search, employee listings, work and personal
+  emails and phones.
+site: https://enrichlayer.com
+docs: https://enrichlayer.com/docs/api/v2
+pricing: https://enrichlayer.com/pricing
+api: https://enrichlayer.com/api/v2
+key:
+  env: ENRICHLAYER_API_KEY
+  bearer: true
+operations:
+  school:
+    title: School Profile Endpoint
+    about: 'Cost: 1 credit / successful request. Get structured data of a School Profile.'
+    request: GET /school
+    params:
+      url:
+        required: true
+        about: URL of the School Profile to crawl.
+      use_cache:
+        about: if-present The default behavior.Fetches profile from cache regardless of age of profile. If profile
+          is not available in cache, API will attempt to source profile externally. if-recent API will make a…
+      live_fetch:
+        about: 'Tweak the behavior of the API to fetch the fresh profile. This parameter accepts the following values:
+          * force - Force the API to fetch the fresh profile. Costs an extra 9 credits on top of the cost…'
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+  company:
+    title: Company Profile Endpoint
+    about: 'Cost: 1 credit / successful request. Get structured data of a Company Profile.'
+    request: GET /company
+    params:
+      url:
+        required: true
+        about: URL Company Profile to crawl.
+      categories:
+        about: Appends categories data of this company. Default value is "exclude". The other acceptable value is
+          "include", which will include these categories (if available) for 1 extra credit.
+      funding_data:
+        about: Returns a list of funding rounds that this company has received. Default value is "exclude". The
+          other acceptable value is "include", which will include these categories (if available) for 1 extra…
+      exit_data:
+        about: Returns a list of investment portfolio exits. Default value is "exclude". The other acceptable value
+          is "include", which will include these categories (if available) for 1 extra credit.
+      acquisitions:
+        about: Provides further enriched data on acquisitions made by this company from external sources. Default
+          value is "exclude". The other acceptable value is "include", which will include these acquisition…
+      extra:
+        about: Enriches the Company Profile with extra details from external sources. Details include Crunchbase
+          ranking, contact email, phone number, Facebook account, Twitter account, funding rounds and amount,…
+      use_cache:
+        about: if-present - Fetches profile from cache regardless of age of profile. If profile is not available
+          in cache, API will attempt to source profile externally. if-recent (Default) - API will make a best…
+      fallback_to_cache:
+        about: 'Tweaks the fallback behavior if an error arises from fetching a fresh profile. This parameter accepts
+          the following values: * on-error (default value) - Fallback to reading the profile from cache if…'
+      live_fetch:
+        about: 'Tweak the behavior of the API to fetch the fresh profile. This parameter accepts the following values:
+          * force - Force the API to fetch the fresh profile. Costs an extra 9 credits on top of the cost…'
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+    jobs:
+      enrich_company:
+        needs:
+        - - linkedin_url
+        send:
+          linkedin_url: url
+        result: '@'
+        fields:
+          name: name
+          website: website
+          description: description
+          industry: industry
+          employees: company_size_on_linkedin
+          founded: founded_year
+          location: join(', ', [hq.city, hq.country][?@])
+          country: hq.country
+          logo: profile_pic_url
+  profile:
+    title: Person Profile Endpoint
+    about: 'Cost: 1 credit / successful request. Get structured data of a Person Profile.'
+    request: GET /profile
+    params:
+      profile_url:
+        about: The Profile URL from which you wish to extract. We support both raw UTF-8 input and URL-encoded input.
+          For example, https://linkedin.com/in/rodríguez/ and https://linkedin.com/in/rodr%C3%ADguez/ are…
+      twitter_profile_url:
+        about: 'The Twitter/X Profile URL from which you wish to extract person profile URL should be in the format
+          of https://x.com/ Include only one of: profile_url, twitter_profile_url, or facebook_profile_url.'
+      facebook_profile_url:
+        about: 'The Facebook Profile URL from which you wish to extract person profile URL should be in the format
+          of https://facebook.com/ Include only one of: profile_url, twitter_profile_url, or…'
+      extra:
+        about: 'Enriches the Person Profile with extra details from external sources. Extra details include gender,
+          birth date, industry and interests. This parameter accepts the following values: - exclude (default…'
+      github_profile_id:
+        about: 'Enriches the Person Profile with GitHub ID from external sources. This parameter accepts the following
+          values: - exclude (default value) - Does not provide GitHub ID data field. - include - Append…'
+      facebook_profile_id:
+        about: 'Enriches the Person Profile with Facebook ID from external sources. This parameter accepts the following
+          values: - exclude (default value) - Does not provide Facebook ID data field. - include -…'
+      twitter_profile_id:
+        about: 'Enriches the Person Profile with Twitter ID from external sources. This parameter accepts the following
+          values: - exclude (default value) - Does not provide Twitter ID data field. - include - Append…'
+      personal_contact_number:
+        about: 'Enriches the Person Profile with personal numbers from external sources. This parameter accepts
+          the following values: - exclude (default value) - Does not provide personal numbers data field. -…'
+      personal_email:
+        about: 'Enriches the Person Profile with personal emails from external sources. This parameter accepts the
+          following values: - exclude (default value) - Does not provide personal emails data field. - include…'
+      inferred_salary:
+        about: 'Include inferred salary range from external sources. This parameter accepts the following values:
+          - exclude (default value) - Does not provide inferred salary data field. - include - Append inferred…'
+      skills:
+        about: Include skills data from external sources. Skills are no longer available as part of public data,
+          but we will show skills for historic profiles, or where skills are inferred or sourced by other…
+      use_cache:
+        about: if-present - Fetches profile from cache regardless of age of profile. If profile is not available
+          in cache, API will attempt to source profile externally. if-recent (Default) - API will make a best…
+      fallback_to_cache:
+        about: 'Tweaks the fallback behavior if an error arises from fetching a fresh profile. This parameter accepts
+          the following values: * on-error (default value) - Fallback to reading the profile from cache if…'
+      live_fetch:
+        about: 'Tweak the behavior of the API to fetch the fresh profile. This parameter accepts the following values:
+          * force - Force the API to fetch the fresh profile. Costs an extra 9 credits on top of the cost…'
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+    not_found: 404
+    jobs:
+      enrich_person:
+        needs:
+        - - linkedin_url
+        send:
+          linkedin_url: profile_url
+        result: '@'
+        fields:
+          name: full_name
+          first_name: first_name
+          last_name: last_name
+          headline: headline
+          title: occupation
+          company: experiences[?ends_at == null] | [0].company
+          location: location_str
+          country: country
+          linkedin_url: public_identifier && join('', ['https://www.linkedin.com/in/', public_identifier])
+          image: profile_pic_url
+          experience: experiences
+          education: education
+  company-employees:
+    title: Employee Listing Endpoint
+    about: 'Cost: 3 credits / employee returned. Get a list of employees of a Company.'
+    request: GET /company/employees/
+    params:
+      url:
+        required: true
+        about: URL of the Company Profile to target.
+      coy_name_match:
+        about: Include profiles that match the company name. The Employee Listing Endpoint works by identifying
+          individual profiles with work experience that provides an exact match to the Company Profile URL…
+      use_cache:
+        about: 'Define the freshness guarantee on the results returned. This parameter accepts the following values:
+          * if-present (default value) - Returns result as it is without any freshness guarantee * if-recent…'
+      country:
+        about: Limit the result set to the country locality of the profile. For example, set the parameter of country=us
+          if you only want profiles from the US. Or you can set the parameter to country=us,sg if you…
+      enrich_profiles:
+        about: 'Get the full profile of employees instead of only their profile urls. Each request respond with
+          a streaming response of profiles. The valid values are: * skip (default): lists employee''s profile url…'
+      boolean_role_search:
+        about: Filter employees by their title using boolean search expression. This parameter will take precedence
+          over role_search parameter if both are provided. The default value of this parameter is null. The…
+      role_search:
+        about: Use boolean_role_search instead. Filter employees by their title by matching the employee's title
+          against a *regular expression*. The default value of this parameter is null. The accepted value for…
+      page_size:
+        about: Limit the maximum results returned per API call. The default value of this parameter is 10. Accepted
+          values for this parameter is an integer ranging from 1 to 9999. When enrich_profiles=enrich, this…
+      employment_status:
+        about: 'Parameter to tell the API to return past or current employees. Valid values are current, past, and
+          all: * current (default) : lists current employees * past : lists past employees * all : lists…'
+      sort_by:
+        about: 'Sort employees by recency. Valid values are: * recently-joined - Sort employees by their join date.
+          The most recent employee is on the top of the list. * recently-left - Sort employees by their…'
+      resolve_numeric_id:
+        about: 'Enable support for Company Profile URLs with numerical IDs. This parameter accepts the following
+          values: - false (default value) - Will not resolve numerical IDs. - true - Enable support for Company…'
+      after:
+        about: The cursor for fetching the next page of results. Take the value of the after query parameter from
+          the next_page URL of the previous response.
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+  company-employees-count:
+    title: Employee Count Endpoint
+    about: 'Cost: 1 credit / successful request. Get the total number of employees of a company. Returns employee
+      counts from various sources.'
+    request: GET /company/employees/count
+    params:
+      url:
+        required: true
+        about: URL of the Company Profile to target.
+      coy_name_match:
+        about: Include profiles that match the company name. The Employee Count Endpoint works by identifying individual
+          profiles with work experience that provides an exact match to the Company Profile URL…
+      at_date:
+        about: Time travel back in time and fetch the employee count of a company at any particular date. This parameter
+          takes an ISO8601 timestamp with the representation of "YYYY-MM-DD". Costs 1 extra credit on…
+      use_cache:
+        about: 'if-present: The default behavior. Fetches data from cache regardless of age of profile. if-recent:
+          API will make a best effort to return a fresh data no older than 29 days. Costs an extra 1 credit on…'
+      estimated_employee_count:
+        about: 'Option to include a retrieved employee count value from the target company''s profile. Valid values
+          are include and exclude: * exclude (default) : To exclude the retrieved employee count. * include :…'
+      employment_status:
+        about: 'Parameter to tell the API to filter past or current employees. Valid values are current, past, and
+          all: * current (default) : count current employees * past : count past employees * all : count…'
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+  person-profile-picture:
+    title: Person Profile Picture Endpoint
+    about: 'Cost: 0 credit / successful request. Get the profile picture of a person. Returns profile pictures from
+      cached people profiles.'
+    request: GET /person/profile-picture
+    params:
+      person_profile_url:
+        required: true
+        about: Profile URL of the person that you are trying to get the profile picture of.
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+  company-profile-picture:
+    title: Company Profile Picture Endpoint
+    about: 'Cost: 0 credit / successful request. Get the profile picture of a company. Returns profile pictures
+      from cached company profiles.'
+    request: GET /company/profile-picture
+    params:
+      company_profile_url:
+        required: true
+        about: Profile URL of the company that you are trying to get the profile picture of.
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+  profile-resolve:
+    title: Person Lookup Endpoint
+    about: 'Cost: 2 credits / successful request. Look up a person with a name and company information. Credits
+      are charged by default even when no match is found; use similarity_checks=skip to avoid charges on…'
+    request: GET /profile/resolve
+    params:
+      company_domain:
+        required: true
+        about: Company name or domain
+      first_name:
+        required: true
+        about: First name of the user
+      similarity_checks:
+        about: Controls whether the API endpoint performs similarity comparisons between the input parameters and
+          the results or simply returns the closest match. For instance, if you are searching for a person…
+      enrich_profile:
+        about: 'Enrich the result with a cached profile of the lookup result. The valid values are: * skip (default):
+          do not enrich the results with cached profile data * enrich: enriches the result with cached…'
+      location:
+        about: The location of this user. Name of country, city or state.
+      title:
+        about: Title that user is holding at his/her current job
+      last_name:
+        about: Last name of the user
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+    jobs:
+      enrich_person:
+        needs:
+        - - full_name
+          - company_domain
+        send:
+          first_name: first_name
+          last_name: last_name
+          company_domain: company_domain
+        fixed:
+          enrich_profile: enrich
+        result: '@'
+        fields:
+          name: profile.full_name
+          headline: profile.headline
+          title: profile.occupation
+          location: profile.location_str
+          country: profile.country
+          linkedin_url: url
+          image: profile.profile_pic_url
+  find-company-role:
+    title: Role Lookup Endpoint
+    about: 'Cost: 3 credits / successful request. Returns the profile of a person who most closely matches a specified
+      role in a company. For instance, it can identify the "CTO" of "Apple". The endpoint returns…'
+    request: GET /find/company/role/
+    params:
+      role:
+        required: true
+        about: Role of the profile that you are looking up
+      company_name:
+        required: true
+        about: Name of the company that you are searching for
+      enrich_profile:
+        about: 'Enrich the result with a cached profile of the lookup result. The valid values are: * skip (default):
+          do not enrich the results with cached profile data * enrich: enriches the result with cached…'
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+  company-resolve:
+    title: Company Lookup Endpoint
+    about: 'Cost: 2 credits / successful request. Resolve a Company Profile from company name, domain name, and
+      location. Credits are charged on any 200 response, including when no matching company is found and…'
+    request: GET /company/resolve
+    params:
+      company_location:
+        about: The location / region of company. ISO 3166-1 alpha-2 codes
+      company_domain:
+        about: Company website or Company domain Requires either company_domain or company_name
+      company_name:
+        about: Company Name Requires either company_domain or company_name
+      enrich_profile:
+        about: 'Enrich the result with a cached profile of the lookup result. The valid values are: * skip (default):
+          do not enrich the results with cached profile data * enrich: enriches the result with cached…'
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+    jobs:
+      enrich_company:
+        needs:
+        - - domain
+        - - name
+        send:
+          domain: company_domain
+          name: company_name
+        fixed:
+          enrich_profile: enrich
+        result: profile
+        fields:
+          name: name
+          website: website
+          description: description
+          industry: industry
+          employees: company_size_on_linkedin
+          founded: founded_year
+          country: hq.country
+  company-resolve-id:
+    title: Company ID Lookup Endpoint
+    about: 'Cost: 0 credit / successful request. Look up the vanity ID of a company by its numeric ID.'
+    request: GET /company/resolve-id
+    params:
+      id:
+        required: true
+        about: The company's internal, immutable numeric ID.
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+  company-employee-search:
+    title: Employee Search Endpoint
+    about: 'Cost: 10 credits / successful request. Search employees of a target company by their job title. This
+      API endpoint is syntactic sugar for the role_search parameter under the Employee Listing Endpoint.…'
+    request: GET /company/employee/search/
+    params:
+      company_profile_url:
+        required: true
+        about: Profile URL of the target company.
+      keyword_boolean:
+        required: true
+        about: Job title keyword to search for in Boolean Search Syntax format. This parameter will take precedence
+          over keyword_regex parameter if both are provided. The value provided for this parameter must not…
+      keyword_regex:
+        about: Use keyword_boolean instead. Job title keyword to search for in regular expression format. The accepted
+          value for this parameter is a case-insensitive regular expression.
+      page_size:
+        about: Tune the maximum results returned per API call. The default value of this parameter is 10. Accepted
+          values for this parameter is an integer ranging from 1 to 9999. When enrich_profiles=enrich, this…
+      country:
+        about: Limit the result set to the country locality of the profile. For example, set the parameter of country=us
+          if you only want profiles from the US. This parameter accepts a case-insensitive Alpha-2…
+      enrich_profiles:
+        about: 'Get the full profile of employees instead of only their profile urls. Each request respond with
+          a streaming response of profiles. The valid values are: * skip (default): lists employee''s profile url…'
+      resolve_numeric_id:
+        about: 'Enable support for Company Profile URLs with numerical IDs. This parameter accepts the following
+          values: - false (default value) - Will not resolve numerical IDs. - true - Enable support for Company…'
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+  profile-resolve-email:
+    title: Reverse Email Lookup Endpoint
+    about: 'Cost: 3 credits / successful request. Resolve a person profile from an email address. Works with both
+      personal and work email addresses. Credits are charged by default (lookup_depth=deep) even when…'
+    request: GET /profile/resolve/email
+    params:
+      email:
+        required: true
+        about: Email address of the user you want to look up.
+      lookup_depth:
+        about: This parameter describes the depth options for our API lookup function. This endpoint can execute
+          either a superficial or a deep lookup. A superficial lookup involves comparing the provided email…
+      enrich_profile:
+        about: 'Enrich the result with a cached profile (if any). Valid values are: * skip (default): do not enrich
+          the results with cached profile data. * enrich: enriches the result with cached profile data.…'
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+  resolve-phone:
+    title: Reverse Contact Number Lookup Endpoint
+    about: 'Cost: 3 credits / successful request. No credits are charged when no social media profiles are found.
+      Find social media profiles from a contact phone number.'
+    request: GET /resolve/phone
+    params:
+      phone_number:
+        required: true
+        about: E.164 formatted phone number of the person you want to identify social media profiles of.
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+  profile-email:
+    title: Work Email Lookup Endpoint
+    about: 'Cost: 3 credits / successful request. Look up the work email address of a Person Profile. Credits are
+      deducted when the request is accepted and refunded if no work email is found (the callback…'
+    request: GET /profile/email
+    params:
+      profile_url:
+        required: true
+        about: Profile URL of the person you want to extract work email address from.
+      callback_url:
+        about: Webhook to notify your application when the request has finished processing.
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+  job:
+    title: Job Profile Endpoint
+    about: 'Cost: 2 credits / successful request. Get structured data of a Job Profile.'
+    request: GET /job
+    params:
+      url:
+        required: true
+        about: URL of the a Job Profile to target. The Job Search endpoint can be used to retrieve a job URL.
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+  company-job:
+    title: Job Search Endpoint
+    about: 'Cost: 2 credits / successful request. List jobs posted by a company.'
+    request: GET /company/job
+    params:
+      job_type:
+        about: 'The nature of the job. It accepts the following 7 case-insensitive values only: - full-time - part-time
+          - contract - internship - temporary - volunteer - anything (default)'
+      experience_level:
+        about: 'The experience level needed for the job. It accepts the following 6 case-insensitive values only:
+          - internship - entry_level - associate - mid_senior_level - director - anything (default)'
+      when:
+        about: 'The time when the job is posted, It accepts the following case-insensitive values only: - yesterday
+          - past-week - past-month - anytime (default)'
+      flexibility:
+        about: 'The flexibility of the job. It accepts the following 3 case insensitive values only: - remote -
+          on-site - hybrid - anything (default)'
+      geo_id:
+        about: The geo_id of the location to search for. For example, 92000000 is the geo_id of world wide.
+      keyword:
+        about: The keyword to search for.
+      search_id:
+        about: The search_id of the company. You can get the search_id of a company via Company Profile API.
+      pagination:
+        about: The token for fetching the next page of results. Take the value of the pagination query parameter
+          from the next_page_api_url of the previous response.
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+  company-job-count:
+    title: Jobs Listing Count Endpoint
+    about: 'Cost: 2 credits / successful request. Count the number of jobs posted by a company.'
+    request: GET /company/job/count
+    params:
+      job_type:
+        about: 'The nature of the job. It accepts the following 7 case-insensitive values only: - full-time - part-time
+          - contract - internship - temporary - volunteer - anything (default)'
+      experience_level:
+        about: 'The experience level needed for the job. It accepts the following 6 case-insensitive values only:
+          - internship - entry_level - associate - mid_senior_level - director - anything (default)'
+      when:
+        about: 'The time when the job is posted, It accepts the following case-insensitive values only: - yesterday
+          - past-week - past-month - anytime (default)'
+      flexibility:
+        about: 'The flexibility of the job. It accepts the following 3 case insensitive values only: - remote -
+          on-site - hybrid - anything (default)'
+      geo_id:
+        about: The geo_id of the location to search for. For example, 92000000 is the geo_id of world wide.
+      keyword:
+        about: The keyword to search for.
+      search_id:
+        about: The search_id of the company. You can get the search_id of a company via Company Profile API.
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+  search-company:
+    title: Company Search Endpoint
+    about: 'Cost: 3 credits / Company URL. Search for companies that meet a set of criteria within our exhaustive
+      dataset of company profiles. This API endpoint can return at most 10,000,000 results per search.…'
+    request: GET /search/company
+    params:
+      country:
+        about: Filter companies with an office based in this country. This parameter accepts a case-insensitive
+          Alpha-2 ISO3166 country code.
+      region:
+        about: Filter companies with an office based in this region. A “region” in this context means “state,” “province,”
+          or similar political division, depending on what country you’re querying.
+      city:
+        about: Filter companies based in cities matching the provided search expression.
+      type:
+        about: 'Filter companies of the provided type. Possible values: * EDUCATIONAL: Educational Institution *
+          GOVERNMENT_AGENCY: Government Agency * NON_PROFIT : Nonprofit * PARTNERSHIP : Partnership *…'
+      follower_count_min:
+        about: Filter companies with a follower count of more than this value.
+      follower_count_max:
+        about: Filter companies with a follower count less than this value.
+      name:
+        about: Filter companies with a name matching the provided search expression.
+      industry:
+        about: Filter companies belonging to an industry that matches the provided search expression. The industry
+          attribute, found in a Company profile, describes the primary industry in which the company…
+      primary_industry:
+        about: Filter companies that has an industry that matches the provided search expression as the primary
+          industry. The industry attribute, found in a Company profile, describes the primary industry in which…
+      specialities:
+        about: Filter companies that have a speciality that matches the provided search expression. Please note
+          that we use the spelling specialities rather than specialties in this document.
+      employee_count_category:
+        about: 'Filter companies based on their employee count category. This parameter will take precedence over
+          employee_count_min and employee_count_max parameters. The valid values are: - custom (default): uses…'
+      employee_count_max:
+        about: Filter companies with at most this many employees.
+      employee_count_min:
+        about: Filter companies with at least this many employees.
+      description:
+        about: Filter companies with a description matching the provided search expression.
+      founded_after_year:
+        about: Filter companies founded after this year.
+      founded_before_year:
+        about: Filter companies founded before this year.
+      funding_amount_max:
+        about: Filter companies that have raised at most this much (USD) funding amount.
+      funding_amount_min:
+        about: Filter companies that have raised at least this much (USD) funding amount.
+      funding_raised_after:
+        about: Filter companies that have raised funding after this date.
+      funding_raised_before:
+        about: Filter companies that have raised funding before this date.
+      public_identifier_in_list:
+        about: A list of public identifiers (the identifying portion of the company’s profile URL). The target company’s
+          identifier must be a member of this list.
+      public_identifier_not_in_list:
+        about: A list of public identifiers (the identifying portion of the company’s profile URL). The target company’s
+          identifier must not be a member of this list.
+      domain_name:
+        about: Filter companies with a domain name matching the provided search expression.
+      page_size:
+        about: Tune the maximum results returned per API call. The default value of this parameter is 100. Accepted
+          values for this parameter is an integer ranging from 1 to 100. When enrich_profiles=enrich, this…
+      enrich_profiles:
+        about: 'Get the company''s complete profile data rather than just the URLs to their profiles. Each request
+          respond with a streaming response of profiles. The valid values are: - skip (default): lists…'
+      use_cache:
+        about: 'Define the freshness guarantee on the results returned. This parameter accepts the following values:
+          if-present (default value) - Returns result as it is without any freshness guarantee if-recent -…'
+      next_token:
+        about: The token for fetching the next page of results. Take the value of the next_token query parameter
+          from the next_page URL of the previous response. When this parameter is provided, the search query is…
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+  search-person:
+    title: Person Search Endpoint
+    about: 'Cost: 3 credits / Profile URL. Search for people who meet a set of criteria within our exhaustive dataset
+      of people profiles. This API endpoint can return at most 10,000,000 results per search. Each…'
+    request: GET /search/person
+    params:
+      country:
+        about: Filter people located in this country. This parameter accepts a case-insensitive Alpha-2 ISO3166
+          country code.
+      first_name:
+        about: Filter people whose first names match the provided search expression.
+      last_name:
+        about: Filter people whose last names match the provided search expression.
+      education_field_of_study:
+        about: Filter people with a field of study matching the provided search expression, based on education history.
+      education_degree_name:
+        about: Filter people who earned a degree matching the provided search expression, based on education history.
+      education_school_name:
+        about: Filter people who have attended a school whose name matches the provided search expression, based
+          on education history.
+      education_school_profile_url:
+        about: Filter people who have attended a school with a specific profile URL, based on education history.
+      current_role_title:
+        about: Filter people who are currently working as a role whose title matches the provided search expression.
+          You'll be looking for profiles that show a person's current job. However, keep in mind that some…
+      past_role_title:
+        about: Filter people who have in the past worked as a role whose title matches the provided search expression.
+      current_role_before:
+        about: Filter people who started their current role before this date. You'll be looking for profiles that
+          show a person's current job. However, keep in mind that some of these profiles may not be…
+      current_role_after:
+        about: Filter people who started their current role after this date. You'll be looking for profiles that
+          show a person's current job. However, keep in mind that some of these profiles may not be up-to-date,…
+      current_company_profile_url:
+        about: Filter people who are currently working at a company represented by this Company Profile URL. Default
+          value of this parameter is null.
+      past_company_profile_url:
+        about: Filter people who have in the past worked at the company represented by this Company Profile URL.
+          This parameter takes a Company Profile URL. Default value of this parameter is null.
+      current_job_description:
+        about: Filter people with current job descriptions matching the provided search expression.
+      past_job_description:
+        about: Filter people with past job descriptions matching the provided search expression.
+      current_company_name:
+        about: Filter people who are currently working at a company whose name matches the provided search expression.
+      past_company_name:
+        about: Filter people who have previously worked at a company whose name matches the provided search expression.
+      groups:
+        about: Filter people who are members of groups whose names match the provided search expression.
+      languages:
+        about: Filter people who list a language matching the provided search expression.
+      region:
+        about: Filter people located in a region matching the provided search expression. A “region” in this context
+          means “state,” “province,” or similar political division, depending on what country you’re…
+      city:
+        about: Filter people located in a city matching the provided search expression.
+      headline:
+        about: Filter people whose headline fields match the provided search expression.
+      summary:
+        about: Filter people whose summary fields match the provided search expression.
+      industries:
+        about: Person's inferred industry. May sometimes exist when current_company_industry does not, but current_company_industry
+          should be preferred when it exists.
+      interests:
+        about: Filter people whose interest fields match the provided search expression.
+      skills:
+        about: Filter people whose skill fields match the provided search expression.
+      skills_all_in_list:
+        about: Filter people whose skill fields match all the skills in the list. This parameter accepts a comma-separated
+          list of skills and returns profiles that include all the skills in the list. This parameter…
+      current_company_country:
+        about: Filter people who are currently working at a company with an office based in this country. This parameter
+          accepts a case-insensitive Alpha-2 ISO3166 country code.
+      current_company_region:
+        about: Filter people who are currently working at a company based in a region matching the provided search
+          expression.
+      current_company_city:
+        about: Filter people who are currently working at a company based in a city matching the provided search
+          expression.
+      current_company_type:
+        about: 'Filter people who are currently working at a company of the provided type. Possible values: * EDUCATIONAL:
+          Educational Institution * GOVERNMENT_AGENCY: Government Agency * NON_PROFIT : Nonprofit *…'
+      current_company_follower_count_min:
+        about: Filter people who are currently working at a company with a follower count of more than this value.
+      current_company_follower_count_max:
+        about: Filter people who are currently working at a company with a follower count less than this value.
+      current_company_industry:
+        about: Filter people who are currently working at a company belonging to an industry that matches the provided
+          search expression. The industry attribute, found in a Company profile, describes the primary…
+      current_company_primary_industry:
+        about: Filter people who are currently working at a company belonging to an industry that matches the provided
+          search expression. The industry attribute, found in a Company profile, describes the primary…
+      current_company_specialities:
+        about: Filter people who are currently working at a company with a specialty matching the provided search
+          expression. Please note that we use the spelling specialities rather than specialties in this…
+      current_company_employee_count_category:
+        about: Filter people who are currently working at a company in this employee count category. This parameter
+          will take precedence over current_company_employee_count_min and…
+      current_company_employee_count_min:
+        about: Filter people who are currently working at a company with at least this many employees.
+      current_company_employee_count_max:
+        about: Filter people who are currently working at a company with at most this many employees.
+      current_company_description:
+        about: Filter people who are currently working at a company with a description matching the provided search
+          expression.
+      current_company_founded_after_year:
+        about: Filter people who are currently working at a company that was founded after this year.
+      current_company_founded_before_year:
+        about: Filter people who are currently working at a company that was founded before this year.
+      current_company_funding_amount_min:
+        about: Filter people who are currently working at a company that has raised at least this much (USD) funding
+          amount.
+      current_company_funding_amount_max:
+        about: Filter people who are currently working at a company that has raised at most this much (USD) funding
+          amount.
+      current_company_funding_raised_after:
+        about: Filter people who are currently working at a company that has raised funding after this date.
+      current_company_funding_raised_before:
+        about: Filter people who are currently working at a company that has raised funding before this date.
+      current_company_domain_name:
+        about: Filter people who are currently working at a company with a domain name matching the provided search
+          expression.
+      public_identifier_in_list:
+        about: A list of public identifiers (the identifying portion of the person’s profile URL). The target person’s
+          identifier must be a member of this list.
+      public_identifier_not_in_list:
+        about: A list of public identifiers (the identifying portion of the person’s profile URL). The target person’s
+          identifier must not be a member of this list.
+      page_size:
+        about: Tune the maximum results returned per API call. The default value of this parameter is 100. Accepted
+          values for this parameter is an integer ranging from 1 to 100. When enrich_profiles=enrich, this…
+      follower_count_min:
+        about: Filter people with a follower count of more than this value.
+      follower_count_max:
+        about: Filter people with a follower count less than this value.
+      enrich_profiles:
+        about: 'Get the person''s complete profile data rather than just the URLs to their profiles. Each request
+          respond with a streaming response of profiles. The valid values are: * skip (default): lists person''s…'
+      use_cache:
+        about: 'Define the freshness guarantee on the results returned. This parameter accepts the following values:
+          if-present (default value) - Returns result as it is without any freshness guarantee if-recent -…'
+      next_token:
+        about: The token for fetching the next page of results. Take the value of the next_token query parameter
+          from the next_page URL of the previous response. When this parameter is provided, the search query is…
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+    jobs:
+      find_people:
+        needs:
+        - - title
+        - - company
+        send:
+          title: current_role_title
+          company: current_company_name
+          country: country
+        result: results
+        fields:
+          name: profile.full_name
+          headline: profile.headline
+          title: profile.occupation
+          location: profile.location_str
+          country: profile.country
+          linkedin_url: linkedin_profile_url
+  credit-balance:
+    title: View Credit Balance Endpoint
+    about: 'Cost: 0 credit / successful request. Get your current credit balance.'
+    request: GET /credit-balance
+    price:
+      usd: 0
+      per: call
+  disposable-email:
+    title: Disposable Email Address Check Endpoint
+    about: 'Cost: 0 credit / successful request. Check whether an email address belongs to a disposable email service.'
+    request: GET /disposable-email
+    params:
+      email:
+        required: true
+        about: Email address to check
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+  personal-phone:
+    title: Personal Contact Number Lookup Endpoint
+    about: 'Cost: 1 credit / contact number returned. Find personal phone numbers associated with a given social
+      media profile.'
+    request: GET /contact-api/personal-contact
+    params:
+      profile_url:
+        about: 'The Profile URL from which you wish to extract personal contact numbers Include only one of: profile_url,
+          twitter_profile_url, or facebook_profile_url.'
+      twitter_profile_url:
+        about: 'The Twitter/X Profile URL from which you wish to extract personal contact numbers Include only one
+          of: profile_url, twitter_profile_url, or facebook_profile_url.'
+      facebook_profile_url:
+        about: 'The Facebook Profile URL from which you wish to extract personal contact numbers Include only one
+          of: profile_url, twitter_profile_url, or facebook_profile_url.'
+      page_size:
+        about: This controls the maximum number of numbers returned per API call. It's useful for limiting credit
+          consumption as the number of numbers per identity can vary. The default value is 0, meaning there's…
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs
+  personal-email:
+    title: Personal Email Lookup Endpoint
+    about: 'Cost: 1 credit / email returned. Find personal email addresses associated with a given social media
+      profile.'
+    request: GET /contact-api/personal-email
+    params:
+      profile_url:
+        about: 'The Profile URL from which you wish to extract personal email addresses. Include only one of: profile_url,
+          twitter_profile_url, or facebook_profile_url.'
+      twitter_profile_url:
+        about: 'The Twitter/X Profile URL from which you wish to extract personal email addresses. Include only
+          one of: profile_url, twitter_profile_url, or facebook_profile_url.'
+      facebook_profile_url:
+        about: 'The Facebook Profile URL from which you wish to extract personal email addresses. Include only one
+          of: profile_url, twitter_profile_url, or facebook_profile_url.'
+      email_validation:
+        about: 'How to validate each email. Takes the following values: * none (default) - Do not perform email
+          validation. * fast - Perform fast email validation (does not cost extra credit). * precise - Perform…'
+      page_size:
+        about: This controls the maximum number of emails returned per API call. It's useful for limiting credit
+          consumption as the number of emails per identity can vary. The default value is 0, meaning there's no…
+    price:
+      credits: 1
+      per: call
+      note: see each endpoint's credit cost in the docs

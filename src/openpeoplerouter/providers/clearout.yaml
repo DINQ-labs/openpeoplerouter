@@ -1,0 +1,453 @@
+id: clearout
+title: Clearout
+about: Email verification (catch-all, disposable, role and gibberish checks), email finding by name and domain,
+  and reverse lookups.
+site: https://clearout.io
+docs: https://docs.clearout.io/developers/api/overview
+pricing: https://clearout.io/pricing/
+api: https://api.clearout.io/v2
+key:
+  env: CLEAROUT_API_TOKEN
+  bearer: true
+operations:
+  get-my-plans:
+    title: Get Plans and Addons
+    about: Retrieve details about the account's active subscription plan and any associated add-ons, including pricing
+      and upcoming billing renewal cycles
+    request: GET /account/myplans
+    price:
+      usd: 0
+      per: call
+  get-credits:
+    title: Get Remaining Credits
+    about: Retrieve the total remaining credit balance along with a categorized breakdown (subscription, pay-as-you-go,
+      and bonus credits) for both individual and organization accounts.
+    request: GET /account/credits
+    price:
+      usd: 0
+      per: call
+  get-account-limits:
+    title: Get Service Limits
+    about: Retrieve the account's active rate limits (Requests Per Minute) and parallel processing constraints for
+      both real-time and bulk verification services.
+    request: GET /account/limits
+    price:
+      usd: 0
+      per: call
+  autocomplete-company:
+    title: Find Domains for Company
+    about: Clearout's Autocomplete API is a free API that effectively identifies the corresponding website domains
+      for a given company name, accompanied with the corporate logo and a confidence score
+    request: GET /public/companies/autocomplete
+    params:
+      query:
+        required: true
+        about: A company name or domain or even the website URL
+    price:
+      credits: 1
+      per: call
+  find-email:
+    title: Instant Email Finder
+    about: Instantly discover email address of any person giving their name and domain or company name
+    request: POST /email_finder/instant
+    params:
+      name:
+        in: body
+        required: true
+        about: Name of the person (eg:- Mr. Tony Stark or Robert Downey Jr.)
+      domain:
+        in: body
+        required: true
+        about: Domain or Company name (eg:- marvel.com or Marvel Entertainment Company)
+      timeout:
+        in: body
+        type: integer
+        about: Request wait time (in milliseconds)
+      queue:
+        in: body
+        type: boolean
+        about: Flag to indicate whether email discovery can be performed in background even after the request timed
+          out, this will help to retrieve result later using queue id or downloaded from Clearout App -> My…
+    price:
+      credits: 1
+      per: success
+    jobs:
+      find_contact:
+        needs:
+        - - full_name
+          - company_domain
+        send:
+          full_name: name
+          company_domain: domain
+        result: data
+        fields:
+          email: emails[0].email_address
+          confidence: confidence_score
+          name: full_name
+          company_domain: domain
+  find-email-status:
+    title: Instant Email Finder Status
+    about: To know the email finder request status in queue
+    request: GET /email_finder/instant/queue_status
+    params:
+      qid:
+        required: true
+    price:
+      credits: 1
+      per: call
+  find-bulk-emails:
+    title: Bulk Email Finder
+    about: Use bulk finder API to discover the email address of the person in contact list of any size. Email discovery
+      process will occur in background and once complete it will be notified through email. Use…
+    request: POST /email_finder/bulk
+    price:
+      credits: 1
+      per: call
+  find-bulk-emails-progress-status:
+    title: Bulk Email Finder Progress Status
+    about: To know the overall progress status of the bulk finder request
+    request: GET /email_finder/bulk/progress_status
+    params:
+      list_id:
+        required: true
+    price:
+      credits: 1
+      per: call
+  download-bulk-emails-result:
+    title: Bulk Finder Result Download
+    about: Bulk email finder result file download
+    request: POST /email_finder/download/result
+    params:
+      list_id:
+        in: body
+        required: true
+        about: Pass the value of bulk list_id property from response object
+    price:
+      credits: 1
+      per: call
+  email-finder-list-remove:
+    title: Bulk Email Finder Removal
+    about: Remove your bulk finder contact list
+    request: POST /email_finder/list/remove
+    params:
+      list_id:
+        in: body
+        required: true
+        about: Pass the value of bulk list_id property from response object
+      ignore_result:
+        in: body
+        type: boolean
+        about: Set this value to true when download request is in progress, otherwise list removal will be denied
+    price:
+      credits: 1
+      per: call
+  email-finder-list-cancel:
+    title: Bulk Finder Cancel
+    about: Cancel running bulk finder list
+    request: POST /email_finder/list/cancel
+    params:
+      list_id:
+        in: body
+        required: true
+        about: Pass the value of bulk list_id property from response object
+    price:
+      credits: 1
+      per: call
+  email-finder-list:
+    title: Get Email Finder List
+    about: The Get Email Finder List endpoint allows you to retrieve your email finder bulk lists. It supports filtering
+      results and utilizes cursor-based pagination for navigating through large sets of data
+    request: POST /email_finder/list
+    params:
+      limit:
+        in: body
+        type: integer
+        required: true
+        about: Number of records to fetch (max 100)
+      start_after:
+        in: body
+        about: Cursor for pagination. - Pass null for first request - Use page_info.last_cursor from previous response
+          for next page
+      filter:
+        in: body
+        type: object
+        about: Filters to refine the email finder list results. If filter is omitted, lists created in the last
+          30 days (ps_last_30_days_including_today) are returned.
+    price:
+      credits: 1
+      per: call
+  verify-email:
+    title: Instant Verify
+    about: Instant verification API can be seamlessly integrated into your signup or onboarding process with just
+      a single request. Use this API to verify Email Address without going through queue If your…
+    request: POST /email_verify/instant
+    params:
+      email:
+        in: body
+        required: true
+      timeout:
+        in: body
+        type: integer
+        about: Request wait time (in milliseconds), Maximum allowed wait time should not exceed 180,000 milliseconds
+    price:
+      credits: 1
+      per: call
+    jobs:
+      verify_email:
+        needs:
+        - - email
+        send:
+          email: email
+        result: data
+        fields:
+          email: email_address
+          status: status
+          deliverable: safe_to_send == 'yes'
+          disposable: disposable == 'yes'
+  verify-bulk-emails:
+    title: Bulk Verify
+    about: Use bulk verify to upload your contact lists, request will be put on queue and at any point you can check
+      the status of your request using Bulk Verify Progress Status API When optimize is…
+    request: POST /email_verify/bulk
+    price:
+      credits: 1
+      per: call
+  verify-bulk-emails-progress-status:
+    title: Bulk Verify Progress Status
+    about: To know the overall progress status of bulk verify request For a Deep Verify list, progress_status changes
+      to deep_verify_in_progress once the standard verification pass is done, while the risky…
+    request: GET /email_verify/bulk/progress_status
+    params:
+      list_id:
+        required: true
+    price:
+      credits: 1
+      per: call
+  download-result-bulk-emails:
+    title: Bulk Verify Result Download
+    about: Bulk verify result download For a Deep Verify list the result is available once its progress_status is
+      completed. The Billable Mode column shows deep_verify for emails charged at the Deep Verify rate.
+    request: POST /download/result
+    params:
+      list_id:
+        in: body
+        required: true
+        about: Pass the value of bulk list_id property from response object
+    price:
+      credits: 1
+      per: call
+  email-verify-list-cancel:
+    title: Bulk Verify Cancel
+    about: Cancel running bulk verify contact list Results of the emails verified up to the point of cancellation
+      are saved, the remaining emails are marked as unknown.
+    request: POST /email_verify/list/cancel
+    params:
+      list_id:
+        in: body
+        required: true
+        about: Pass the value of bulk list_id property from response object
+    price:
+      credits: 1
+      per: call
+  email-verify-list:
+    title: Get Email Verifier List
+    about: The Get Email Verifier List endpoint allows you to retrieve your Email Verifier bulk lists. It supports
+      filtering results and utilizes cursor-based pagination for navigating through large sets of data
+    request: POST /email_verify/list
+    params:
+      limit:
+        in: body
+        type: integer
+        about: Number of records to fetch (max 100)
+      start_after:
+        in: body
+        about: Cursor for pagination. - Pass null for first request - Use page_info.last_cursor from previous response
+      filter:
+        in: body
+        type: object
+        about: Filters to refine the email verifier list results. If filter is omitted, lists created in the last
+          30 days (ps_last_30_days_including_today) are returned.
+    price:
+      credits: 1
+      per: call
+  verify-catch-all-emails:
+    title: Catch-All Verify
+    about: Verify email address for Catch-All, since certain servers accept all the emails for that domain and never
+      bounces it back to the sender, those email addresses are flagged as catch-all emails
+    request: POST /email/verify/catchall
+    params:
+      email:
+        in: body
+        required: true
+      timeout:
+        in: body
+        type: integer
+    price:
+      credits: 1
+      per: call
+  verify-disposable-emails:
+    title: Disposable Account Verify
+    about: Verify email address for Disposable, generally these email addresses live for short period of time and
+      used for account activation or confirmation emails for sites like forums, e-shopping etc. so it…
+    request: POST /email/verify/disposable
+    params:
+      email:
+        in: body
+        required: true
+      timeout:
+        in: body
+        type: integer
+    price:
+      credits: 1
+      per: call
+  verify-business-emails:
+    title: Business Account Verify
+    about: Verify email address belongs to business (a.k.a work) account
+    request: POST /email/verify/business
+    params:
+      email:
+        in: body
+        required: true
+      timeout:
+        in: body
+        type: integer
+    price:
+      credits: 1
+      per: call
+  verify-free-email:
+    title: Free Account Verify
+    about: Verify email address for free mail service such as Gmail, Yahoo!, AOL, Mail.ru etc. In many cases, it
+      is perfectly acceptable to send email to a user of a free email service. However, in certain…
+    request: POST /email/verify/free
+    params:
+      email:
+        in: body
+        required: true
+      timeout:
+        in: body
+        type: integer
+    price:
+      credits: 1
+      per: call
+  verify-role-email:
+    title: Role Account Verify
+    about: Verify email address for role account, typically these addresses are associated with a role or group
+      (postmaster, support, sales, etc.) account instead of a person. In some instances, mailing to a…
+    request: POST /email/verify/role
+    params:
+      email:
+        in: body
+        required: true
+      timeout:
+        in: body
+        type: integer
+    price:
+      credits: 1
+      per: call
+  verify-gibberish-email:
+    title: Gibberish Account Verify
+    about: Verify email address for gibberish account, typically these addresses are not used by the genuine users,
+      so its highly adviceable not to accept such email addresses
+    request: POST /email/verify/gibberish
+    params:
+      email:
+        in: body
+        required: true
+      timeout:
+        in: body
+        type: integer
+    price:
+      credits: 1
+      per: call
+  get-available-credits:
+    title: Get Available Credits
+    about: Instantly get to know the available credits.
+    request: GET /email_verify/getcredits
+    price:
+      usd: 0
+      per: call
+  find-mx:
+    title: Find MX
+    about: Convenience API to find and return the MX records for domain in higher priority order
+    request: POST /domain/resolve/mx
+    params:
+      domain:
+        in: body
+        required: true
+        about: Find MX records for domain
+      timeout:
+        in: body
+        type: number
+        about: Request wait time (in milliseconds), Maximum allowed wait time should not exceed 110000 milliseconds
+    price:
+      credits: 1
+      per: call
+  find-whois:
+    title: Find Whois
+    about: Convenience API to find and return the Whois record for domain in JSON format
+    request: POST /domain/resolve/whois
+    params:
+      domain:
+        in: body
+        required: true
+        about: Find Whois record for domain
+      timeout:
+        in: body
+        type: number
+        about: Request wait time (in milliseconds), Maximum allowed wait time should not exceed 110000 milliseconds
+    price:
+      credits: 1
+      per: call
+  name-validate:
+    title: Name validate
+    about: Instantly verify the legitimacy of a person's name to ensure clean data at the point of capture.
+    request: POST /name/validate
+    params:
+      name:
+        in: body
+        required: true
+        about: The full name or name string to validate.
+      settings:
+        in: body
+        type: object
+        about: Optional validation settings.
+      timeout:
+        in: body
+        type: integer
+        about: Request timeout in milliseconds
+    price:
+      credits: 1
+      per: call
+  reverse-lookup-linkedin:
+    title: Reverse Lookup LinkedIn Profile
+    about: Retrieve lead information from a LinkedIn profile URL
+    request: GET /reverse_lookup/linkedin
+    params:
+      url:
+        required: true
+        about: LinkedIn profile URL to lookup
+    price:
+      credits: 1
+      per: call
+  reverse-lookup-email:
+    title: Reverse Lookup Email Address
+    about: Retrieve lead information from an email address
+    request: GET /reverse_lookup/email
+    params:
+      email_address:
+        required: true
+        about: Email address to lookup
+    price:
+      credits: 1
+      per: call
+  reverse-lookup-domain:
+    title: Reverse Lookup Domain
+    about: Retrieve company lead information from a domain name
+    request: GET /reverse_lookup/domain
+    params:
+      name:
+        required: true
+        about: Domain name to lookup
+    price:
+      credits: 1
+      per: call

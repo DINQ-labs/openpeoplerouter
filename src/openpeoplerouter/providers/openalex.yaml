@@ -1,0 +1,78 @@
+id: openalex
+title: OpenAlex
+about: Open index of 100M+ scholarly authors, works and institutions.
+site: https://openalex.org
+docs: https://help.openalex.org
+pricing: https://openalex.org/pricing
+api: https://api.openalex.org
+key:
+  env: OPENALEX_API_KEY
+  query: api_key
+  optional: true
+operations:
+  search-authors:
+    title: Researchers by name or topic
+    about: Full-text search over author names; filter narrows by institution country, topic or h-index.
+    request: GET /authors
+    docs: https://help.openalex.org/api-entities/authors/search-authors
+    params:
+      search: {about: words matched against the author's name}
+      filter: {about: "comma-separated filters, e.g. last_known_institutions.country_code:US,summary_stats.h_index:>20"}
+      sort: {about: "e.g. cited_by_count:desc"}
+      per-page: {type: integer, about: 1-200, default: 25}
+      page: {type: integer}
+    price: {usd: 0.001, per: call, note: a free daily allowance applies; a key raises it}
+    jobs:
+      find_people:
+        audience: researchers
+        needs: [[query]]
+        send: {query: search}
+        limit: per-page
+        result: results
+        fields:
+          name: display_name
+          company: last_known_institutions[0].display_name
+          country: last_known_institutions[0].country_code
+          url: id
+  get-author:
+    title: One researcher by OpenAlex id or ORCID
+    request: GET /authors/{id}
+    docs: https://help.openalex.org/api-entities/authors/get-a-single-author
+    params:
+      id: {in: path, required: true, about: "an OpenAlex id (A5001226970) or orcid:0000-0002-1992-2684"}
+    price: {usd: 0, per: call}
+  search-works:
+    title: Papers by keywords, with their authors
+    about: Use it to find who publishes on a topic; each work lists its authorships and institutions.
+    request: GET /works
+    docs: https://help.openalex.org/api-entities/works/search-works
+    params:
+      search: {about: words matched against title, abstract and full text}
+      filter: {about: "e.g. publication_year:>2022,authorships.institutions.country_code:DE"}
+      sort: {about: "e.g. cited_by_count:desc"}
+      per-page: {type: integer, default: 25}
+      page: {type: integer}
+    price: {usd: 0.001, per: call}
+    jobs:
+      find_people:
+        audience: [researchers]
+        priority: 1
+        needs: [[query], [keywords]]
+        send: {query: search, keywords: search}
+        fixed: {sort: "relevance_score:desc"}
+        limit: per-page
+        result: results[].authorships[]
+        fields:
+          name: author.display_name
+          company: institutions[0].display_name
+          country: countries[0]
+          url: author.id
+  search-institutions:
+    title: Universities, labs and companies that publish
+    request: GET /institutions
+    docs: https://help.openalex.org/api-entities/institutions
+    params:
+      search: {}
+      filter: {}
+      per-page: {type: integer, default: 25}
+    price: {usd: 0.001, per: call}

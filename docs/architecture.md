@@ -1,25 +1,49 @@
-# Independent open-source boundary
+# How routing works
 
-Client → MCP tools → unified contract → configured provider/adapter → provider API.
-When the contract cannot meet the need: find_tool → endpoint → call_tool.
+```
+MCP client ──► job tool (find_contact …) ──► router ──► provider operation ──► provider API
+           └─► search_operations / describe_operation / call_operation ─────┘
+```
 
-Only catalog models, transformations, public HTTP request machinery and provider
-metadata were extracted from PeopleRouter. The open router and entry point have
-no imports from the original project. Runtime data is packaged into the wheel.
-There are no symlinks, private package requirements or requests to the commercial
-account/payment gateway. No customer rows, production environment files, example
-responses, Git history, deployment credentials or internal service URLs are copied.
+**Catalog.** `catalog.py` loads every file in `providers/`. `openpeoplerouter check`
+validates them: https base URLs, path placeholders, param locations and types,
+that every route sends the inputs it needs and fills every required param, and that
+every JMESPath expression compiles.
 
-The optional DINQ bridge calls its public MCP service only when the caller pins
-vendor=dinq. The open project does not impose its own credits or account login.
-It is a client of that supplier, not a replacement for its commercial API.
+**Jobs.** `jobs.py` defines the seven jobs: their inputs and the fields each answer
+carries. Before routing, the router derives what follows from the inputs — first and
+last name from a full name, a bare domain from a URL, platform and handle from a
+profile URL — so a provider that needs `first_name` can serve a caller who gave
+`full_name`.
 
-No PostgreSQL, analytics storage, user administration or commercial frontend is
-included. Configuration is local environment variables/.env. HTTP authentication
-is an owner-managed bearer token; stdio relies on local process access. This
-initial release targets single-owner installations, not multi-tenant hosting.
+**Candidates.** A route is a candidate when its provider is configured (its key is
+set, or it needs none, and it is allowed by `OPENPEOPLEROUTER_PROVIDERS`) and one of
+its `needs` sets is satisfied. `find_people` routes also match on `audience`, and
+`read_profile` routes on `platform`.
 
-The inherited provider catalog requires ongoing maintenance. The five entries
-that required the private internal DINQ service were deliberately excluded rather
-than advertised as direct integrations. Existing supplier-native credit units in
-catalog metadata describe their published billing, not a router credit wallet.
+**Order.** Providers named in `OPENPEOPLEROUTER_ORDER` (or the call's `providers`)
+first, then routes marked with a higher `priority`, then by price: free, then cheapest
+known, then unknown. At most three are
+tried per call.
+
+**Answers.** One-record jobs stop at the first provider that returns something.
+List jobs keep going until `limit` rows are collected, merging rows that share a
+LinkedIn URL, profile URL, email, domain, or name with employer; a merged row lists
+the other providers in `also_from`.
+
+**Outcomes.** Each attempt is `ok`, `empty` (a miss: a not-found status, a
+`no_match` error body, or a reply with no rows) or `failed` with a code —
+`missing_key`, `key_rejected`, `out_of_credit`, `rate_limited`, `bad_request`,
+`timeout`, `network`, `provider_error`. A miss moves on to the next provider; so
+does a failure.
+
+**Asynchronous providers.** A route with `poll` sends the request, then asks the
+result operation every `every` seconds until `until` holds or `within` seconds pass.
+
+**Secrets.** Keys are read from the environment (or `.env`) and only ever placed in
+the request to their own provider. Every value returned to the client is scrubbed of
+all configured keys.
+
+**Direct calls.** `call_operation` checks the arguments against the operation's
+params, sends them as given and returns the provider's response untouched. It is the
+way to reach the two thousand operations that no job covers.

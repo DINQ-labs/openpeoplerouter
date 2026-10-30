@@ -1,0 +1,34 @@
+id: neverbounce
+title: NeverBounce
+about: Real-time email verification.
+site: https://neverbounce.com
+docs: https://developers.neverbounce.com/reference/single-check
+pricing: https://neverbounce.com/pricing
+api: https://api.neverbounce.com/v4.2
+key:
+  env: NEVERBOUNCE_API_KEY
+  query: key
+operations:
+  single-check:
+    title: Whether an address accepts mail
+    request: GET /single/check
+    params:
+      email: {required: true}
+      address_info: {type: boolean}
+      credits_info: {type: boolean}
+      timeout: {type: integer, about: seconds}
+    price: {credits: 1, per: call}
+    jobs:
+      verify_email:
+        needs: [[email]]
+        send: {email: email}
+        result: '@'
+        fields:
+          status: result
+          deliverable: result == 'valid'
+          catch_all: result == 'catchall'
+          disposable: result == 'disposable'
+  account-info:
+    title: Credits left and jobs running
+    request: GET /account/info
+    price: {usd: 0, per: call}

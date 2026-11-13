@@ -181,7 +181,7 @@ class Router:
                 expr = route.fields.get(name)
                 if expr:
                     value = evaluate(expr, item)
-                    if value not in (None, "", [], {}):
+                    if value not in (None, "", [], {}) and not isinstance(value, bool):  # a bare true/false is a provider masking a field its plan withholds
                         row[name] = value
             if len(row) == 1:
                 continue

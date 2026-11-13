@@ -92,6 +92,7 @@ operations:
       scroll_token: {in: body, about: from the previous page}
       dataset: {in: body, about: resume (default), email, phone, mobile_phone, developer, all…}
       titlecase: {in: body, type: boolean, default: true}
+    not_found: 404
     price: {credits: 1, per: result}
     jobs:
       find_people:
@@ -100,7 +101,9 @@ operations:
           title: query.bool.must.0.match.job_title
           company_domain: query.bool.must.1.term.job_company_website
           company: query.bool.must.2.match.job_company_name
-          location: query.bool.must.3.match.location_name
+          location:
+            to: query.bool.must.3
+            as: {bool: {should: [{match: {location_locality: $}}, {match: {location_region: $}}, {match: {location_country: $}}]}}
           keywords: query.bool.must.4.match.skills
         limit: size
         result: data
@@ -156,13 +159,16 @@ operations:
       size: {in: body, type: integer, default: 10}
       scroll_token: {in: body}
       titlecase: {in: body, type: boolean, default: true}
+    not_found: 404
     price: {credits: 1, per: result}
     jobs:
       find_companies:
         needs: [[industry], [location], [employees], [query]]
         send:
           industry: query.bool.must.0.match.industry
-          location: query.bool.must.1.match.location.name
+          location:
+            to: query.bool.must.1
+            as: {bool: {should: [{match: {location.locality: $}}, {match: {location.region: $}}, {match: {location.country: $}}]}}
           employees: query.bool.must.2.term.size
           query: query.bool.must.3.match.summary
         limit: size

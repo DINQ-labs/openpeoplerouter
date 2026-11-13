@@ -25,11 +25,12 @@ git clone https://github.com/DINQ-labs/openpeoplerouter && cd openpeoplerouter
 uv sync
 cp .env.example .env          # fill in only the providers you use
 uv run openpeoplerouter providers
-uv run openpeoplerouter run find_contact "full_name=Jane Doe" company_domain=example.com
+uv run openpeoplerouter run find_people audience=researchers "keywords=protein folding" limit=5   # works with no key
+uv run openpeoplerouter run find_contact "full_name=Jane Doe" company_domain=example.com          # needs an email provider's key
 ```
 
 Several sources work with no key at all (OpenAlex, ORCID, Crossref, Wikidata,
-GitHub, Hugging Face, Semantic Scholar, Stack Exchange, Bluesky), so the server is
+GitHub, Hugging Face, Semantic Scholar, Stack Exchange, Bluesky, Jina), so the server is
 useful before you configure anything.
 
 ### In an MCP client
@@ -75,7 +76,9 @@ your provider credits. `docker compose up` does the same in a container.
 
 Every job result lists what was `tried`: the operation, whether it answered, how
 long it took, and the error if it failed — so an agent can tell "nobody matched"
-from "the key was rejected" from "out of credit".
+from "the key was rejected" from "out of credit". A search also lists as `ignored`
+any filter that none of the providers it tried could apply, so the rows are not
+read as filtered by it.
 
 ## Choosing providers
 

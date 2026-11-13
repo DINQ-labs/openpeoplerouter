@@ -16,10 +16,11 @@ git clone https://github.com/DINQ-labs/openpeoplerouter && cd openpeoplerouter
 uv sync
 cp .env.example .env          # 只填你要用的供应商
 uv run openpeoplerouter providers
-uv run openpeoplerouter run find_contact "full_name=Jane Doe" company_domain=example.com
+uv run openpeoplerouter run find_people audience=researchers "keywords=protein folding" limit=5   # 不需要 key
+uv run openpeoplerouter run find_contact "full_name=Jane Doe" company_domain=example.com          # 需要先配一家邮箱供应商的 key
 ```
 
-有几个数据源不需要 key 就能用：OpenAlex、ORCID、Crossref、Wikidata、GitHub、Hugging Face、Semantic Scholar、Stack Exchange、Bluesky。所以什么都不配置也能先用起来。
+有几个数据源不需要 key 就能用：OpenAlex、ORCID、Crossref、Wikidata、GitHub、Hugging Face、Semantic Scholar、Stack Exchange、Bluesky、Jina。所以什么都不配置也能先用起来。
 
 ### 接入 MCP 客户端
 
@@ -60,7 +61,7 @@ OPENPEOPLEROUTER_TOKEN=换成你的口令 uv run openpeoplerouter serve --transp
 | `describe_operation` | 查看某个接口的参数、价格和文档。 |
 | `call_operation` | 用供应商自己的参数直接调用接口，返回原始结果。 |
 
-每次任务调用都会在 `tried` 里列出试过的每个接口：有没有结果、耗时多少、失败的话错在哪。agent 能据此分清「没找到这个人」「key 被拒」「额度用完」这几种情况。
+每次任务调用都会在 `tried` 里列出试过的每个接口：有没有结果、耗时多少、失败的话错在哪。agent 能据此分清「没找到这个人」「key 被拒」「额度用完」这几种情况。搜索时如果某个筛选条件试过的供应商都不支持，结果里会在 `ignored` 列出来，避免把结果当成已按它筛过。
 
 ## 选择供应商
 

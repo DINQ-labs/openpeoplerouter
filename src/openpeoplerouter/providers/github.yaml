@@ -29,8 +29,8 @@ operations:
         send:
           query: q
           location: {to: q, as: "location:$"}
-          keywords: {to: q, as: "language:$"}
-        fixed: {sort: followers}
+          keywords: q
+        fixed: {sort: followers, q: "type:user"}
         limit: per_page
         result: items
         fields: {name: login, url: html_url, image: avatar_url}

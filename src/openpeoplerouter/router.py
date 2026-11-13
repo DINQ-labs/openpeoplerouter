@@ -20,6 +20,7 @@ from .expr import search as evaluate
 from .jobs import JOBS, derive
 
 MAX_TRIES = 3
+UNSENT = {"limit", "audience"}  # inputs the router itself consumes; no provider receives them
 
 
 class Router:
@@ -58,17 +59,20 @@ class Router:
     async def run(self, job_name: str, given: dict[str, Any], providers: list[str] | None = None,
                   raw: bool = False, max_tries: int = MAX_TRIES) -> dict[str, Any]:
         job = JOBS[job_name]
+        asked = set(given)
         given = derive(job_name, {**job.defaults, **given})
         limit = int(given.get("limit") or 0)
         plan = self.candidates(job_name, given, providers)
         if not plan:
             return redact({"job": job_name, "state": "no_provider", "message": self._why_none(job_name, given, providers)}, self._hidden())
         tried: list[dict[str, Any]] = []
+        sent: set[str] = set()
         rows: list[dict[str, Any]] = []
         record: dict[str, Any] | None = None
         async with self._client() as client:
             for op, route in plan[:max_tries]:
                 outcome = await self._attempt(client, op, route, given, limit)
+                sent |= set(route.send)
                 found = self._read(route, outcome, job.fields, raw) if outcome.state == "ok" else []
                 if outcome.state == "ok" and not found:
                     outcome.state = "empty"
@@ -85,6 +89,9 @@ class Router:
                 if limit and len(rows) >= limit:
                     break
         result: dict[str, Any] = {"job": job_name, "tried": tried}
+        unused = sorted(k for k in asked if k in given and k not in sent and k not in UNSENT) if job.many and tried else []
+        if unused:  # the providers tried have no such filter; the caller should not read the rows as filtered by it
+            result["ignored"] = unused
         if job.many:
             result["state"] = "found" if rows else "empty"
             result["rows"] = rows[:limit] if limit else rows
@@ -187,6 +194,8 @@ class Router:
         routes = [(op, r) for op, r in self.catalog.routes(job) if not only or op.provider in only]
         fitting = [op.provider for op, r in routes if r.usable(given) is not None]
         if not fitting:
+            if job == "read_profile" and given.get("url") and not given.get("platform"):
+                return f"no provider reads profiles on this site; platforms: {sorted({r.platform for _, r in routes if r.platform})}"
             needs = sorted({" + ".join(o) for _, r in routes for o in r.needs})
             return f"no provider answers {job} from these inputs; options: {needs[:12]}"
         keys = sorted({e for p in dict.fromkeys(fitting) for e in self.catalog.providers[p].key.envs()})
